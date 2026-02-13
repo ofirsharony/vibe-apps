@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vibe Apps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:        #0b0b0f;
+      --surface:   #14141a;
+      --border:    #1e1e28;
+      --text:      #e4e4e7;
+      --text-dim:  #71717a;
+      --accent:    #a78bfa;
+      --accent2:   #38bdf8;
+      --accent3:   #f472b6;
+      --accent4:   #34d399;
+      --accent5:   #fb923c;
+      --radius:    16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Ambient glow blobs ───────────────────────────── */
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: .15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow--purple { width: 600px; height: 600px; background: var(--accent);  top: -10%; left: -5%; }
+    .glow--blue   { width: 500px; height: 500px; background: var(--accent2); bottom: -8%; right: -4%; }
+    .glow--pink   { width: 400px; height: 400px; background: var(--accent3); top: 40%; left: 50%; transform: translateX(-50%); }
+
+    /* ── Layout ────────────────────────────────────────── */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Header / Hero ─────────────────────────────────── */
+    header {
+      padding: 80px 0 48px;
+      text-align: center;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      color: var(--text);
+      margin-bottom: 40px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -.03em;
+      margin-bottom: 16px;
+    }
+
+    h1 .gradient {
+      background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── App Grid ──────────────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding-bottom: 100px;
+      margin-top: 16px;
+    }
+
+    .card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius);
+      opacity: 0;
+      transition: opacity .3s ease;
+      pointer-events: none;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(167, 139, 250, .3);
+      box-shadow: 0 8px 32px rgba(167, 139, 250, .08);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -.01em;
+    }
+
+    .card p {
+      font-size: .9rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    .card-tag {
+      display: inline-block;
+      font-size: .7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+
+    /* ── Color variants ────────────────────────────────── */
+    .card--purple .card-icon { background: rgba(167,139,250,.12); color: var(--accent);  }
+    .card--purple .card-tag  { background: rgba(167,139,250,.1);  color: var(--accent);  }
+    .card--purple::before    { background: radial-gradient(ellipse at top left, rgba(167,139,250,.06), transparent 60%); }
+
+    .card--blue .card-icon   { background: rgba(56,189,248,.12);  color: var(--accent2); }
+    .card--blue .card-tag    { background: rgba(56,189,248,.1);   color: var(--accent2); }
+    .card--blue::before      { background: radial-gradient(ellipse at top left, rgba(56,189,248,.06), transparent 60%); }
+
+    .card--pink .card-icon   { background: rgba(244,114,182,.12); color: var(--accent3); }
+    .card--pink .card-tag    { background: rgba(244,114,182,.1);  color: var(--accent3); }
+    .card--pink::before      { background: radial-gradient(ellipse at top left, rgba(244,114,182,.06), transparent 60%); }
+
+    .card--green .card-icon  { background: rgba(52,211,153,.12);  color: var(--accent4); }
+    .card--green .card-tag   { background: rgba(52,211,153,.1);   color: var(--accent4); }
+    .card--green::before     { background: radial-gradient(ellipse at top left, rgba(52,211,153,.06), transparent 60%); }
+
+    .card--orange .card-icon { background: rgba(251,146,60,.12);  color: var(--accent5); }
+    .card--orange .card-tag  { background: rgba(251,146,60,.1);   color: var(--accent5); }
+    .card--orange::before    { background: radial-gradient(ellipse at top left, rgba(251,146,60,.06), transparent 60%); }
+
+    .card--cyan .card-icon   { background: rgba(34,211,238,.12);  color: #22d3ee; }
+    .card--cyan .card-tag    { background: rgba(34,211,238,.1);   color: #22d3ee; }
+    .card--cyan::before      { background: radial-gradient(ellipse at top left, rgba(34,211,238,.06), transparent 60%); }
+
+    /* ── Arrow indicator ───────────────────────────────── */
+    .card-arrow {
+      position: absolute;
+      top: 28px;
+      right: 28px;
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      transition: transform .25s ease, color .25s ease;
+    }
+    .card:hover .card-arrow {
+      transform: translate(3px, -3px);
+      color: var(--text);
+    }
+
+    /* ── Footer ────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 32px 0 48px;
+      color: var(--text-dim);
+      font-size: .82rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Entrance animation ────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    header, .card, footer {
+      animation: fadeUp .6s ease both;
+    }
+    .card:nth-child(1) { animation-delay: .08s; }
+    .card:nth-child(2) { animation-delay: .14s; }
+    .card:nth-child(3) { animation-delay: .20s; }
+    .card:nth-child(4) { animation-delay: .26s; }
+    .card:nth-child(5) { animation-delay: .32s; }
+    .card:nth-child(6) { animation-delay: .38s; }
+    footer { animation-delay: .44s; }
+
+    /* ── Responsive ────────────────────────────────────── */
+    @media (max-width: 640px) {
+      header { padding: 56px 0 36px; }
+      .grid  { grid-template-columns: 1fr; }
+      .card  { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient glow -->
+  <div class="glow glow--purple"></div>
+  <div class="glow glow--blue"></div>
+  <div class="glow glow--pink"></div>
+
+  <div class="wrapper">
+
+    <header>
+      <div class="logo">
+        <div class="logo-icon">✦</div>
+        vibe apps
+      </div>
+      <h1>A collection of<br /><span class="gradient">things I built</span></h1>
+      <p class="subtitle">Side projects, experiments, and tools — all in one place.</p>
+    </header>
+
+    <section class="grid">
+
+      <a href="#" class="card card--purple">
+        <span class="card-arrow">↗</span>
+        <div class="card-icon">🎨</div>
+        <span class="card-tag">Design</span>
+        <h2>Palette Lab</h2>
+        <p>Generate beautiful, accessible color palettes for any project in seconds.</p>
+      </a>
+
+      <a href="#" class="card card--blue">
+        <span class="card-arrow">↗</span>
+        <div class="card-icon">⚡</div>
+        <span class="card-tag">Productivity</span>
+        <h2>Focus Timer</h2>
+        <p>A minimal pomodoro timer with ambient sounds and session tracking.</p>
+      </a>
+
+      <a href="#" class="card card--pink">
+        <span class="card-arrow">↗</span>
+        <div class="card-icon">💬</div>
+        <span class="card-tag">AI</span>
+        <h2>Chat Playground</h2>
+        <p>Experiment with different LLM prompts and compare outputs side by side.</p>
+      </a>
+
+      <a href="#" class="card card--green">
+        <span class="card-arrow">↗</span>
+        <div class="card-icon">📊</div>
+        <span class="card-tag">Data</span>
+        <h2>Dash Metrics</h2>
+        <p>Lightweight dashboard for tracking personal KPIs and daily habits.</p>
+      </a>
+
+      <a href="#" class="card card--orange">
+        <span class="card-arrow">↗</span>
+        <div class="card-icon">🗺️</div>
+        <span class="card-tag">Maps</span>
+        <h2>Wander Log</h2>
+        <p>Pin and journal the places you've visited on an interactive world map.</p>
+      </a>
+
+      <a href="#" class="card card--cyan">
+        <span class="card-arrow">↗</span>
+        <div class="card-icon">🔗</div>
+        <span class="card-tag">Utility</span>
+        <h2>Shortcut.io</h2>
+        <p>Create branded short links with click analytics and QR code generation.</p>
+      </a>
+
+    </section>
+
+    <footer>
+      Built with ☕ and curiosity · © 2026
+    </footer>
+
+  </div>
+
+</body>
+</html>
