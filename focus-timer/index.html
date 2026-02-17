@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Timer — Vibe Apps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Tokens ───────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:       #0b0b0f;
+      --surface:  #14141a;
+      --border:   #1e1e28;
+      --text:     #e4e4e7;
+      --text-dim: #71717a;
+      --accent:   #38bdf8;
+      --accent-glow: rgba(56, 189, 248, .15);
+      --red:      #f87171;
+      --green:    #34d399;
+      --orange:   #fb923c;
+      --radius:   16px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* ── Ambient glow ─────────────────────────────────── */
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: .12;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow--1 { width: 500px; height: 500px; background: var(--accent); top: -10%; left: 20%; }
+    .glow--2 { width: 400px; height: 400px; background: #a78bfa;      bottom: -5%; right: 10%; }
+
+    /* ── Nav ───────────────────────────────────────────── */
+    .back {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .85rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .back:hover { color: var(--text); }
+
+    /* ── Main container ────────────────────────────────── */
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      padding: 80px 24px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    /* ── Header ────────────────────────────────────────── */
+    .header {
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: 6px;
+    }
+    .header p {
+      font-size: .9rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Mode selector ─────────────────────────────────── */
+    .modes {
+      display: flex;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .mode-btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: .82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    .mode-btn:hover { color: var(--text); }
+    .mode-btn.active {
+      background: var(--accent-glow);
+      color: var(--accent);
+    }
+
+    /* ── Timer ring ────────────────────────────────────── */
+    .timer-wrap {
+      position: relative;
+      width: 280px;
+      height: 280px;
+    }
+
+    .timer-ring {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 6;
+    }
+
+    .ring-progress {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset .4s ease, stroke .3s ease;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+
+    .timer-display {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .time {
+      font-size: 3.4rem;
+      font-weight: 300;
+      letter-spacing: .04em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .session-label {
+      font-size: .78rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* ── Controls ──────────────────────────────────────── */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-family: inherit;
+      display: grid;
+      place-items: center;
+      transition: transform .15s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .btn:active { transform: scale(.93); }
+
+    .btn-play {
+      width: 64px;
+      height: 64px;
+      background: var(--accent);
+      color: #0b0b0f;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 24px rgba(56, 189, 248, .3);
+    }
+    .btn-play:hover {
+      box-shadow: 0 4px 32px rgba(56, 189, 248, .45);
+    }
+
+    .btn-secondary {
+      width: 44px;
+      height: 44px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 1rem;
+    }
+    .btn-secondary:hover { color: var(--text); border-color: #2a2a36; }
+
+    /* ── Session dots ──────────────────────────────────── */
+    .sessions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .3s ease, box-shadow .3s ease;
+    }
+    .dot.done {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+    .dot.active {
+      background: var(--accent);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(56,189,248,.4); }
+      50%      { box-shadow: 0 0 0 8px rgba(56,189,248,0); }
+    }
+
+    /* ── Stats bar ─────────────────────────────────────── */
+    .stats {
+      display: flex;
+      gap: 24px;
+      padding: 16px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .stat {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    .stat-label {
+      font-size: .72rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-top: 2px;
+    }
+
+    /* ── Sound toggle ──────────────────────────────────── */
+    .sound-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sound-section-title {
+      font-size: .78rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .sounds {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .sound-btn {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s;
+    }
+    .sound-btn:hover { color: var(--text); border-color: #2a2a36; }
+    .sound-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    /* ── Entrance ──────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .container > * {
+      animation: fadeUp .5s ease both;
+    }
+    .container > *:nth-child(1) { animation-delay: .05s; }
+    .container > *:nth-child(2) { animation-delay: .10s; }
+    .container > *:nth-child(3) { animation-delay: .15s; }
+    .container > *:nth-child(4) { animation-delay: .20s; }
+    .container > *:nth-child(5) { animation-delay: .25s; }
+    .container > *:nth-child(6) { animation-delay: .30s; }
+    .container > *:nth-child(7) { animation-delay: .35s; }
+  </style>
+</head>
+<body>
+
+  <div class="glow glow--1"></div>
+  <div class="glow glow--2"></div>
+
+  <a href="../index.html" class="back">← Back to apps</a>
+
+  <div class="container">
+
+    <div class="header">
+      <h1>⚡ Focus Timer</h1>
+      <p>Stay in the zone with timed focus sessions</p>
+    </div>
+
+    <!-- Mode selector -->
+    <div class="modes">
+      <button class="mode-btn active" data-mode="focus">Focus</button>
+      <button class="mode-btn" data-mode="short">Short Break</button>
+      <button class="mode-btn" data-mode="long">Long Break</button>
+    </div>
+
+    <!-- Timer -->
+    <div class="timer-wrap">
+      <svg class="timer-ring" viewBox="0 0 280 280">
+        <circle class="ring-bg" cx="140" cy="140" r="124" />
+        <circle class="ring-progress" cx="140" cy="140" r="124"
+                stroke-dasharray="779.42" stroke-dashoffset="0" />
+      </svg>
+      <div class="timer-display">
+        <div class="time" id="time">25:00</div>
+        <div class="session-label" id="sessionLabel">Focus</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn btn-secondary" id="resetBtn" title="Reset">↺</button>
+      <button class="btn btn-play" id="playBtn" title="Start">▶</button>
+      <button class="btn btn-secondary" id="skipBtn" title="Skip">⏭</button>
+    </div>
+
+    <!-- Session progress dots -->
+    <div class="sessions" id="sessions">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="completedSessions">0</div>
+        <div class="stat-label">Sessions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="totalMinutes">0m</div>
+        <div class="stat-label">Focused</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="streak">0</div>
+        <div class="stat-label">Streak</div>
+      </div>
+    </div>
+
+    <!-- Ambient sounds -->
+    <div class="sound-section">
+      <div class="sound-section-title">Ambient Sound</div>
+      <div class="sounds">
+        <button class="sound-btn" data-sound="none">None</button>
+        <button class="sound-btn" data-sound="rain">🌧 Rain</button>
+        <button class="sound-btn" data-sound="fire">🔥 Fireplace</button>
+        <button class="sound-btn" data-sound="forest">🌲 Forest</button>
+        <button class="sound-btn" data-sound="waves">🌊 Waves</button>
+        <button class="sound-btn" data-sound="cafe">☕ Café</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Configuration ──────────────────────────────────
+    const MODES = {
+      focus: { label: 'Focus',       minutes: 25, color: '#38bdf8' },
+      short: { label: 'Short Break', minutes: 5,  color: '#34d399' },
+      long:  { label: 'Long Break',  minutes: 15, color: '#a78bfa' },
+    };
+
+    const CIRCUMFERENCE = 2 * Math.PI * 124; // ≈ 779.42
+
+    // ── State ──────────────────────────────────────────
+    let currentMode   = 'focus';
+    let totalSeconds   = MODES.focus.minutes * 60;
+    let remainingSeconds = totalSeconds;
+    let isRunning      = false;
+    let intervalId     = null;
+    let sessionsCompleted = 0;
+    let focusMinutesTotal = 0;
+    let currentSession = 0; // 0-based, out of 4
+
+    // ── DOM refs ───────────────────────────────────────
+    const timeEl        = document.getElementById('time');
+    const sessionLabel  = document.getElementById('sessionLabel');
+    const playBtn       = document.getElementById('playBtn');
+    const resetBtn      = document.getElementById('resetBtn');
+    const skipBtn       = document.getElementById('skipBtn');
+    const ringProgress  = document.querySelector('.ring-progress');
+    const sessionsEl    = document.getElementById('sessions');
+    const completedEl   = document.getElementById('completedSessions');
+    const totalMinEl    = document.getElementById('totalMinutes');
+    const streakEl      = document.getElementById('streak');
+    const modeBtns      = document.querySelectorAll('.mode-btn');
+    const soundBtns     = document.querySelectorAll('.sound-btn');
+
+    // ── Audio context for notification ─────────────────
+    function playNotification() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.15);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.15);
+          osc.stop(ctx.currentTime + i * 0.15 + 0.4);
+        });
+      } catch (_) { /* silent fail */ }
+    }
+
+    // ── Ambient sound engine ───────────────────────────
+    let ambientCtx = null;
+    let ambientSource = null;
+    let ambientGain = null;
+    let currentSound = 'none';
+
+    function generateNoise(ctx, type) {
+      const sampleRate = ctx.sampleRate;
+      const duration = 4; // seconds of loopable buffer
+      const length = sampleRate * duration;
+      const buffer = ctx.createBuffer(2, length, sampleRate);
+
+      for (let ch = 0; ch < 2; ch++) {
+        const data = buffer.getChannelData(ch);
+        if (type === 'rain') {
+          // Brown noise with high-pass feel
+          let last = 0;
+          for (let i = 0; i < length; i++) {
+            const white = Math.random() * 2 - 1;
+            last = (last + 0.02 * white) / 1.02;
+            data[i] = last * 3.5;
+          }
+          // Add occasional "drop" clicks
+          for (let i = 0; i < length; i += Math.floor(Math.random() * 800 + 200)) {
+            data[i] += (Math.random() - 0.5) * 0.3;
+          }
+        } else if (type === 'fire') {
+          // Crackling brown noise
+          let last = 0;
+          for (let i = 0; i < length; i++) {
+            const white = Math.random() * 2 - 1;
+            last = (last + 0.04 * white) / 1.04;
+            data[i] = last * 2;
+            if (Math.random() < 0.001) data[i] += (Math.random() - 0.5) * 0.8;
+          }
+        } else if (type === 'forest') {
+          // Soft pink noise
+          let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+          for (let i = 0; i < length; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            b3 = 0.86650 * b3 + white * 0.3104856;
+            b4 = 0.55000 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.0168980;
+            data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+            b6 = white * 0.115926;
+            // Bird-like chirps
+            if (Math.random() < 0.00005) {
+              for (let j = 0; j < Math.min(400, length - i); j++) {
+                data[i + j] += Math.sin(j * 0.15) * Math.exp(-j * 0.008) * 0.15;
+              }
+            }
+          }
+        } else if (type === 'waves') {
+          // Slow oscillating noise
+          for (let i = 0; i < length; i++) {
+            const t = i / sampleRate;
+            const wave = Math.sin(t * 0.4 * Math.PI) * 0.5 + 0.5;
+            const white = Math.random() * 2 - 1;
+            data[i] = white * wave * 0.3;
+          }
+        } else if (type === 'cafe') {
+          // Warm murmur — brown noise + occasional clinks
+          let last = 0;
+          for (let i = 0; i < length; i++) {
+            const white = Math.random() * 2 - 1;
+            last = (last + 0.015 * white) / 1.015;
+            data[i] = last * 4;
+            if (Math.random() < 0.0003) {
+              for (let j = 0; j < Math.min(120, length - i); j++) {
+                data[i + j] += Math.sin(j * 0.5) * Math.exp(-j * 0.05) * 0.12;
+              }
+            }
+          }
+        }
+      }
+      return buffer;
+    }
+
+    function startAmbient(type) {
+      stopAmbient();
+      if (type === 'none') { currentSound = 'none'; return; }
+
+      ambientCtx = new (window.AudioContext || window.webkitAudioContext)();
+      ambientGain = ambientCtx.createGain();
+      ambientGain.gain.value = 0.5;
+      ambientGain.connect(ambientCtx.destination);
+
+      const buffer = generateNoise(ambientCtx, type);
+      ambientSource = ambientCtx.createBufferSource();
+      ambientSource.buffer = buffer;
+      ambientSource.loop = true;
+      ambientSource.connect(ambientGain);
+      ambientSource.start();
+      currentSound = type;
+    }
+
+    function stopAmbient() {
+      if (ambientSource) { try { ambientSource.stop(); } catch(_){} ambientSource = null; }
+      if (ambientCtx)    { try { ambientCtx.close(); }  catch(_){} ambientCtx = null; }
+    }
+
+    // ── Rendering ──────────────────────────────────────
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function updateDisplay() {
+      timeEl.textContent = formatTime(remainingSeconds);
+      const fraction = 1 - remainingSeconds / totalSeconds;
+      ringProgress.style.strokeDashoffset = CIRCUMFERENCE * (1 - fraction);
+      document.title = `${formatTime(remainingSeconds)} — Focus Timer`;
+    }
+
+    function setAccentColor(color) {
+      document.documentElement.style.setProperty('--accent', color);
+      document.documentElement.style.setProperty('--accent-glow', color.replace(')', ', .15)').replace('rgb', 'rgba'));
+      ringProgress.style.stroke = color;
+    }
+
+    function updateDots() {
+      const dots = sessionsEl.querySelectorAll('.dot');
+      dots.forEach((dot, i) => {
+        dot.classList.remove('done', 'active');
+        if (i < currentSession) dot.classList.add('done');
+        if (i === currentSession && currentMode === 'focus') dot.classList.add('active');
+      });
+    }
+
+    function updateStats() {
+      completedEl.textContent = sessionsCompleted;
+      totalMinEl.textContent = focusMinutesTotal + 'm';
+      streakEl.textContent = sessionsCompleted; // simple streak = completed count for now
+    }
+
+    // ── Mode switching ─────────────────────────────────
+    function switchMode(mode, resetTimer = true) {
+      currentMode = mode;
+      const cfg = MODES[mode];
+      totalSeconds = cfg.minutes * 60;
+      if (resetTimer) remainingSeconds = totalSeconds;
+      sessionLabel.textContent = cfg.label;
+      setAccentColor(cfg.color);
+
+      modeBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+
+      if (isRunning) pause();
+      updateDisplay();
+      updateDots();
+    }
+
+    // ── Timer controls ─────────────────────────────────
+    function start() {
+      if (isRunning) return;
+      isRunning = true;
+      playBtn.textContent = '⏸';
+      playBtn.title = 'Pause';
+      intervalId = setInterval(() => {
+        remainingSeconds--;
+        if (remainingSeconds <= 0) {
+          remainingSeconds = 0;
+          updateDisplay();
+          onTimerComplete();
+          return;
+        }
+        updateDisplay();
+      }, 1000);
+    }
+
+    function pause() {
+      isRunning = false;
+      playBtn.textContent = '▶';
+      playBtn.title = 'Start';
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+
+    function reset() {
+      pause();
+      remainingSeconds = totalSeconds;
+      updateDisplay();
+    }
+
+    function skip() {
+      pause();
+      onTimerComplete();
+    }
+
+    function onTimerComplete() {
+      pause();
+      playNotification();
+
+      if (currentMode === 'focus') {
+        sessionsCompleted++;
+        focusMinutesTotal += MODES.focus.minutes;
+        currentSession++;
+        updateStats();
+
+        if (currentSession >= 4) {
+          currentSession = 0;
+          switchMode('long');
+        } else {
+          switchMode('short');
+        }
+      } else {
+        switchMode('focus');
+      }
+    }
+
+    // ── Event listeners ────────────────────────────────
+    playBtn.addEventListener('click', () => isRunning ? pause() : start());
+    resetBtn.addEventListener('click', reset);
+    skipBtn.addEventListener('click', skip);
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+    });
+
+    soundBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        soundBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        startAmbient(btn.dataset.sound);
+      });
+    });
+
+    // ── Init ───────────────────────────────────────────
+    switchMode('focus');
+    updateStats();
+  </script>
+
+</body>
+</html>
