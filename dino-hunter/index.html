@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ציד הדינוזאורים — Vibe Apps</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-from: #1a3a2a;
+      --bg-to: #2d1f0e;
+      --surface: rgba(255,255,255,0.95);
+      --surface-dark: rgba(0,0,0,0.25);
+      --text: #2d1f0e;
+      --text-light: #f5f0e8;
+      --accent: #e8a838;
+      --accent-green: #4caf50;
+      --accent-red: #ef5350;
+      --radius: 20px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(135deg, var(--bg-from), var(--bg-to));
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 12px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .screen.active { display: flex; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Top Bar ── */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background: var(--surface-dark);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      color: var(--text-light);
+      font-weight: 500;
+      font-size: 1rem;
+    }
+
+    .bone-counter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .level-badge {
+      background: var(--accent);
+      color: #2d1f0e;
+      padding: 4px 14px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    
+
+    /* ── Welcome Screen ── */
+    .welcome-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 40px 36px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      max-width: 600px;
+      width: 100%;
+      margin-top: 30px;
+    }
+
+    .trex-avatar {
+      font-size: 72px;
+      line-height: 1;
+      margin-bottom: 12px;
+      animation: bounce 2s ease infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .welcome-card h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .welcome-card p {
+      font-size: 1.05rem;
+      color: #5a4a3a;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .controls-hint {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .key-icon {
+      width: 44px;
+      height: 44px;
+      background: #f0e8d8;
+      border: 2px solid #d4c8b4;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #5a4a3a;
+      box-shadow: 0 3px 0 #c4b8a4;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 36px;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      min-height: 52px;
+    }
+
+    .btn:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(0,0,0,0.2); }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e8a838, #f0c060);
+      color: #2d1f0e;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--accent-green), #66bb6a);
+      color: #fff;
+    }
+
+    /* ── Game Canvas Area ── */
+    .game-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 680px;
+      aspect-ratio: 1 / 1;
+    }
+
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      display: block;
+      touch-action: none;
+    }
+
+    /* ── Fact Popup ── */
+    .fact-popup {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 14px 22px;
+      box-shadow: var(--shadow);
+      max-width: 90%;
+      text-align: center;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      z-index: 10;
+      animation: fadeUp 0.3s ease both;
+      pointer-events: none;
+    }
+
+    .fact-popup .fact-name {
+      font-weight: 700;
+      color: var(--accent-green);
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+
+    /* ── Mobile Controls ── */
+    .mobile-controls {
+      display: none;
+      width: 100%;
+      max-width: 280px;
+      margin-top: 10px;
+    }
+
+    .mobile-controls .row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .mobile-controls button {
+      width: 72px;
+      height: 60px;
+      border: none;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      color: var(--text-light);
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-controls button:active {
+      background: rgba(255,255,255,0.35);
+    }
+
+    @media (pointer: coarse) {
+      .mobile-controls { display: flex; flex-direction: column; align-items: center; }
+    }
+
+    /* ── Summary Screen ── */
+    .summary-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 40px 36px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      max-width: 600px;
+      width: 100%;
+      margin-top: 30px;
+    }
+
+    .summary-trex { font-size: 80px; line-height: 1; margin-bottom: 12px; }
+
+    .summary-card h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .summary-card .score-display {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 12px 0;
+    }
+
+    .summary-card .score-label {
+      font-size: 1rem;
+      color: #5a4a3a;
+      margin-bottom: 6px;
+    }
+
+    .summary-message {
+      font-size: 1.05rem;
+      color: #5a4a3a;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .stars-row {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      letter-spacing: 8px;
+    }
+
+    .caught-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .caught-chip {
+      background: #e8f5e9;
+      border: 2px solid #a5d6a7;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    /* ── Confetti ── */
+    .confetti-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 200;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      top: -20px;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    .jungle-top, .jungle-bottom {
+      position: fixed;
+      left: 0; right: 0;
+      font-size: 2rem;
+      text-align: center;
+      line-height: 1;
+      opacity: 0.2;
+      pointer-events: none;
+      z-index: 0;
+      letter-spacing: 4px;
+    }
+    .jungle-top { top: 0; }
+    .jungle-bottom { bottom: 0; }
+
+    @media (max-width: 640px) {
+      body { padding: 8px; }
+      .welcome-card, .summary-card { padding: 28px 18px; }
+      .welcome-card h1 { font-size: 1.6rem; }
+      .top-bar { flex-wrap: wrap; gap: 6px; justify-content: center; font-size: 0.85rem; padding: 8px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="jungle-top">🌿🌴🍃🌿🌴🍃🌿🌴🍃🌿🌴🍃🌿🌴🍃🌿🌴🍃</div>
+  <div class="jungle-bottom">🌿🪨🌴🍃🪨🌿🌴🍃🪨🌿🌴🍃🪨🌿🌴🍃🪨🌿</div>
+
+  <div class="app">
+
+    <div class="top-bar" id="topBar" style="display:none;">
+      <div class="bone-counter">🦴 <span id="boneCount">0</span></div>
+      <div class="level-badge" id="levelBadge">שלב 1</div>
+    </div>
+
+    <!-- Welcome -->
+    <div class="screen active" id="welcomeScreen">
+      <div class="welcome-card">
+        <div class="trex-avatar">🦖</div>
+        <h1>ציד הדינוזאורים</h1>
+        <p>
+          היי! אני טי-רקס רעב מאוד! 🦴<br>
+          עזרו לי לרדוף ולתפוס דינוזאורים צמחוניים!<br>
+          היזהרו מהקירות ותפסו את כולם!
+        </p>
+        <p style="font-size:0.9rem; color:#8a7a6a; margin-bottom:12px;">
+          השתמשו בחצים במקלדת כדי לנוע במבוך 🎮
+        </p>
+        <div class="controls-hint">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div class="key-icon">↑</div>
+            <div style="display:flex;gap:6px;">
+              <div class="key-icon">←</div>
+              <div class="key-icon">↓</div>
+              <div class="key-icon">→</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="startGame()" aria-label="התחל לשחק">
+          בואו נצא לציד! 🦖
+        </button>
+      </div>
+    </div>
+
+    <!-- Game -->
+    <div class="screen" id="gameScreen">
+      <div class="game-wrapper" id="gameWrapper">
+        <canvas id="gameCanvas"></canvas>
+        <div class="fact-popup" id="factPopup" style="display:none;"></div>
+      </div>
+      <div class="mobile-controls" id="mobileControls">
+        <div class="row">
+          <button ontouchstart="handleMobile('up')" onclick="handleMobile('up')" aria-label="למעלה">↑</button>
+        </div>
+        <div class="row">
+          <button ontouchstart="handleMobile('left')" onclick="handleMobile('left')" aria-label="שמאלה">←</button>
+          <button ontouchstart="handleMobile('down')" onclick="handleMobile('down')" aria-label="למטה">↓</button>
+          <button ontouchstart="handleMobile('right')" onclick="handleMobile('right')" aria-label="ימינה">→</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="screen" id="summaryScreen">
+      <div class="summary-card">
+        <div class="summary-trex" id="summaryTrex">🦖</div>
+        <h2 id="summaryTitle">סיימנו!</h2>
+        <div class="stars-row" id="starsRow"></div>
+        <div class="score-label">דינוזאורים שנתפסו</div>
+        <div class="score-display" id="finalScore">0 🦴</div>
+        <div class="caught-list" id="caughtList"></div>
+        <p class="summary-message" id="summaryMessage"></p>
+        <button class="btn btn-secondary" onclick="resetGame()" aria-label="שחק שוב">
+          שחק שוב 🔄
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="confetti-container" id="confettiContainer"></div>
+
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'chomp') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(500, audioCtx.currentTime + 0.05);
+        osc.frequency.setValueAtTime(200, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.2);
+      } else if (type === 'levelup') {
+        const notes = [523, 659, 784, 1047];
+        notes.forEach((freq, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g); g.connect(audioCtx.destination);
+          o.type = 'sine';
+          o.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.1);
+          g.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.15);
+          o.start(audioCtx.currentTime + i * 0.1);
+          o.stop(audioCtx.currentTime + i * 0.1 + 0.2);
+        });
+      } else if (type === 'victory') {
+        const notes = [523, 587, 659, 784, 880, 1047];
+        notes.forEach((freq, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g); g.connect(audioCtx.destination);
+          o.type = 'sine';
+          o.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.12);
+          g.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.12);
+          g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.12 + 0.2);
+          o.start(audioCtx.currentTime + i * 0.12);
+          o.stop(audioCtx.currentTime + i * 0.12 + 0.25);
+        });
+      } else if (type === 'tick') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.05);
+      }
+    }
+
+    // ── Dinosaur data ──
+    const herbivores = [
+      { name: 'טְרִיצֶרָטוֹפְּס', emoji: '🦕', fact: 'לטריצרטופס היו 3 קרניים על הראש! הוא אכל צמחים בעזרת המקור החזק שלו.' },
+      { name: 'בְּרוֹנְטוֹזָאוּרוּס', emoji: '🦕', fact: 'הברונטוזאורוס היה ענק! הוא אכל עלים מצמרות העצים הגבוהים.' },
+      { name: 'סְטֶגוֹזָאוּרוּס', emoji: '🦕', fact: 'לסטגוזאורוס היו לוחות עצם על הגב וקוצים בזנב! הוא אכל רק צמחים.' },
+      { name: 'אַנְקִילוֹזָאוּרוּס', emoji: '🦕', fact: 'האנקילוזאורוס היה כמו טנק חי! גופו היה מכוסה בשריון עצם.' },
+      { name: 'פָּרָזָאוּרוֹלוֹפוּס', emoji: '🦕', fact: 'לפרזאורולופוס היה מפרש ארוך על הראש שעזר לו להשמיע קולות חזקים!' },
+      { name: 'אִיגוּאָנוֹדוֹן', emoji: '🦕', fact: 'לאיגואנודון היה "אגודל" חד על היד! הוא היה מהדינוזאורים הראשונים שהתגלו.' },
+      { name: 'דִּיפְּלוֹדוֹקוּס', emoji: '🦕', fact: 'הדיפלודוקוס היה ארוך מאוד! הזנב שלו היה כמו שוט ענק.' },
+      { name: 'גָּלִימִימוּס', emoji: '🦕', fact: 'הגלימימוס נראה כמו יען ענק! הוא היה מהדינוזאורים המהירים ביותר.' },
+      { name: 'פָּכִיצֶפָלוֹזָאוּרוּס', emoji: '🦕', fact: 'לפכיצפלוזאורוס היה ראש עבה מאוד! הוא השתמש בו כדי לנגח.' },
+      { name: 'מָאיָאזָאוּרָה', emoji: '🦕', fact: 'המאיאזאורה הייתה "אמא לטאה טובה" — היא דאגה לגוזלים שלה!' },
+      { name: 'תֶּרִיזִינוֹזָאוּרוּס', emoji: '🦕', fact: 'לתריזינוזאורוס היו הטפרים הארוכים ביותר — עד 70 סנטימטר!' },
+      { name: 'נִיגֶרְזָאוּרוּס', emoji: '🦕', fact: 'לניגרזאורוס היו מעל 500 שיניים! הוא השתמש בהן כמו שואב אבק לצמחים.' },
+      { name: 'אָמַרְגָזָאוּרוּס', emoji: '🦕', fact: 'לאמרגזאורוס היו קוצים ארוכים על הצוואר! הוא היה צמחוני ענק מארגנטינה.' },
+      { name: 'קוֹרִיתוֹזָאוּרוּס', emoji: '🦕', fact: 'הקוריתוזאורוס היה דינוזאור ברווזי עם מפרש צבעוני על הראש!' },
+      { name: 'מוּטָבּוּרָזָאוּרוּס', emoji: '🦕', fact: 'המוטבורזאורוס היה דינוזאור צמחוני מאוסטרליה עם מקור כמו ברווז!' },
+    ];
+
+    // ── Maze definitions (1 = wall, 0 = path, 2 = player start, 3 = dino spawn area) ──
+    const COLS = 17;
+    const ROWS = 17;
+
+    const mazeTemplates = [
+      // Level 1 - simple open maze
+      [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,2,0,0,0,0,0,0,1,0,0,0,0,0,0,3,1],
+        [1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,0,1],
+        [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+        [1,1,1,0,1,1,0,1,0,1,0,1,1,0,1,1,1],
+        [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+        [1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,0,1,1,0,1,0,1,0,1,1,0,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1],
+        [1,3,0,0,0,0,0,0,1,0,0,0,0,0,0,3,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      ],
+      // Level 2 - more walls
+      [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,2,0,0,0,1,0,0,0,0,0,1,0,0,0,3,1],
+        [1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,0,1],
+        [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+        [1,0,0,0,1,1,0,1,0,1,0,1,1,0,0,0,1],
+        [1,1,1,0,0,0,0,1,0,1,0,0,0,0,1,1,1],
+        [1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1],
+        [1,0,1,0,0,1,1,0,1,0,1,1,0,0,1,0,1],
+        [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+        [1,0,1,0,0,1,1,0,1,0,1,1,0,0,1,0,1],
+        [1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1],
+        [1,1,1,0,0,0,0,1,0,1,0,0,0,0,1,1,1],
+        [1,0,0,0,1,1,0,1,0,1,0,1,1,0,0,0,1],
+        [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+        [1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,0,1],
+        [1,3,0,0,0,1,0,0,0,0,0,1,0,0,0,3,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      ],
+      // Level 3 - complex
+      [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,2,0,0,1,0,0,0,0,0,0,0,1,0,0,3,1],
+        [1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0,1],
+        [1,0,1,0,0,0,0,1,0,1,0,0,0,0,1,0,1],
+        [1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1],
+        [1,1,0,1,1,0,1,0,1,0,1,0,1,1,0,1,1],
+        [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+        [1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,0,1,1,0,1,0,1,1,0,1,1,0,1],
+        [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+        [1,1,0,1,1,0,1,0,1,0,1,0,1,1,0,1,1],
+        [1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,1],
+        [1,0,1,0,0,0,0,1,0,1,0,0,0,0,1,0,1],
+        [1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0,1],
+        [1,3,0,0,1,0,0,0,0,0,0,0,1,0,0,3,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      ],
+      // Level 4 - narrow corridors
+      [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,2,0,1,0,0,0,1,0,1,0,0,0,1,0,3,1],
+        [1,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,1],
+        [1,1,0,0,0,1,1,0,1,0,1,1,0,0,0,1,1],
+        [1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1],
+        [1,0,1,1,1,0,1,1,0,1,1,0,1,1,1,0,1],
+        [1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],
+        [1,1,1,0,1,1,0,0,0,0,0,1,1,0,1,1,1],
+        [1,0,0,0,0,1,0,1,0,1,0,1,0,0,0,0,1],
+        [1,1,1,0,1,1,0,0,0,0,0,1,1,0,1,1,1],
+        [1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1],
+        [1,0,1,1,1,0,1,1,0,1,1,0,1,1,1,0,1],
+        [1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1],
+        [1,1,0,0,0,1,1,0,1,0,1,1,0,0,0,1,1],
+        [1,0,0,1,0,1,0,0,0,0,0,1,0,1,0,0,1],
+        [1,3,0,1,0,0,0,1,0,1,0,0,0,1,0,3,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      ],
+      // Level 5 - spiral with passages
+      [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1],
+        [1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1],
+        [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+        [1,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1],
+        [1,0,1,0,1,0,0,0,0,0,0,0,1,0,1,0,1],
+        [1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0,1],
+        [1,0,1,0,0,0,1,0,0,0,1,0,1,0,1,0,1],
+        [1,0,1,0,1,0,1,0,3,0,0,0,1,0,0,0,1],
+        [1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1],
+        [1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0,1],
+        [1,0,1,0,1,0,0,0,0,0,0,0,1,0,1,0,1],
+        [1,0,1,0,1,1,1,1,1,1,0,1,1,0,1,0,1],
+        [1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+        [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1],
+        [1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      ],
+      // Level 6 - ultimate maze
+      [
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [1,2,0,1,0,0,0,1,0,1,0,0,0,1,0,3,1],
+        [1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1],
+        [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+        [1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,1],
+        [1,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,1],
+        [1,0,1,1,1,1,0,0,0,0,0,1,1,1,1,0,1],
+        [1,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,1],
+        [1,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,1],
+        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+        [1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,1],
+        [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],
+        [1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1],
+        [1,3,0,1,0,0,0,1,0,1,0,0,0,1,0,3,1],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      ],
+    ];
+
+    // ── Game State ──
+    let maze = [];
+    let player = { col: 1, row: 1, dir: 'right' };
+    let dinos = [];
+    let bones = 0;
+    let level = 0;
+    
+    let gameRunning = false;
+    let caughtDinos = [];
+    let factTimeout = null;
+    let animFrame = null;
+    let mouthOpen = true;
+    let mouthTimer = 0;
+    let dinosPerLevel = [3, 4, 5, 5, 6, 7];
+    
+    let dinoPool = [];
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const wrapper = document.getElementById('gameWrapper');
+      const size = Math.min(wrapper.clientWidth, window.innerHeight - 160);
+      canvas.width = size;
+      canvas.height = size;
+    }
+
+    function cellSize() {
+      return canvas.width / COLS;
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function startGame() {
+      audioCtx.resume();
+      bones = 0;
+      level = 0;
+      caughtDinos = [];
+      dinoPool = shuffleArray([...herbivores]);
+      document.getElementById('topBar').style.display = 'flex';
+      showScreen('gameScreen');
+      resizeCanvas();
+      startLevel();
+    }
+
+    function startLevel() {
+      maze = mazeTemplates[level].map(r => [...r]);
+
+      // Find player start
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (maze[r][c] === 2) {
+            player.col = c;
+            player.row = r;
+            maze[r][c] = 0;
+          }
+        }
+      }
+      player.dir = 'right';
+
+      // Place dinos at spawn points (3) and open cells
+      const spawnCells = [];
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (maze[r][c] === 3) {
+            spawnCells.push({ col: c, row: r });
+            maze[r][c] = 0;
+          }
+        }
+      }
+
+      // Also collect all open cells far from player for extra spawns
+      const openCells = [];
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (maze[r][c] === 0) {
+            const dist = Math.abs(c - player.col) + Math.abs(r - player.row);
+            if (dist > 6) openCells.push({ col: c, row: r });
+          }
+        }
+      }
+      shuffleArray(openCells);
+      const allSpawns = [...spawnCells, ...openCells];
+
+      const numDinos = dinosPerLevel[level];
+      dinos = [];
+      for (let i = 0; i < numDinos && i < allSpawns.length; i++) {
+        const dinoData = dinoPool.length > 0 ? dinoPool.pop() : herbivores[Math.floor(Math.random() * herbivores.length)];
+        dinos.push({
+          col: allSpawns[i].col,
+          row: allSpawns[i].row,
+          ...dinoData,
+          moveTimer: 0,
+          moveInterval: 18 - level * 3,
+          alive: true,
+        });
+      }
+
+      updateHUD();
+
+      gameRunning = true;
+      hideFactPopup();
+
+      if (animFrame) cancelAnimationFrame(animFrame);
+      gameLoop();
+    }
+
+    function updateHUD() {
+      document.getElementById('boneCount').textContent = bones;
+      const labels = ['שלב 1 — קל 🟢', 'שלב 2 — בינוני 🟡', 'שלב 3 — קשה 🔴', 'שלב 4 — קשה מאוד 🔴🔴', 'שלב 5 — מסוכן ☠️', 'שלב 6 — בלתי אפשרי 💀'];
+      document.getElementById('levelBadge').textContent = labels[level];
+    }
+
+    function endLevel() {
+      gameRunning = false;
+
+      if (level < 5) {
+        level++;
+        playSound('levelup');
+        showLevelTransition();
+      } else {
+        showSummary();
+      }
+    }
+
+    function showLevelTransition() {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;justify-content:center;align-items:center;z-index:90;animation:fadeUp 0.4s ease both;';
+      const labels = ['', 'שלב 2 — בינוני 🟡', 'שלב 3 — קשה 🔴', 'שלב 4 — קשה מאוד 🔴🔴', 'שלב 5 — מסוכן ☠️', 'שלב 6 — בלתי אפשרי 💀'];
+      const icons = ['', '🔥', '⚡', '🌋', '☠️', '💀'];
+      const msgs = ['', 'הדינוזאורים יהיו מהירים יותר!', 'המבוך נהיה מסובך יותר!', 'מסדרונות צרים! היזהר!', 'מבוך ספירלה! אין מנוס!', 'המבוך האולטימטיבי! בהצלחה!'];
+      overlay.innerHTML = `
+        <div style="background:var(--surface);border-radius:var(--radius);padding:40px 48px;text-align:center;box-shadow:var(--shadow);max-width:400px;width:90%;">
+          <div style="font-size:56px;margin-bottom:12px;">${icons[level]}</div>
+          <h2 style="font-size:1.6rem;margin-bottom:8px;color:var(--text);">${labels[level]}</h2>
+          <p style="font-size:1rem;color:#5a4a3a;">${msgs[level]}</p>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      setTimeout(() => {
+        overlay.remove();
+        startLevel();
+      }, 2000);
+    }
+
+    // ── Drawing ──
+    const WALL_COLOR = '#3a5a3a';
+    const WALL_BORDER = '#2a4a2a';
+    const PATH_COLOR = '#1a2a1a';
+    const PLAYER_COLOR = '#e8a838';
+
+    function drawMaze() {
+      const cs = cellSize();
+      ctx.fillStyle = PATH_COLOR;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (maze[r][c] === 1) {
+            ctx.fillStyle = WALL_COLOR;
+            ctx.fillRect(c * cs, r * cs, cs, cs);
+            ctx.strokeStyle = WALL_BORDER;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(c * cs + 0.5, r * cs + 0.5, cs - 1, cs - 1);
+
+            // Draw leaf decorations on some walls
+            if ((r + c) % 5 === 0) {
+              ctx.font = `${cs * 0.5}px serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('🌿', c * cs + cs / 2, r * cs + cs / 2);
+            }
+          } else {
+            // Dots on path (pac-man style)
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            ctx.beginPath();
+            ctx.arc(c * cs + cs / 2, r * cs + cs / 2, cs * 0.06, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    function drawPlayer() {
+      const cs = cellSize();
+      const cx = player.col * cs + cs / 2;
+      const cy = player.row * cs + cs / 2;
+      const s = cs * 0.45;
+
+      mouthTimer++;
+      if (mouthTimer % 8 === 0) mouthOpen = !mouthOpen;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Rotate based on direction
+      const angles = { right: 0, down: Math.PI / 2, left: Math.PI, up: -Math.PI / 2 };
+      ctx.rotate(angles[player.dir]);
+
+      const jawOpen = mouthOpen ? s * 0.12 : 0;
+
+      // Tail
+      ctx.fillStyle = '#5a8a2a';
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.7, -s * 0.1);
+      ctx.quadraticCurveTo(-s * 1.1, -s * 0.4, -s * 1.2, -s * 0.15);
+      ctx.quadraticCurveTo(-s * 1.1, 0, -s * 0.7, s * 0.1);
+      ctx.closePath();
+      ctx.fill();
+
+      // Body
+      ctx.fillStyle = '#6aaa2a';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 0.55, s * 0.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Back spines
+      ctx.fillStyle = '#4a7a1a';
+      for (let i = -2; i <= 1; i++) {
+        const sx = i * s * 0.2;
+        ctx.beginPath();
+        ctx.moveTo(sx - s * 0.06, -s * 0.35);
+        ctx.lineTo(sx, -s * 0.55);
+        ctx.lineTo(sx + s * 0.06, -s * 0.35);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Legs
+      ctx.fillStyle = '#5a9a22';
+      const legKick = mouthOpen ? s * 0.05 : -s * 0.05;
+      ctx.beginPath();
+      ctx.ellipse(-s * 0.15, s * 0.35 + legKick, s * 0.1, s * 0.18, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(s * 0.15, s * 0.35 - legKick, s * 0.1, s * 0.18, -0.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Tiny arms
+      ctx.strokeStyle = '#5a9a22';
+      ctx.lineWidth = s * 0.08;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(s * 0.25, -s * 0.05);
+      ctx.lineTo(s * 0.38, s * 0.1);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(s * 0.3, -s * 0.12);
+      ctx.lineTo(s * 0.42, 0);
+      ctx.stroke();
+
+      // Head - upper jaw
+      ctx.fillStyle = '#6aaa2a';
+      ctx.beginPath();
+      ctx.moveTo(s * 0.35, -s * 0.3);
+      ctx.quadraticCurveTo(s * 0.8, -s * 0.35, s * 0.9, -s * 0.15 - jawOpen * 0.5);
+      ctx.lineTo(s * 0.9, -s * 0.05 - jawOpen * 0.5);
+      ctx.quadraticCurveTo(s * 0.6, -s * 0.05, s * 0.35, -s * 0.05);
+      ctx.closePath();
+      ctx.fill();
+
+      // Head - lower jaw
+      ctx.fillStyle = '#5a9a22';
+      ctx.beginPath();
+      ctx.moveTo(s * 0.35, s * 0.0);
+      ctx.quadraticCurveTo(s * 0.6, s * 0.05, s * 0.85, s * 0.0 + jawOpen * 0.5);
+      ctx.lineTo(s * 0.85, -s * 0.05 + jawOpen * 0.5);
+      ctx.quadraticCurveTo(s * 0.6, -s * 0.02, s * 0.35, -s * 0.05);
+      ctx.closePath();
+      ctx.fill();
+
+      // Teeth
+      if (mouthOpen) {
+        ctx.fillStyle = '#fff';
+        for (let i = 0; i < 4; i++) {
+          const tx = s * 0.48 + i * s * 0.1;
+          // Upper teeth
+          ctx.beginPath();
+          ctx.moveTo(tx - s * 0.025, -s * 0.05 - jawOpen * 0.5);
+          ctx.lineTo(tx, -s * 0.02);
+          ctx.lineTo(tx + s * 0.025, -s * 0.05 - jawOpen * 0.5);
+          ctx.closePath();
+          ctx.fill();
+          // Lower teeth
+          ctx.beginPath();
+          ctx.moveTo(tx - s * 0.02, s * 0.0 + jawOpen * 0.3);
+          ctx.lineTo(tx, -s * 0.02);
+          ctx.lineTo(tx + s * 0.02, s * 0.0 + jawOpen * 0.3);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+
+      // Eye
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s * 0.55, -s * 0.22, s * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(s * 0.58, -s * 0.22, s * 0.05, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Nostril
+      ctx.fillStyle = '#4a7a1a';
+      ctx.beginPath();
+      ctx.arc(s * 0.82, -s * 0.2, s * 0.025, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawDinos() {
+      const cs = cellSize();
+      const fontSize = Math.max(cs * 0.65, 14);
+      ctx.font = `${fontSize}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      dinos.forEach(d => {
+        if (!d.alive) return;
+        const cx = d.col * cs + cs / 2;
+        const cy = d.row * cs + cs / 2;
+
+        // Glow effect
+        ctx.shadowColor = '#4caf50';
+        ctx.shadowBlur = cs * 0.3;
+        ctx.fillText(d.emoji, cx, cy);
+        ctx.shadowBlur = 0;
+      });
+    }
+
+    function draw() {
+      drawMaze();
+      drawDinos();
+      drawPlayer();
+    }
+
+    // ── Movement & Logic ──
+    let inputQueue = [];
+
+    function canMove(col, row) {
+      if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return false;
+      return maze[row][col] !== 1;
+    }
+
+    function tryMovePlayer() {
+      if (inputQueue.length === 0) return;
+      const dir = inputQueue[0];
+      let nc = player.col, nr = player.row;
+
+      if (dir === 'up') nr--;
+      else if (dir === 'down') nr++;
+      else if (dir === 'left') nc--;
+      else if (dir === 'right') nc++;
+
+      if (canMove(nc, nr)) {
+        player.col = nc;
+        player.row = nr;
+        player.dir = dir;
+        inputQueue.shift();
+      }
+    }
+
+    function moveDinos() {
+      dinos.forEach(d => {
+        if (!d.alive) return;
+        d.moveTimer++;
+        if (d.moveTimer < d.moveInterval) return;
+        d.moveTimer = 0;
+
+        // Simple AI: try to move away from player, with some randomness
+        const dirs = ['up', 'down', 'left', 'right'];
+        shuffleArray(dirs);
+
+        // Sort by distance from player (prefer moving away)
+        const scored = dirs.map(dir => {
+          let nc = d.col, nr = d.row;
+          if (dir === 'up') nr--;
+          else if (dir === 'down') nr++;
+          else if (dir === 'left') nc--;
+          else if (dir === 'right') nc++;
+
+          if (!canMove(nc, nr)) return { dir, score: -1, nc, nr };
+          const dist = Math.abs(nc - player.col) + Math.abs(nr - player.row);
+          return { dir, score: dist, nc, nr };
+        }).filter(s => s.score >= 0);
+
+        if (scored.length === 0) return;
+
+        // 70% chance to flee, 30% random
+        scored.sort((a, b) => b.score - a.score);
+        const pick = Math.random() < 0.7 ? scored[0] : scored[Math.floor(Math.random() * scored.length)];
+        d.col = pick.nc;
+        d.row = pick.nr;
+      });
+    }
+
+    function checkCollisions() {
+      dinos.forEach(d => {
+        if (!d.alive) return;
+        if (d.col === player.col && d.row === player.row) {
+          d.alive = false;
+          bones++;
+          caughtDinos.push(d);
+          playSound('chomp');
+          showFactPopup(d);
+          updateHUD();
+
+          // Check if all dinos caught
+          if (dinos.every(dd => !dd.alive)) {
+            setTimeout(() => endLevel(), 1500);
+          }
+        }
+      });
+    }
+
+    function showFactPopup(dino) {
+      const popup = document.getElementById('factPopup');
+      popup.innerHTML = `
+        <div class="fact-name">🦕 תפסתי את ${dino.name}!</div>
+        <div>💡 ${dino.fact}</div>
+      `;
+      popup.style.display = 'block';
+      if (factTimeout) clearTimeout(factTimeout);
+      factTimeout = setTimeout(hideFactPopup, 3500);
+    }
+
+    function hideFactPopup() {
+      document.getElementById('factPopup').style.display = 'none';
+    }
+
+    let frameTick = 0;
+    function gameLoop() {
+      if (!gameRunning) return;
+      frameTick++;
+
+      if (frameTick % 4 === 0) {
+        tryMovePlayer();
+      }
+      if (frameTick % 2 === 0) {
+        moveDinos();
+      }
+      checkCollisions();
+      draw();
+
+      animFrame = requestAnimationFrame(gameLoop);
+    }
+
+    // ── Input ──
+    document.addEventListener('keydown', (e) => {
+      if (!gameRunning) return;
+      const map = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+      const dir = map[e.key];
+      if (dir) {
+        e.preventDefault();
+        inputQueue = [dir];
+      }
+    });
+
+    function handleMobile(dir) {
+      if (!gameRunning) return;
+      audioCtx.resume();
+      inputQueue = [dir];
+    }
+
+    // ── Summary ──
+    function showSummary() {
+      gameRunning = false;
+      if (animFrame) cancelAnimationFrame(animFrame);
+      document.getElementById('topBar').style.display = 'none';
+      showScreen('summaryScreen');
+
+      const total = herbivores.length;
+      const caught = caughtDinos.length;
+      document.getElementById('finalScore').textContent = `${caught} 🦴`;
+
+      let stars = '';
+      if (caught >= 25) stars = '⭐⭐⭐';
+      else if (caught >= 18) stars = '⭐⭐';
+      else if (caught >= 10) stars = '⭐';
+      else stars = '🌟';
+      document.getElementById('starsRow').textContent = stars;
+
+      const list = document.getElementById('caughtList');
+      list.innerHTML = '';
+      caughtDinos.forEach(d => {
+        const chip = document.createElement('span');
+        chip.className = 'caught-chip';
+        chip.textContent = `${d.emoji} ${d.name}`;
+        list.appendChild(chip);
+      });
+
+      let msg;
+      if (caught >= 25) {
+        msg = 'וואו! טי-רקס שבע ומרוצה! אתה ציד דינוזאורים מקצועי! 🏆';
+      } else if (caught >= 18) {
+        msg = 'יופי של ציד! טי-רקס כמעט שבע. כל הכבוד! 💪';
+      } else if (caught >= 10) {
+        msg = 'לא רע! טי-רקס עדיין קצת רעב, אבל למדת הרבה על דינוזאורים! 📚';
+      } else {
+        msg = 'טי-רקס עדיין רעב, אבל אל דאגה! נסה שוב ותתפוס יותר! 💪';
+      }
+
+      document.getElementById('summaryTrex').textContent = '🦖';
+      document.getElementById('summaryMessage').textContent = msg;
+
+      if (caught >= 18) {
+        playSound('victory');
+        launchConfetti();
+      }
+    }
+
+    function launchConfetti() {
+      const container = document.getElementById('confettiContainer');
+      container.innerHTML = '';
+      const colors = ['#e8a838', '#4caf50', '#ef5350', '#2196f3', '#9c27b0', '#ff9800', '#00bcd4'];
+      for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+        piece.style.animationDelay = Math.random() * 1.5 + 's';
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (6 + Math.random() * 8) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        container.appendChild(piece);
+      }
+      setTimeout(() => { container.innerHTML = ''; }, 5000);
+    }
+
+    function resetGame() {
+      showScreen('welcomeScreen');
+      document.getElementById('topBar').style.display = 'none';
+      if (animFrame) cancelAnimationFrame(animFrame);
+      gameRunning = false;
+    }
+
+    window.addEventListener('resize', () => {
+      if (document.getElementById('gameScreen').classList.contains('active')) {
+        resizeCanvas();
+        draw();
+      }
+    });
+  </script>
+</body>
+</html>
