@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>דינו תלת-ממד — Vibe Apps</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --glass: rgba(8, 18, 38, 0.58);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --text: #f8fafc;
+      --dim: rgba(248, 250, 252, 0.72);
+      --accent: #f59e0b;
+      --accent2: #22c55e;
+      --accent3: #0ea5e9;
+      --radius: 20px;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: #0b1030;
+      font-family: 'Rubik', sans-serif;
+      color: var(--text);
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #c { position: fixed; inset: 0; display: block; touch-action: none; }
+
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+    }
+
+    /* ── Top bar ─────────────────────────────────────── */
+    .topbar {
+      position: fixed; top: 12px; right: 12px; left: 12px;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      z-index: 5; pointer-events: none;
+    }
+    .brand { pointer-events: auto; padding: 10px 18px; display: flex; gap: 12px; align-items: center; }
+    .brand .logo { font-size: 30px; line-height: 1; }
+    .brand h1 { font-size: 20px; font-weight: 900; letter-spacing: -0.01em; }
+    .brand p { font-size: 13px; color: var(--dim); margin-top: 2px; }
+    .home {
+      pointer-events: auto; display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 14px; color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500;
+      min-height: 48px; transition: background 0.15s;
+    }
+    .home:hover { background: rgba(255, 255, 255, 0.12); }
+
+    /* ── Facts card ──────────────────────────────────── */
+    .facts {
+      position: fixed; right: 12px; top: 90px; width: 310px; padding: 16px 18px; z-index: 5;
+      max-height: calc(100vh - 210px); overflow-y: auto; scrollbar-width: thin;
+    }
+    .facts-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .facts-head .big { font-size: 42px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+    .facts-head h2 { font-size: 22px; font-weight: 900; line-height: 1.15; }
+    .facts-head .latin { font-size: 12px; color: var(--dim); font-style: italic; direction: ltr; text-align: right; }
+    .fact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .fact { background: rgba(255,255,255,0.07); border-radius: 12px; padding: 8px 10px; }
+    .fact.wide { grid-column: 1 / -1; }
+    .fact-k { display: block; font-size: 11px; color: var(--dim); margin-bottom: 2px; }
+    .fact-v { display: block; font-size: 15px; font-weight: 700; }
+    .fun {
+      background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(239,68,68,0.2));
+      border: 1px solid rgba(245,158,11,0.35); border-radius: 14px; padding: 10px 12px;
+      font-size: 14px; line-height: 1.5; margin-bottom: 12px;
+    }
+    .fun strong { color: #fcd34d; }
+    .row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .row .label { font-size: 12px; color: var(--dim); min-width: 34px; }
+    .swatches { display: flex; gap: 8px; }
+    .swatch {
+      width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.25); cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s; padding: 0;
+    }
+    .swatch.active { border-color: #fff; transform: scale(1.12); }
+    .views { display: flex; gap: 6px; flex-wrap: wrap; }
+    .vbtn {
+      border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.08); color: var(--text);
+      font: inherit; font-size: 13px; font-weight: 500; padding: 8px 12px; border-radius: 999px; cursor: pointer;
+      min-height: 36px; transition: background 0.15s;
+    }
+    .vbtn:hover { background: rgba(255,255,255,0.18); }
+    .facts-toggle { display: none; }
+
+    /* ── Tools ───────────────────────────────────────── */
+    .tools {
+      position: fixed; left: 12px; top: 90px; display: flex; flex-direction: column; gap: 6px; z-index: 5; padding: 8px;
+    }
+    .tool {
+      width: 66px; height: 62px; border-radius: 16px; border: none; background: rgba(255,255,255,0.07); color: var(--text);
+      font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      cursor: pointer; transition: background 0.15s, transform 0.1s;
+    }
+    .tool .ic { font-size: 22px; line-height: 1; }
+    .tool .lb { font-size: 11px; font-weight: 500; opacity: 0.9; }
+    .tool:hover { background: rgba(255,255,255,0.16); }
+    .tool:active { transform: scale(0.92); }
+    .tool.on { background: linear-gradient(135deg, var(--accent), #ef4444); }
+    .tool.pulse { animation: pulse 0.5s ease; }
+    @keyframes pulse { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+
+    /* ── Dock (dino chips) ───────────────────────────── */
+    .dock {
+      position: fixed; bottom: 12px; left: 12px; right: 12px; display: flex; gap: 8px; overflow-x: auto; padding: 10px;
+      z-index: 5; scrollbar-width: none;
+    }
+    .dock::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 14px;
+      border: 1px solid transparent; background: rgba(255,255,255,0.08); color: var(--text); font: inherit;
+      font-size: 16px; font-weight: 500; cursor: pointer; min-height: 50px; transition: background 0.15s, transform 0.1s;
+    }
+    .chip .em { font-size: 22px; }
+    .chip:hover { background: rgba(255,255,255,0.16); }
+    .chip:active { transform: scale(0.95); }
+    .chip.active { background: linear-gradient(135deg, var(--accent2), var(--accent3)); font-weight: 700; }
+
+    /* ── Hint / toast / loading ──────────────────────── */
+    .hint {
+      position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); padding: 10px 18px; font-size: 15px;
+      z-index: 4; pointer-events: none; opacity: 1; transition: opacity 0.6s; white-space: nowrap;
+    }
+    .hint.hide { opacity: 0; }
+    .toast {
+      position: fixed; top: 100px; left: 50%; transform: translate(-50%, -20px); padding: 12px 20px; font-size: 16px;
+      font-weight: 700; z-index: 9; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    #loading {
+      position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; background: radial-gradient(ellipse at 50% 40%, #1d3a5f, #0b1030); transition: opacity 0.5s;
+    }
+    #loading.hide { opacity: 0; pointer-events: none; }
+    #loading .egg { font-size: 72px; animation: wobble 1.2s ease-in-out infinite; }
+    @keyframes wobble { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg) translateY(-6px); } }
+    #loading p { font-size: 18px; font-weight: 500; }
+    #loading .err { color: #fca5a5; font-size: 15px; max-width: 320px; text-align: center; line-height: 1.5; display: none; }
+
+    /* ── Mobile ──────────────────────────────────────── */
+    @media (max-width: 820px) {
+      .brand p { display: none; }
+      .brand h1 { font-size: 17px; }
+      .tools { top: auto; bottom: 86px; left: 8px; right: 8px; flex-direction: row; overflow-x: auto; scrollbar-width: none; padding: 6px; }
+      .tool { width: 60px; height: 56px; flex: 0 0 auto; }
+      .facts { right: 8px; left: 8px; top: 74px; width: auto; max-height: 56px; overflow: hidden; padding: 8px 14px; transition: max-height 0.3s; }
+      .facts.open { max-height: calc(100vh - 260px); overflow-y: auto; padding: 14px; }
+      .facts-head { margin-bottom: 8px; }
+      .facts-head .big { font-size: 30px; }
+      .facts-head h2 { font-size: 18px; }
+      .facts-toggle {
+        display: inline-flex; margin-inline-start: auto; border: none; background: rgba(255,255,255,0.12); color: var(--text);
+        font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 36px; align-items: center;
+      }
+      .hint { bottom: 156px; font-size: 13px; }
+      .dock { bottom: 8px; left: 8px; right: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div id="loading">
+    <div class="egg">🥚</div>
+    <p>הדינוזאורים מתעוררים...</p>
+    <div class="err" id="loadErr">אופס! לא הצלחנו לטעון את המנוע התלת-ממדי. בדקו את חיבור האינטרנט ונסו שוב.</div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand glass">
+      <span class="logo">🦕</span>
+      <div>
+        <h1>דינו תלת-ממד</h1>
+        <p>סובבו, התקרבו והכירו את הדינוזאורים מקרוב</p>
+      </div>
+    </div>
+    <a class="home glass" href="../index.html">🏠 <span>חזרה</span></a>
+  </header>
+
+  <aside class="facts glass" id="facts">
+    <div class="facts-head">
+      <span class="big" id="fEmoji">🦖</span>
+      <div>
+        <h2 id="fName">טירנוזאורוס רקס</h2>
+        <div class="latin" id="fLatin">Tyrannosaurus rex</div>
+      </div>
+      <button class="facts-toggle" id="factsToggle">ℹ️ מידע</button>
+    </div>
+    <div class="fact-grid">
+      <div class="fact wide"><span class="fact-k">תקופה</span><span class="fact-v" id="fPeriod"></span></div>
+      <div class="fact"><span class="fact-k">אורך</span><span class="fact-v" id="fLength"></span></div>
+      <div class="fact"><span class="fact-k">גובה</span><span class="fact-v" id="fHeight"></span></div>
+      <div class="fact"><span class="fact-k">משקל</span><span class="fact-v" id="fWeight"></span></div>
+      <div class="fact"><span class="fact-k">תזונה</span><span class="fact-v" id="fDiet"></span></div>
+    </div>
+    <div class="fun"><strong>ידעת?</strong> <span id="fFun"></span></div>
+    <div class="row">
+      <span class="label">צבע</span>
+      <div class="swatches" id="swatches"></div>
+    </div>
+    <div class="row">
+      <span class="label">מבט</span>
+      <div class="views">
+        <button class="vbtn" data-view="front">מלפנים</button>
+        <button class="vbtn" data-view="side">מהצד</button>
+        <button class="vbtn" data-view="top">מלמעלה</button>
+        <button class="vbtn" data-view="kid">בגובה ילד</button>
+      </div>
+    </div>
+  </aside>
+
+  <nav class="tools glass" id="tools">
+    <button class="tool" id="btnRoar"><span class="ic">🔊</span><span class="lb">שאגה</span></button>
+    <button class="tool" id="btnWalk"><span class="ic">🚶</span><span class="lb">הליכה</span></button>
+    <button class="tool" id="btnSpin"><span class="ic">🔄</span><span class="lb">סיבוב</span></button>
+    <button class="tool" id="btnCompare"><span class="ic">🧒</span><span class="lb">גודל</span></button>
+    <button class="tool" id="btnXray"><span class="ic">🦴</span><span class="lb">שלד</span></button>
+    <button class="tool" id="btnNight"><span class="ic">🌙</span><span class="lb">לילה</span></button>
+    <button class="tool" id="btnShot"><span class="ic">📸</span><span class="lb">צילום</span></button>
+    <button class="tool" id="btnFull"><span class="ic">⛶</span><span class="lb">מסך מלא</span></button>
+  </nav>
+
+  <footer class="dock glass" id="dock"></footer>
+
+  <div class="hint glass" id="hint">גררו כדי לסובב 🔄 &nbsp;•&nbsp; גלגלו או צבטו כדי להתקרב 🔍</div>
+  <div class="toast glass" id="toast"></div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script>
+    // Surface CDN failures to the child instead of a blank screen.
+    window.addEventListener('error', (e) => {
+      if (String(e.message || '').includes('import') || String(e.filename || '').includes('jsdelivr')) {
+        document.getElementById('loadErr').style.display = 'block';
+      }
+    });
+    setTimeout(() => {
+      if (!window.__dinoReady) document.getElementById('loadErr').style.display = 'block';
+    }, 15000);
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const DEG = Math.PI / 180;
+    const { lerp, clamp } = THREE.MathUtils;
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    //  Dinosaur data — Hebrew facts, sounds, skins and the numeric "body plan" spec that the procedural builder uses
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    const DIET = { carnivore: 'טורף 🍖', herbivore: 'אוכל צמחים 🌿', fish: 'אוכל דגים 🐟' };
+
+    const DINOS = [
+      {
+        id: 'trex', name: 'טירנוזאורוס רקס', latin: 'Tyrannosaurus rex', emoji: '🦖', diet: 'carnivore', sound: 'roar',
+        period: 'קרטיקון מאוחר, לפני 68–66 מיליון שנה', length: '12 מטר', height: '4 מטר', weight: '8 טון', lengthM: 12, mass: 1,
+        fun: 'הנשיכה של טי-רקס הייתה החזקה ביותר מכל חיה יבשתית שחיה אי פעם! הזרועות הקטנות שלו היו באורך של זרועות של אדם בוגר.',
+        skins: [
+          { main: 0x5d7a3d, belly: 0xd9cf9a, accent: 0x3a4b23 },
+          { main: 0x8a4b2c, belly: 0xe0c9a0, accent: 0x4f2a17 },
+          { main: 0x4a4f6b, belly: 0xb8bccf, accent: 0x2e3149 },
+        ],
+        spec: {
+          body: { L: 4.6, H: 2.3, W: 1.9, y: 3.1, tilt: 0 },
+          neck: { count: 4, length: 1.7, r0: 0.75, r1: 0.5, pitch0: 30 * DEG, bend: -12 * DEG, attach: [1.85, 0.35] },
+          head: { len: 1.7, h: 1.0, w: 0.85, snout: 0.55, taper: 0.6, teeth: true, eye: 0.09, pitch: 0 },
+          tail: { count: 9, length: 5.5, r0: 0.85, r1: 0.06, pitch0: 8 * DEG, bend: -1.5 * DEG, attach: [-1.85, 0.1] },
+          legs: [{ x: -0.9, y: 2.6, z: 0.75, thick: 0.42, a1: 25 * DEG, a2: -50 * DEG, footH: 0.3, toes: 3 }],
+          arms: [{ x: 1.5, y: -0.3, z: 0.7, len: 0.9, thick: 0.12, a1: 30 * DEG, a2: -40 * DEG }],
+        },
+      },
+      {
+        id: 'trike', name: 'טריצרטופס', latin: 'Triceratops horridus', emoji: '🦕', diet: 'herbivore', sound: 'honk',
+        period: 'קרטיקון מאוחר, לפני 68–66 מיליון שנה', length: '9 מטר', height: '3 מטר', weight: '6 טון', lengthM: 9, mass: 0.9,
+        fun: 'לטריצרטופס היו שלוש קרניים ומגן ראש ענק. בפה שלו היו עד 800 שיניים שהתחלפו כל הזמן!',
+        skins: [
+          { main: 0x6b8f5a, belly: 0xd8d3a4, accent: 0xe8d9b0 },
+          { main: 0x9c6b3f, belly: 0xe4cfa6, accent: 0xf1e6c7 },
+          { main: 0x5b6c9d, belly: 0xc3c9de, accent: 0xefe3c0 },
+        ],
+        spec: {
+          body: { L: 4.8, H: 2.4, W: 2.4, y: 1.9, tilt: 0 },
+          neck: { count: 2, length: 0.7, r0: 0.95, r1: 0.8, pitch0: -8 * DEG, bend: 0, attach: [1.9, 0.2] },
+          head: { len: 2.1, h: 1.25, w: 1.15, snout: 0.5, taper: 0.45, teeth: false, eye: 0.1, pitch: -10 * DEG },
+          tail: { count: 6, length: 3.2, r0: 0.75, r1: 0.05, pitch0: -5 * DEG, bend: -3 * DEG, attach: [-1.9, 0.1] },
+          legs: [
+            { x: -1.4, y: 1.5, z: 0.95, thick: 0.42, a1: 10 * DEG, a2: -20 * DEG, footH: 0.25, toes: 4 },
+            { x: 1.3, y: 1.4, z: 0.9, thick: 0.36, a1: 5 * DEG, a2: -10 * DEG, footH: 0.22, toes: 4, fore: true },
+          ],
+        },
+        extras: extrasTriceratops,
+      },
+      {
+        id: 'stego', name: 'סטגוזאורוס', latin: 'Stegosaurus stenops', emoji: '🦕', diet: 'herbivore', sound: 'honk',
+        period: 'יורה מאוחר, לפני 155–150 מיליון שנה', length: '9 מטר', height: '4 מטר', weight: '5 טון', lengthM: 9, mass: 0.85,
+        fun: 'המוח של הסטגוזאורוס היה בגודל של אגוז מלך! הלוחות על הגב כנראה עזרו לו להתחמם בשמש ולהתקרר בצל.',
+        skins: [
+          { main: 0x7a8b3e, belly: 0xd9d2a0, accent: 0xd9542b },
+          { main: 0x6d5b8e, belly: 0xd7cfe6, accent: 0xf0b429 },
+          { main: 0x3f7f7a, belly: 0xbfe0dc, accent: 0xe07a5f },
+        ],
+        spec: {
+          body: { L: 4.6, H: 2.6, W: 2.0, y: 2.0, tilt: 0 },
+          neck: { count: 3, length: 1.4, r0: 0.6, r1: 0.35, pitch0: -25 * DEG, bend: -5 * DEG, attach: [1.9, -0.1] },
+          head: { len: 0.75, h: 0.4, w: 0.38, snout: 0.5, taper: 0.6, teeth: false, eye: 0.05, pitch: -5 * DEG },
+          tail: { count: 7, length: 3.8, r0: 0.7, r1: 0.06, pitch0: 5 * DEG, bend: -4 * DEG, attach: [-1.85, 0.1] },
+          legs: [
+            { x: -1.3, y: 1.6, z: 0.75, thick: 0.4, a1: 8 * DEG, a2: -16 * DEG, footH: 0.25, toes: 3 },
+            { x: 1.3, y: 1.2, z: 0.65, thick: 0.3, a1: 5 * DEG, a2: -10 * DEG, footH: 0.2, toes: 4, fore: true },
+          ],
+        },
+        extras: extrasStegosaurus,
+      },
+      {
+        id: 'brachio', name: 'ברכיוזאורוס', latin: 'Brachiosaurus altithorax', emoji: '🦕', diet: 'herbivore', sound: 'rumble',
+        period: 'יורה מאוחר, לפני 154–150 מיליון שנה', length: '22 מטר', height: '13 מטר', weight: '40 טון', lengthM: 22, mass: 1.4,
+        fun: 'ברכיוזאורוס היה גבוה כמו בניין של ארבע קומות! הצוואר הארוך עזר לו לאכול עלים מצמרות העצים הגבוהים ביותר.',
+        skins: [
+          { main: 0x7d9a5a, belly: 0xd6d3a1, accent: 0x55703b },
+          { main: 0x8f7c5b, belly: 0xe3d8bd, accent: 0x5f5138 },
+          { main: 0x5f8fa8, belly: 0xc9dfe8, accent: 0x3e6577 },
+        ],
+        spec: {
+          body: { L: 7.5, H: 3.8, W: 3.2, y: 5.0, tilt: 6 * DEG },
+          neck: { count: 10, length: 9.5, r0: 1.2, r1: 0.4, pitch0: 62 * DEG, bend: -2.5 * DEG, attach: [2.9, 0.9] },
+          head: { len: 1.15, h: 0.65, w: 0.55, snout: 0.45, taper: 0.7, teeth: false, eye: 0.06, pitch: -15 * DEG },
+          tail: { count: 10, length: 9, r0: 1.1, r1: 0.06, pitch0: -8 * DEG, bend: -1.5 * DEG, attach: [-3.1, 0.2] },
+          legs: [
+            { x: -2.3, y: 3.9, z: 1.3, thick: 0.55, a1: 5 * DEG, a2: -10 * DEG, footH: 0.4, toes: 4 },
+            { x: 2.5, y: 4.4, z: 1.25, thick: 0.55, a1: 3 * DEG, a2: -6 * DEG, footH: 0.4, toes: 4, fore: true },
+          ],
+        },
+      },
+      {
+        id: 'raptor', name: 'ולוציראפטור', latin: 'Velociraptor mongoliensis', emoji: '🦖', diet: 'carnivore', sound: 'screech',
+        period: 'קרטיקון מאוחר, לפני 75–71 מיליון שנה', length: '2 מטר', height: 'חצי מטר', weight: '15 ק"ג', lengthM: 2, mass: 0.15,
+        fun: 'ולוציראפטור היה בגודל של תרנגול הודו גדול ומכוסה בנוצות! על כל רגל היה לו טופר ענק בצורת חרמש.',
+        skins: [
+          { main: 0xb5773a, belly: 0xe8d6b0, accent: 0x2f7f8f },
+          { main: 0x5c7f4a, belly: 0xd7dcb0, accent: 0xd9542b },
+          { main: 0x7d6a9e, belly: 0xe0d6ea, accent: 0xf0b429 },
+        ],
+        spec: {
+          body: { L: 0.95, H: 0.48, W: 0.36, y: 0.62, tilt: 0 },
+          neck: { count: 4, length: 0.45, r0: 0.16, r1: 0.1, pitch0: 55 * DEG, bend: -20 * DEG, attach: [0.4, 0.08] },
+          head: { len: 0.42, h: 0.2, w: 0.17, snout: 0.55, taper: 0.5, teeth: true, eye: 0.03, pitch: 0 },
+          tail: { count: 8, length: 1.3, r0: 0.15, r1: 0.02, pitch0: 5 * DEG, bend: -0.5 * DEG, attach: [-0.4, 0.03] },
+          legs: [{ x: -0.18, y: 0.5, z: 0.16, thick: 0.075, a1: 30 * DEG, a2: -60 * DEG, footH: 0.06, toes: 2, sickle: true }],
+          arms: [{ x: 0.35, y: -0.05, z: 0.17, len: 0.42, thick: 0.03, a1: 35 * DEG, a2: -50 * DEG, feathers: true }],
+        },
+        extras: extrasRaptor,
+      },
+      {
+        id: 'spino', name: 'ספינוזאורוס', latin: 'Spinosaurus aegyptiacus', emoji: '🦖', diet: 'fish', sound: 'roar',
+        period: 'קרטיקון, לפני 99–93 מיליון שנה', length: '15 מטר', height: '5 מטר', weight: '7 טון', lengthM: 15, mass: 1,
+        fun: 'ספינוזאורוס היה הדינוזאור הטורף הגדול ביותר, גדול אפילו מטי-רקס! הוא ידע לשחות וצד דגים כמו תנין ענק.',
+        skins: [
+          { main: 0x4f7d6b, belly: 0xd3dcc0, accent: 0xd97742 },
+          { main: 0x6f5b45, belly: 0xe2d4b8, accent: 0xc94a4a },
+          { main: 0x3d5a8a, belly: 0xc4d3e6, accent: 0xf0a040 },
+        ],
+        spec: {
+          body: { L: 5.8, H: 2.3, W: 2.0, y: 2.5, tilt: 0 },
+          neck: { count: 4, length: 2.0, r0: 0.8, r1: 0.5, pitch0: 15 * DEG, bend: -8 * DEG, attach: [2.4, 0.3] },
+          head: { len: 2.1, h: 0.62, w: 0.55, snout: 0.62, taper: 0.55, teeth: true, eye: 0.07, pitch: -3 * DEG },
+          tail: { count: 9, length: 6.5, r0: 0.8, r1: 0.08, pitch0: 0, bend: -1 * DEG, attach: [-2.4, 0.1], tall: 1.7 },
+          legs: [{ x: -1.2, y: 2.0, z: 0.8, thick: 0.4, a1: 20 * DEG, a2: -40 * DEG, footH: 0.3, toes: 3 }],
+          arms: [{ x: 2.0, y: -0.4, z: 0.8, len: 1.5, thick: 0.16, a1: 35 * DEG, a2: -25 * DEG }],
+        },
+        extras: extrasSpinosaurus,
+      },
+      {
+        id: 'anky', name: 'אנקילוזאורוס', latin: 'Ankylosaurus magniventris', emoji: '🦕', diet: 'herbivore', sound: 'honk',
+        period: 'קרטיקון מאוחר, לפני 68–66 מיליון שנה', length: '7 מטר', height: '1.7 מטר', weight: '6 טון', lengthM: 7, mass: 0.9,
+        fun: 'אנקילוזאורוס היה כמו טנק חי! הוא היה מכוסה בשריון וקוצים, ובקצה הזנב הייתה לו אלה ענקית שיכלה לשבור עצמות.',
+        skins: [
+          { main: 0x8a7a4a, belly: 0xdcd2a8, accent: 0x4d4327 },
+          { main: 0x6b7d5c, belly: 0xd4dcc4, accent: 0x33402b },
+          { main: 0x9a5f4a, belly: 0xe6cdbb, accent: 0x4f2d22 },
+        ],
+        spec: {
+          body: { L: 4.6, H: 1.7, W: 3.0, y: 1.25, tilt: 0 },
+          neck: { count: 2, length: 0.7, r0: 0.7, r1: 0.55, pitch0: -10 * DEG, bend: -5 * DEG, attach: [1.9, 0.05] },
+          head: { len: 1.0, h: 0.55, w: 0.85, snout: 0.4, taper: 0.6, teeth: false, eye: 0.06, pitch: -5 * DEG },
+          tail: { count: 7, length: 3.2, r0: 0.55, r1: 0.18, pitch0: -2 * DEG, bend: -1 * DEG, attach: [-1.9, 0.05] },
+          legs: [
+            { x: -1.3, y: 1.0, z: 1.1, thick: 0.32, a1: 8 * DEG, a2: -16 * DEG, footH: 0.2, toes: 4 },
+            { x: 1.3, y: 0.95, z: 1.0, thick: 0.3, a1: 5 * DEG, a2: -10 * DEG, footH: 0.2, toes: 4, fore: true },
+          ],
+        },
+        extras: extrasAnkylosaurus,
+      },
+      {
+        id: 'para', name: 'פאראזאורולופוס', latin: 'Parasaurolophus walkeri', emoji: '🦕', diet: 'herbivore', sound: 'trumpet',
+        period: 'קרטיקון מאוחר, לפני 76–73 מיליון שנה', length: '10 מטר', height: '4 מטר', weight: '3 טון', lengthM: 10, mass: 0.7,
+        fun: 'הקרן הארוכה על הראש של הפאראזאורולופוס הייתה חלולה, והוא השתמש בה כמו חצוצרה כדי להשמיע קולות רועמים!',
+        skins: [
+          { main: 0x6f8f4f, belly: 0xdfe0b0, accent: 0xd9542b },
+          { main: 0xa8713f, belly: 0xebd9b4, accent: 0x2f7f8f },
+          { main: 0x6f6fa8, belly: 0xd8d8ee, accent: 0xf0b429 },
+        ],
+        spec: {
+          body: { L: 4.2, H: 2.1, W: 1.7, y: 2.4, tilt: 0 },
+          neck: { count: 5, length: 2.0, r0: 0.5, r1: 0.28, pitch0: 45 * DEG, bend: -8 * DEG, attach: [1.7, 0.5] },
+          head: { len: 1.2, h: 0.55, w: 0.45, snout: 0.55, taper: 0.5, teeth: false, eye: 0.06, pitch: -20 * DEG },
+          tail: { count: 8, length: 4.8, r0: 0.7, r1: 0.06, pitch0: 3 * DEG, bend: -2 * DEG, attach: [-1.7, 0.1], tall: 1.3 },
+          legs: [
+            { x: -1.0, y: 1.9, z: 0.65, thick: 0.36, a1: 20 * DEG, a2: -40 * DEG, footH: 0.28, toes: 3 },
+            { x: 1.4, y: 1.6, z: 0.6, thick: 0.22, a1: 5 * DEG, a2: -10 * DEG, footH: 0.18, toes: 3, fore: true },
+          ],
+        },
+        extras: extrasParasaurolophus,
+      },
+    ];
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    //  Geometry helpers
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    function mkMat(color, opts = {}) {
+      return new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.85, metalness: 0.04, ...opts });
+    }
+    function mesh(geo, mat, x = 0, y = 0, z = 0) {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      return m;
+    }
+    function ellipsoid(rx, ry, rz, mat, segs = 14) {
+      const m = mesh(new THREE.SphereGeometry(1, segs, Math.max(6, Math.round(segs * 0.7))), mat);
+      m.scale.set(rx, ry, rz);
+      return m;
+    }
+    // A box whose +X end is shrunk by `taper` — used for snouts and jaws.
+    function taperedBox(l, h, w, taper, mat, taperY = taper) {
+      const g = new THREE.BoxGeometry(l, h, w);
+      const p = g.attributes.position;
+      for (let i = 0; i < p.count; i++) {
+        if (p.getX(i) > 0) { p.setY(i, p.getY(i) * taperY); p.setZ(i, p.getZ(i) * taper); }
+      }
+      g.computeVertexNormals();
+      return mesh(g, mat);
+    }
+    // Chain of tapered cylinders (neck / tail). dir = +1 forward (+X), -1 backward (-X). pitch > 0 always means "up".
+    function chain({ count, length, r0, r1, pitch0, bend, dir, mat, tall = 1 }) {
+      const root = new THREE.Group();
+      const groups = [];
+      const seg = length / count;
+      let parent = root;
+      for (let i = 0; i < count; i++) {
+        const g = new THREE.Group();
+        g.position.x = i === 0 ? 0 : dir * seg;
+        g.rotation.z = (i === 0 ? pitch0 : bend) * dir;
+        g.userData.baseZ = g.rotation.z;
+        const ra = lerp(r0, r1, i / count);
+        const rb = lerp(r0, r1, (i + 1) / count);
+        const cyl = mesh(new THREE.CylinderGeometry(rb, ra, seg * 1.02, 8), mat, dir * seg / 2, 0, 0);
+        cyl.rotation.z = -dir * Math.PI / 2;
+        cyl.scale.x = tall;
+        g.add(cyl);
+        const joint = mesh(new THREE.SphereGeometry(ra, 8, 6), mat);
+        joint.scale.y = tall;
+        g.add(joint);
+        parent.add(g);
+        groups.push(g);
+        parent = g;
+      }
+      const end = new THREE.Group();
+      end.position.x = dir * seg;
+      parent.add(end);
+      end.add(mesh(new THREE.SphereGeometry(r1, 8, 6), mat));
+      return { root, groups, end, seg };
+    }
+    // Leg or arm. If `len` is given it's an arm (no foot, claws instead); otherwise the leg is sized to touch the ground.
+    function limb({ x, y, z, thick, a1, a2, footH = 0, toes = 3, sickle = false, len, mats, feathers = false }) {
+      const L = len ? len / 2 : (y - footH) / (Math.cos(a1) + Math.cos(a1 + a2));
+      const hip = new THREE.Group();
+      hip.position.set(x, y, z);
+      hip.rotation.z = a1;
+      hip.userData.baseZ = a1;
+      hip.add(mesh(new THREE.SphereGeometry(thick * 1.05, 8, 6), mats.main));
+      hip.add(mesh(new THREE.CylinderGeometry(thick * 0.75, thick, L, 8), mats.main, 0, -L / 2, 0));
+      const knee = new THREE.Group();
+      knee.position.y = -L;
+      knee.rotation.z = a2;
+      knee.userData.baseZ = a2;
+      hip.add(knee);
+      knee.add(mesh(new THREE.SphereGeometry(thick * 0.8, 8, 6), mats.main));
+      knee.add(mesh(new THREE.CylinderGeometry(thick * 0.5, thick * 0.75, L, 8), mats.main, 0, -L / 2, 0));
+      const foot = new THREE.Group();
+      foot.position.y = -L;
+      knee.add(foot);
+      if (len) {
+        // Hand with two claws.
+        for (const dz of [-0.5, 0.5]) {
+          const c = mesh(new THREE.ConeGeometry(thick * 0.45, thick * 2.2, 6), mats.claw, thick * 0.6, -thick * 0.6, dz * thick);
+          c.rotation.z = -Math.PI / 2 + 0.5;
+          foot.add(c);
+        }
+        if (feathers) {
+          const f = mesh(new THREE.BoxGeometry(L * 1.1, L * 0.55, thick * 0.4), mats.accent, -L * 0.25, -L * 0.25, 0);
+          f.rotation.z = -0.35;
+          knee.add(f);
+        }
+      } else {
+        foot.rotation.z = -(a1 + a2);
+        const fl = thick * 2.4, fw = thick * 1.9;
+        foot.add(mesh(new THREE.BoxGeometry(fl, footH, fw), mats.main, fl * 0.2, -footH / 2, 0));
+        const n = toes;
+        for (let i = 0; i < n; i++) {
+          const t = n === 1 ? 0 : (i / (n - 1) - 0.5);
+          const toe = mesh(new THREE.ConeGeometry(thick * 0.42, thick * 1.3, 6), mats.claw, fl * 0.7, -footH / 2, t * fw * 0.85);
+          toe.rotation.z = -Math.PI / 2;
+          toe.rotation.y = -t * 0.35;
+          foot.add(toe);
+        }
+        if (sickle) {
+          const s = mesh(new THREE.ConeGeometry(thick * 0.5, thick * 2.6, 6), mats.claw, fl * 0.35, footH * 0.6, -fw * 0.55 * Math.sign(z || 1));
+          s.rotation.z = -Math.PI / 2 + 0.75;
+          foot.add(s);
+        }
+      }
+      return { hip, knee, foot };
+    }
+    function head({ len, h, w, snout, taper, teeth, eye, mats }) {
+      const g = new THREE.Group();
+      const skullL = len * (1 - snout), snoutL = len * snout;
+      const skull = ellipsoid(skullL * 0.62, h * 0.55, w * 0.55, mats.main, 10);
+      skull.position.x = skullL * 0.5;
+      g.add(skull);
+      const sn = taperedBox(snoutL, h * 0.78, w * 0.9, taper, mats.main, taper * 0.9);
+      sn.position.set(skullL + snoutL / 2 - 0.02 * len, h * 0.06, 0);
+      g.add(sn);
+      const jaw = new THREE.Group();
+      jaw.position.set(skullL * 0.45, -h * 0.3, 0);
+      g.add(jaw);
+      const jl = skullL * 0.55 + snoutL * 0.95;
+      const jm = taperedBox(jl, h * 0.3, w * 0.78, taper * 0.9, mats.main, taper);
+      jm.position.x = jl / 2;
+      jaw.add(jm);
+      const eyes = [];
+      for (const s of [-1, 1]) {
+        const e = mesh(new THREE.SphereGeometry(eye, 10, 8), mats.eye, skullL * 0.62, h * 0.18, s * w * 0.5);
+        e.castShadow = false;
+        const p = mesh(new THREE.SphereGeometry(eye * 0.55, 8, 6), mats.pupil, eye * 0.35, 0, s * eye * 0.6);
+        p.castShadow = false;
+        e.add(p);
+        g.add(e);
+        eyes.push(e);
+        const nos = mesh(new THREE.SphereGeometry(h * 0.06, 6, 4), mats.dark, skullL + snoutL * 0.85, h * 0.36 * taper + h * 0.05, s * w * 0.28 * taper);
+        g.add(nos);
+      }
+      if (teeth) {
+        const n = 6;
+        for (let i = 0; i < n; i++) {
+          const f = (i + 0.5) / n;
+          const x = skullL * 0.7 + f * snoutL * 0.95;
+          const zz = w * 0.42 * lerp(1, taper, f);
+          const th = h * 0.13;
+          for (const s of [-1, 1]) {
+            const t = mesh(new THREE.ConeGeometry(th * 0.3, th, 5), mats.tooth, x, -h * 0.28 - th * 0.35, s * zz);
+            t.rotation.x = Math.PI;
+            t.castShadow = false;
+            g.add(t);
+          }
+        }
+      }
+      return { g, jaw, eyes, skullL, snoutL };
+    }
+
+    // ── Species-specific decorations ──────────────────────────────────────────────────────────────────────────────
+    function extrasTriceratops({ hd, mats, s }) {
+      const { h, w } = s.head;
+      const frillG = new THREE.Group();
+      frillG.position.set(hd.skullL * 0.15, h * 0.15, 0);
+      frillG.rotation.z = -28 * DEG;
+      const frill = mesh(new THREE.CylinderGeometry(1.45, 1.45, 0.16, 18, 1, false, 0, Math.PI), mats.frill);
+      frill.rotation.z = Math.PI / 2;
+      frillG.add(frill);
+      for (let i = 0; i <= 9; i++) {
+        const t = (i / 9) * Math.PI;
+        frillG.add(mesh(new THREE.SphereGeometry(0.11, 6, 5), mats.accent, 0, Math.sin(t) * 1.45, Math.cos(t) * 1.45));
+      }
+      hd.g.add(frillG);
+      for (const sgn of [-1, 1]) {
+        const horn = mesh(new THREE.ConeGeometry(0.13, 1.15, 8), mats.accent, hd.skullL * 0.7, h * 0.42, sgn * w * 0.34);
+        horn.rotation.z = -62 * DEG;
+        horn.rotation.x = sgn * 0.12;
+        hd.g.add(horn);
+      }
+      const nose = mesh(new THREE.ConeGeometry(0.1, 0.5, 8), mats.accent, hd.skullL + hd.snoutL * 0.45, h * 0.38, 0);
+      nose.rotation.z = -35 * DEG;
+      hd.g.add(nose);
+    }
+    function extrasStegosaurus({ body, tail, mats, s }) {
+      const { L, H } = s.body;
+      const plate = (hgt, wid) => {
+        const sh = new THREE.Shape();
+        sh.moveTo(-wid / 2, 0); sh.lineTo(wid / 2, 0); sh.lineTo(wid * 0.42, hgt * 0.45); sh.lineTo(wid * 0.1, hgt);
+        sh.lineTo(-wid * 0.1, hgt); sh.lineTo(-wid * 0.42, hgt * 0.45); sh.closePath();
+        const g = new THREE.ExtrudeGeometry(sh, { depth: 0.1, bevelEnabled: false });
+        g.translate(0, 0, -0.05);
+        return mesh(g, mats.accent);
+      };
+      const N = 12;
+      for (let i = 0; i < N; i++) {
+        const t = -0.82 + (i / (N - 1)) * 1.64;
+        const x = t * L / 2;
+        const y = (H / 2) * Math.sqrt(Math.max(0, 1 - t * t)) - 0.15;
+        const size = 0.55 + 0.95 * Math.sin(Math.PI * (i + 0.5) / N);
+        const p = plate(size, size * 0.8);
+        p.position.set(x, y, (i % 2 ? 1 : -1) * 0.17);
+        p.rotation.z = -t * 0.5;
+        body.add(p);
+      }
+      for (let i = 0; i < 3; i++) {
+        const g = tail.groups[i];
+        const size = 0.9 - i * 0.22;
+        const p = plate(size, size * 0.8);
+        p.position.set(-tail.seg * 0.5, s.tail.r0 * (0.8 - i * 0.12), (i % 2 ? 1 : -1) * 0.12);
+        g.add(p);
+      }
+      for (const i of [tail.groups.length - 2, tail.groups.length - 1]) {
+        for (const sgn of [-1, 1]) {
+          const sp = mesh(new THREE.ConeGeometry(0.08, 0.75, 6), mats.accent, -tail.seg * 0.5, 0.05, sgn * 0.12);
+          sp.rotation.x = -sgn * 0.5;
+          sp.rotation.z = 0.25;
+          tail.groups[i].add(sp);
+        }
+      }
+    }
+    function extrasRaptor({ hd, tail, mats, s }) {
+      const crest = mesh(new THREE.BoxGeometry(hd.skullL * 0.9, 0.09, 0.02), mats.accent, hd.skullL * 0.35, s.head.h * 0.55, 0);
+      crest.rotation.z = 0.3;
+      hd.g.add(crest);
+      const fan = mesh(new THREE.BoxGeometry(0.26, 0.015, 0.16), mats.accent, -tail.seg * 0.4, 0, 0);
+      tail.end.add(fan);
+    }
+    function extrasSpinosaurus({ body, mats, s }) {
+      const { L, H } = s.body;
+      const half = L * 0.47, peak = 2.5;
+      const sh = new THREE.Shape();
+      sh.moveTo(-half, -0.3);
+      const N = 24;
+      for (let i = 0; i <= N; i++) {
+        const t = i / N;
+        const x = -half + t * 2 * half;
+        const env = Math.pow(Math.sin(Math.PI * t), 0.8) * peak;
+        const jag = (i % 2 ? 0.12 : 0) * env;
+        sh.lineTo(x, env + jag);
+      }
+      sh.lineTo(half, -0.3);
+      sh.closePath();
+      const g = new THREE.ExtrudeGeometry(sh, { depth: 0.14, bevelEnabled: false });
+      g.translate(0, 0, -0.07);
+      const sail = mesh(g, mats.accent);
+      sail.position.y = H * 0.5 * 0.7;
+      body.add(sail);
+    }
+    function extrasAnkylosaurus({ body, hd, tail, mats, s }) {
+      const { L, H, W } = s.body;
+      for (let x = -1.8; x <= 1.8; x += 0.6) {
+        for (let z = -1.1; z <= 1.1; z += 0.55) {
+          const nx = x / (L / 2), nz = z / (W / 2);
+          const yy = (H / 2) * Math.sqrt(Math.max(0, 1 - nx * nx - nz * nz));
+          if (yy < 0.2) continue;
+          const r = 0.13 + 0.1 * (1 - Math.abs(nz));
+          const b = mesh(new THREE.SphereGeometry(r, 7, 5), mats.accent, x, yy - r * 0.35, z);
+          b.scale.y = 0.7;
+          body.add(b);
+        }
+      }
+      for (let x = -1.7; x <= 1.7; x += 0.75) {
+        for (const sgn of [-1, 1]) {
+          const nx = x / (L / 2);
+          const zz = (W / 2) * Math.sqrt(Math.max(0, 1 - nx * nx)) * 0.97;
+          const sp = mesh(new THREE.ConeGeometry(0.14, 0.55, 6), mats.accent, x, -0.1, sgn * zz);
+          sp.rotation.x = sgn * (Math.PI / 2 + 0.25);
+          body.add(sp);
+        }
+      }
+      for (const sgn of [-1, 1]) {
+        for (const [xx, yy] of [[0.05, 0.2], [0.35, -0.1]]) {
+          const hn = mesh(new THREE.ConeGeometry(0.07, 0.3, 6), mats.accent, xx, yy, sgn * s.head.w * 0.5);
+          hn.rotation.x = sgn * 1.2;
+          hn.rotation.z = 0.5;
+          hd.g.add(hn);
+        }
+      }
+      const club = mesh(new THREE.SphereGeometry(0.5, 8, 6), mats.accent, -0.15, 0, 0);
+      club.scale.set(1.15, 0.7, 1.35);
+      tail.end.add(club);
+    }
+    function extrasParasaurolophus({ hd, mats, s }) {
+      // Cone tip points along (-cos a, sin a) after the rotation; place its base at the back of the skull.
+      const a = 0.5, len = 1.7;
+      const crest = mesh(new THREE.ConeGeometry(0.17, len, 8), mats.accent, 0.1 - Math.cos(a) * len / 2, s.head.h * 0.2 + Math.sin(a) * len / 2, 0);
+      crest.rotation.z = Math.PI / 2 - a;
+      hd.g.add(crest);
+    }
+
+    // ── Assemble a whole dinosaur from its spec ───────────────────────────────────────────────────────────────────
+    function buildDino(def, skin) {
+      const s = def.spec;
+      const mats = {
+        main: mkMat(skin.main), belly: mkMat(skin.belly), accent: mkMat(skin.accent),
+        eye: mkMat(0xffffff, { flatShading: false, roughness: 0.3 }), pupil: mkMat(0x111111, { flatShading: false, roughness: 0.2 }),
+        claw: mkMat(0xe9dfc8), tooth: mkMat(0xf5f1e6, { flatShading: false }), dark: mkMat(0x1d1d1d),
+        frill: mkMat(skin.main, { side: THREE.DoubleSide }),
+      };
+      const root = new THREE.Group();
+      const { L, H, W } = s.body;
+      const body = new THREE.Group();
+      body.position.y = s.body.y;
+      body.rotation.z = s.body.tilt || 0;
+      body.userData.baseY = s.body.y;
+      root.add(body);
+      body.add(ellipsoid(L / 2, H / 2, W / 2, mats.main, 16));
+      const belly = ellipsoid(L / 2 * 0.9, H / 2 * 0.72, W / 2 * 1.02, mats.belly, 14);
+      belly.position.y = -H * 0.18;
+      body.add(belly);
+
+      const neck = chain({ ...s.neck, dir: 1, mat: mats.main });
+      neck.root.position.set(s.neck.attach[0], s.neck.attach[1], 0);
+      body.add(neck.root);
+      const hd = head({ ...s.head, mats });
+      const neckPitch = s.neck.pitch0 + s.neck.bend * (s.neck.count - 1);
+      hd.g.rotation.z = (s.head.pitch || 0) - neckPitch;
+      hd.g.userData.baseZ = hd.g.rotation.z;
+      neck.end.add(hd.g);
+
+      const tail = chain({ ...s.tail, dir: -1, mat: mats.main });
+      tail.root.position.set(s.tail.attach[0], s.tail.attach[1], 0);
+      body.add(tail.root);
+
+      const legs = [];
+      for (const lg of s.legs) {
+        for (const sgn of [-1, 1]) {
+          const l = limb({ ...lg, z: sgn * lg.z, mats });
+          root.add(l.hip);
+          // Diagonal gait: left hind with right fore.
+          l.phase = (sgn > 0 ? 0 : Math.PI) + (lg.fore ? Math.PI : 0);
+          l.prev = 1;
+          legs.push(l);
+        }
+      }
+      const arms = [];
+      for (const ar of s.arms || []) {
+        for (const sgn of [-1, 1]) {
+          const a = limb({ ...ar, z: sgn * ar.z, mats });
+          body.add(a.hip);
+          a.phase = sgn > 0 ? Math.PI : 0;
+          arms.push(a);
+        }
+      }
+      if (def.extras) def.extras({ root, body, neck, tail, hd, legs, mats, s });
+      root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      return { root, body, neck, tail, hd, legs, arms, mats, def };
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    //  Scene, environment, lighting
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    const canvas = document.getElementById('c');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.05, 1200);
+    camera.position.set(12, 6, 16);
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.enablePan = false;
+    controls.maxPolarAngle = Math.PI / 2 - 0.03;
+    controls.autoRotateSpeed = 1.4;
+    controls.rotateSpeed = 0.7;
+
+    const SKY = { day: new THREE.Color(0x8fd0f0), night: new THREE.Color(0x0a1030) };
+    scene.background = SKY.day.clone();
+    scene.fog = new THREE.Fog(SKY.day.clone(), 60, 320);
+
+    const hemi = new THREE.HemisphereLight(0xcfe9ff, 0x6b8f3a, 0.95);
+    scene.add(hemi);
+    const sun = new THREE.DirectionalLight(0xfff1d6, 2.4);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.bias = -0.0008;
+    sun.shadow.normalBias = 0.02;
+    scene.add(sun);
+    scene.add(sun.target);
+    const fill = new THREE.DirectionalLight(0xbfd8ff, 0.5);
+    fill.position.set(-30, 20, -30);
+    scene.add(fill);
+
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x6f9e4c, roughness: 1, flatShading: true });
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(400, 48), groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Decorative patches, trees, rocks, hills and a volcano — a fixed-scale world so the dinos read at real size.
+    const env = new THREE.Group();
+    scene.add(env);
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const patchMat = new THREE.MeshStandardMaterial({ color: 0x5d8a3f, roughness: 1 });
+    for (let i = 0; i < 30; i++) {
+      const p = new THREE.Mesh(new THREE.CircleGeometry(rnd(2, 8), 8), patchMat);
+      p.rotation.x = -Math.PI / 2;
+      const a = rnd(0, Math.PI * 2), r = rnd(6, 120);
+      p.position.set(Math.cos(a) * r, 0.02, Math.sin(a) * r);
+      p.receiveShadow = true;
+      env.add(p);
+    }
+    const trunkMat = mkMat(0x6b4a2b), leafMats = [mkMat(0x2f7d3a), mkMat(0x3f9a44), mkMat(0x27683a)];
+    function tree(x, z, hgt) {
+      const g = new THREE.Group();
+      const trunk = mesh(new THREE.CylinderGeometry(hgt * 0.04, hgt * 0.06, hgt * 0.45, 7), trunkMat, 0, hgt * 0.22, 0);
+      g.add(trunk);
+      const lm = leafMats[Math.floor(Math.random() * leafMats.length)];
+      if (Math.random() < 0.5) {
+        for (let i = 0; i < 3; i++) {
+          const r = hgt * (0.3 - i * 0.07), y = hgt * (0.45 + i * 0.18);
+          g.add(mesh(new THREE.ConeGeometry(r, hgt * 0.32, 7), lm, 0, y, 0));
+        }
+      } else {
+        const c = mesh(new THREE.DodecahedronGeometry(hgt * 0.32, 0), lm, 0, hgt * 0.62, 0);
+        c.scale.y = 0.8;
+        g.add(c);
+      }
+      g.position.set(x, 0, z);
+      g.rotation.y = rnd(0, Math.PI * 2);
+      return g;
+    }
+    for (let i = 0; i < 46; i++) {
+      const a = rnd(0, Math.PI * 2), r = rnd(34, 140);
+      env.add(tree(Math.cos(a) * r, Math.sin(a) * r, rnd(5, 11)));
+    }
+    const rockMat = mkMat(0x8b8b86);
+    for (let i = 0; i < 24; i++) {
+      const a = rnd(0, Math.PI * 2), r = rnd(16, 100), sz = rnd(0.5, 2.4);
+      const rk = mesh(new THREE.DodecahedronGeometry(sz, 0), rockMat, Math.cos(a) * r, sz * 0.4, Math.sin(a) * r);
+      rk.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
+      rk.scale.y = 0.7;
+      env.add(rk);
+    }
+    const hillMat = mkMat(0x4f7a46);
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2 + rnd(-0.2, 0.2), r = rnd(190, 260);
+      const h = mesh(new THREE.SphereGeometry(rnd(30, 60), 10, 7), hillMat, Math.cos(a) * r, -8, Math.sin(a) * r);
+      h.scale.y = rnd(0.35, 0.6);
+      env.add(h);
+    }
+    const volcano = mesh(new THREE.ConeGeometry(70, 75, 9), mkMat(0x5a4a44), -150, 36, -250);
+    env.add(volcano);
+    const lavaMat = new THREE.MeshStandardMaterial({ color: 0xff5a1f, emissive: 0xff3c00, emissiveIntensity: 1.4, flatShading: true });
+    env.add(mesh(new THREE.CylinderGeometry(11, 14, 3, 9), lavaMat, -150, 74, -250));
+    const smokeMat = new THREE.MeshStandardMaterial({ color: 0x9a9a9a, transparent: true, opacity: 0.5, roughness: 1 });
+    const smoke = [];
+    for (let i = 0; i < 8; i++) {
+      const s = new THREE.Mesh(new THREE.SphereGeometry(5, 7, 5), smokeMat.clone());
+      s.userData.t = i / 8;
+      env.add(s);
+      smoke.push(s);
+    }
+
+    // Sun/moon disc and stars.
+    const skyBall = new THREE.Mesh(new THREE.SphereGeometry(14, 16, 12), new THREE.MeshBasicMaterial({ color: 0xfff3b0, fog: false }));
+    skyBall.position.set(260, 150, -300);
+    scene.add(skyBall);
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(900 * 3);
+    for (let i = 0; i < 900; i++) {
+      const th = rnd(0, Math.PI * 2), ph = rnd(0.05, Math.PI / 2.1), r = 700;
+      starPos[i * 3] = r * Math.cos(ph) * Math.cos(th);
+      starPos[i * 3 + 1] = r * Math.sin(ph);
+      starPos[i * 3 + 2] = r * Math.cos(ph) * Math.sin(th);
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2.4, sizeAttenuation: true, transparent: true, opacity: 0, fog: false });
+    const stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    //  Sound (Web Audio, no files)
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    let actx = null;
+    function audio() {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      return actx;
+    }
+    function noiseBuffer(ctx, sec) {
+      const b = ctx.createBuffer(1, ctx.sampleRate * sec, ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      return b;
+    }
+    function distortion(ctx, k) {
+      const ws = ctx.createWaveShaper();
+      const n = 256, curve = new Float32Array(n);
+      for (let i = 0; i < n; i++) { const x = (i / (n - 1)) * 2 - 1; curve[i] = ((3 + k) * x * 20 * DEG) / (Math.PI + k * Math.abs(x)); }
+      ws.curve = curve;
+      return ws;
+    }
+    function playSound(kind, mass = 1) {
+      const ctx = audio();
+      const t0 = ctx.currentTime;
+      const master = ctx.createGain();
+      master.gain.value = 0.9;
+      master.connect(ctx.destination);
+      if (kind === 'roar' || kind === 'rumble') {
+        const dur = kind === 'roar' ? 1.5 : 1.8;
+        const o = ctx.createOscillator();
+        o.type = 'sawtooth';
+        const f0 = kind === 'roar' ? 95 : 55;
+        o.frequency.setValueAtTime(f0, t0);
+        o.frequency.linearRampToValueAtTime(f0 * 1.35, t0 + 0.35);
+        o.frequency.exponentialRampToValueAtTime(f0 * 0.55, t0 + dur);
+        const lfo = ctx.createOscillator(), lfoG = ctx.createGain();
+        lfo.frequency.value = 22; lfoG.gain.value = 12;
+        lfo.connect(lfoG); lfoG.connect(o.frequency);
+        const lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.setValueAtTime(900, t0); lp.frequency.exponentialRampToValueAtTime(250, t0 + dur);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.6, t0 + 0.12);
+        g.gain.setValueAtTime(0.6, t0 + dur * 0.55);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(distortion(ctx, 60)).connect(lp).connect(g).connect(master);
+        const n = ctx.createBufferSource();
+        n.buffer = noiseBuffer(ctx, dur);
+        const nf = ctx.createBiquadFilter();
+        nf.type = 'bandpass'; nf.frequency.value = 400; nf.Q.value = 0.7;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.0001, t0);
+        ng.gain.exponentialRampToValueAtTime(0.25, t0 + 0.15);
+        ng.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        n.connect(nf).connect(ng).connect(master);
+        o.start(t0); lfo.start(t0); n.start(t0);
+        o.stop(t0 + dur); lfo.stop(t0 + dur); n.stop(t0 + dur);
+      } else if (kind === 'trumpet') {
+        const dur = 1.3;
+        const o = ctx.createOscillator();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(180, t0);
+        o.frequency.linearRampToValueAtTime(330, t0 + 0.25);
+        o.frequency.linearRampToValueAtTime(290, t0 + 0.7);
+        o.frequency.linearRampToValueAtTime(240, t0 + dur);
+        const lfo = ctx.createOscillator(), lfoG = ctx.createGain();
+        lfo.frequency.value = 6; lfoG.gain.value = 9;
+        lfo.connect(lfoG); lfoG.connect(o.frequency);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.5, t0 + 0.1);
+        g.gain.setValueAtTime(0.5, t0 + dur * 0.7);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(distortion(ctx, 8)).connect(g).connect(master);
+        o.start(t0); lfo.start(t0); o.stop(t0 + dur); lfo.stop(t0 + dur);
+      } else if (kind === 'honk') {
+        for (let k = 0; k < 2; k++) {
+          const s = t0 + k * 0.42, dur = 0.38;
+          const o = ctx.createOscillator();
+          o.type = 'square';
+          o.frequency.setValueAtTime(150, s);
+          o.frequency.exponentialRampToValueAtTime(105, s + dur);
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass'; lp.frequency.value = 700;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, s);
+          g.gain.exponentialRampToValueAtTime(0.45, s + 0.05);
+          g.gain.exponentialRampToValueAtTime(0.0001, s + dur);
+          o.connect(lp).connect(g).connect(master);
+          o.start(s); o.stop(s + dur);
+        }
+      } else if (kind === 'screech') {
+        const dur = 0.55;
+        const o = ctx.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(650, t0);
+        o.frequency.exponentialRampToValueAtTime(1400, t0 + 0.15);
+        o.frequency.exponentialRampToValueAtTime(480, t0 + dur);
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 500;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.3, t0 + 0.04);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(hp).connect(g).connect(master);
+        o.start(t0); o.stop(t0 + dur);
+      } else if (kind === 'step') {
+        const dur = 0.18;
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(70, t0);
+        o.frequency.exponentialRampToValueAtTime(35, t0 + dur);
+        const g = ctx.createGain();
+        const v = 0.05 + 0.5 * mass;
+        g.gain.setValueAtTime(v, t0);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(g).connect(master);
+        o.start(t0); o.stop(t0 + dur);
+        const n = ctx.createBufferSource();
+        n.buffer = noiseBuffer(ctx, 0.08);
+        const nf = ctx.createBiquadFilter();
+        nf.type = 'lowpass'; nf.frequency.value = 300;
+        const ng = ctx.createGain();
+        ng.gain.setValueAtTime(0.12 * mass, t0);
+        ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.08);
+        n.connect(nf).connect(ng).connect(master);
+        n.start(t0);
+      } else if (kind === 'pop') {
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(420, t0);
+        o.frequency.exponentialRampToValueAtTime(880, t0 + 0.12);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.18, t0);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
+        o.connect(g).connect(master);
+        o.start(t0); o.stop(t0 + 0.2);
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    //  Tweens, labels, size-comparison props
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    const tweens = [];
+    const easeOut = (k) => 1 - Math.pow(1 - k, 3);
+    const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+    const easeBack = (k) => { const c = 1.4; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
+    function tween(dur, ease, fn) {
+      return new Promise((res) => tweens.push({ t: 0, dur, ease, fn, res }));
+    }
+    function stepTweens(dt) {
+      for (let i = tweens.length - 1; i >= 0; i--) {
+        const tw = tweens[i];
+        tw.t += dt;
+        const k = clamp(tw.t / tw.dur, 0, 1);
+        tw.fn(tw.ease(k));
+        if (k >= 1) { tweens.splice(i, 1); tw.res(); }
+      }
+    }
+
+    function textSprite(text, height) {
+      const c = document.createElement('canvas');
+      c.width = 1024; c.height = 256;
+      const x = c.getContext('2d');
+      x.direction = 'rtl';
+      x.font = '700 110px Rubik, sans-serif';
+      x.textAlign = 'center';
+      x.textBaseline = 'middle';
+      const tw = x.measureText(text).width + 90;
+      x.fillStyle = 'rgba(8,18,38,0.72)';
+      x.beginPath();
+      x.roundRect(512 - tw / 2, 40, tw, 176, 60);
+      x.fill();
+      x.fillStyle = '#ffffff';
+      x.fillText(text, 512, 132);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
+      sp.scale.set(height * 4, height, 1);
+      sp.renderOrder = 10;
+      return sp;
+    }
+    function kidFigure() {
+      const g = new THREE.Group();
+      const skin = mkMat(0xf1c27d, { flatShading: false }), shirt = mkMat(0xef4444), pants = mkMat(0x1e3a8a), hair = mkMat(0x3b2412);
+      for (const s of [-1, 1]) g.add(mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.55, 8), pants, 0, 0.275, s * 0.09));
+      g.add(mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.45, 8), shirt, 0, 0.78, 0));
+      for (const s of [-1, 1]) {
+        const arm = mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.42, 8), skin, 0, 0.78, s * 0.22);
+        arm.rotation.x = s * 0.25;
+        g.add(arm);
+      }
+      g.add(mesh(new THREE.SphereGeometry(0.14, 12, 10), skin, 0, 1.15, 0));
+      const h = mesh(new THREE.SphereGeometry(0.15, 12, 10), hair, 0, 1.19, 0);
+      h.scale.y = 0.7;
+      g.add(h);
+      g.rotation.y = Math.PI / 2;
+      return g;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    //  App state
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    const state = {
+      index: 0, skin: 0, cur: null, busy: false, t: 0,
+      walking: false, walkAmt: 0, roar: -1, night: 0, nightTarget: 0, xray: false, compare: false,
+      blinkIn: 3, blinkT: 0, compareGroup: null, frame: null,
+    };
+
+    function disposeGroup(g) {
+      g.traverse((o) => {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) {
+          const ms = Array.isArray(o.material) ? o.material : [o.material];
+          ms.forEach((m) => { if (m.map) m.map.dispose(); m.dispose(); });
+        }
+      });
+    }
+    function applyXray(root, on) {
+      root.traverse((o) => { if (o.isMesh && !o.isSprite) o.material.wireframe = on; });
+    }
+    function computeFrame(root) {
+      root.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(root);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const radius = Math.max(size.x, size.y, size.z) * 0.5;
+      return { box, size, center, radius };
+    }
+    function cameraFor(frame, view) {
+      const { center, radius } = frame;
+      // Fit the bounding sphere into whichever field of view is narrower (vertical on landscape, horizontal on portrait phones).
+      const fovV = camera.fov * DEG;
+      const fovH = 2 * Math.atan(Math.tan(fovV / 2) * camera.aspect);
+      const dist = (radius / Math.sin(Math.min(fovV, fovH) / 2)) * 1.05;
+      let dir;
+      if (view === 'front') dir = new THREE.Vector3(1, 0.18, 0.25);
+      else if (view === 'side') dir = new THREE.Vector3(0.05, 0.14, 1);
+      else if (view === 'top') dir = new THREE.Vector3(0.25, 1, 0.3);
+      else dir = new THREE.Vector3(0.9, 0.42, 1.1);
+      dir.normalize();
+      const pos = center.clone().addScaledVector(dir, dist);
+      const target = center.clone();
+      if (view === 'kid') {
+        pos.set(center.x + dist * 0.55, 1.1, center.z + dist * 0.6);
+        target.set(center.x, Math.min(center.y, 1.1 + radius * 0.35), center.z);
+      }
+      // On wide screens the facts card covers the right ~25% of the viewport, so nudge the subject toward screen-left
+      // by moving both camera and target along the camera's right vector.
+      if (window.innerWidth > 820) {
+        const right = new THREE.Vector3().subVectors(target, pos).cross(camera.up).normalize();
+        const shift = right.multiplyScalar(radius * 0.42);
+        pos.add(shift);
+        target.add(shift);
+      }
+      return { pos, target, dist };
+    }
+    function flyTo(view, dur = 0.9) {
+      const frame = state.compare && state.compareGroup ? unionFrame() : state.frame;
+      if (!frame) return;
+      const { pos, target, dist } = cameraFor(frame, view);
+      controls.minDistance = frame.radius * 0.35;
+      controls.maxDistance = dist * 3.2;
+      const p0 = camera.position.clone(), t0 = controls.target.clone();
+      return tween(dur, easeInOut, (k) => {
+        camera.position.lerpVectors(p0, pos, k);
+        controls.target.lerpVectors(t0, target, k);
+      });
+    }
+    function unionFrame() {
+      const box = state.frame.box.clone();
+      if (state.compareGroup) {
+        state.compareGroup.updateMatrixWorld(true);
+        box.union(new THREE.Box3().setFromObject(state.compareGroup));
+      }
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      return { box, size, center, radius: Math.max(size.x, size.y, size.z) * 0.5 };
+    }
+    function updateSun(frame) {
+      const r = frame.radius;
+      sun.position.copy(frame.center).add(new THREE.Vector3(r * 1.8, r * 3.2, r * 1.4));
+      sun.target.position.copy(frame.center);
+      sun.target.updateMatrixWorld();
+      const cam = sun.shadow.camera;
+      cam.left = -r * 1.5; cam.right = r * 1.5; cam.top = r * 1.5; cam.bottom = -r * 1.5;
+      cam.near = 0.5; cam.far = r * 10;
+      cam.updateProjectionMatrix();
+    }
+
+    function buildCompare() {
+      const g = new THREE.Group();
+      const { box, size } = state.frame;
+      const kid = kidFigure();
+      kid.position.set(box.max.x + 0.6 + size.x * 0.03, 0, state.frame.center.z + 0.3);
+      g.add(kid);
+      const lblH = clamp(size.x * 0.06, 0.28, 1.6);
+      const kl = textSprite('ילד בן 8 — 1.3 מטר', lblH * 0.6);
+      kl.position.set(kid.position.x, 1.75 + lblH * 0.3, kid.position.z);
+      g.add(kl);
+      const lineZ = box.max.z + 0.5 + size.x * 0.02;
+      const lineMat = new THREE.MeshBasicMaterial({ color: 0xfcd34d });
+      const thick = clamp(size.x * 0.006, 0.02, 0.12);
+      const line = new THREE.Mesh(new THREE.BoxGeometry(size.x, thick, thick), lineMat);
+      line.position.set(state.frame.center.x, thick, lineZ);
+      g.add(line);
+      for (const s of [-1, 1]) {
+        const tick = new THREE.Mesh(new THREE.BoxGeometry(thick, thick * 8, thick), lineMat);
+        tick.position.set(state.frame.center.x + s * size.x / 2, thick * 4, lineZ);
+        g.add(tick);
+      }
+      const dl = textSprite(`אורך: ${state.cur.def.length}`, lblH);
+      dl.position.set(state.frame.center.x, thick * 12 + lblH * 0.6, lineZ);
+      g.add(dl);
+      return g;
+    }
+    function setCompare(on) {
+      state.compare = on;
+      btn.compare.classList.toggle('on', on);
+      if (state.compareGroup) { scene.remove(state.compareGroup); disposeGroup(state.compareGroup); state.compareGroup = null; }
+      if (on && state.frame) {
+        state.compareGroup = buildCompare();
+        scene.add(state.compareGroup);
+      }
+      flyTo('default', 0.8);
+    }
+
+    async function selectDino(i, { keepSkin = false } = {}) {
+      if (state.busy) return;
+      state.busy = true;
+      state.index = i;
+      if (!keepSkin) state.skin = 0;
+      const def = DINOS[i];
+      renderChips();
+      renderFacts(def);
+      if (state.cur) {
+        const old = state.cur;
+        await tween(0.28, easeInOut, (k) => old.root.scale.setScalar(Math.max(0.001, 1 - k)));
+        scene.remove(old.root);
+        disposeGroup(old.root);
+      }
+      const dino = buildDino(def, def.skins[state.skin]);
+      state.cur = dino;
+      state.roar = -1;
+      scene.add(dino.root);
+      state.frame = computeFrame(dino.root);
+      updateSun(state.frame);
+      applyXray(dino.root, state.xray);
+      dino.root.scale.setScalar(0.001);
+      if (state.compare) setCompare(true); else flyTo('default', 0.9);
+      playSound('pop');
+      await tween(0.6, easeBack, (k) => dino.root.scale.setScalar(Math.max(0.001, k)));
+      dino.root.scale.setScalar(1);
+      state.busy = false;
+    }
+    function changeSkin(k) {
+      if (!state.cur || state.busy) return;
+      state.skin = k;
+      const def = state.cur.def, skin = def.skins[k];
+      state.cur.mats.main.color.setHex(skin.main);
+      state.cur.mats.belly.color.setHex(skin.belly);
+      state.cur.mats.accent.color.setHex(skin.accent);
+      state.cur.mats.frill.color.setHex(skin.main);
+      renderSwatches(def);
+      playSound('pop');
+    }
+    function doRoar() {
+      if (!state.cur || state.roar >= 0) return;
+      state.roar = 0;
+      playSound(state.cur.def.sound);
+      btn.roar.classList.remove('pulse');
+      void btn.roar.offsetWidth;
+      btn.roar.classList.add('pulse');
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    //  UI
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    const $ = (id) => document.getElementById(id);
+    const btn = {
+      roar: $('btnRoar'), walk: $('btnWalk'), spin: $('btnSpin'), compare: $('btnCompare'),
+      xray: $('btnXray'), night: $('btnNight'), shot: $('btnShot'), full: $('btnFull'),
+    };
+    const dock = $('dock');
+    function renderChips() {
+      dock.innerHTML = '';
+      DINOS.forEach((d, i) => {
+        const b = document.createElement('button');
+        b.className = 'chip' + (i === state.index ? ' active' : '');
+        b.innerHTML = `<span class="em">${d.emoji}</span><span>${d.name}</span>`;
+        b.addEventListener('click', () => selectDino(i));
+        dock.appendChild(b);
+        if (i === state.index) requestAnimationFrame(() => b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }));
+      });
+    }
+    function renderFacts(d) {
+      $('fEmoji').textContent = d.emoji;
+      $('fName').textContent = d.name;
+      $('fLatin').textContent = d.latin;
+      $('fPeriod').textContent = d.period;
+      $('fLength').textContent = d.length;
+      $('fHeight').textContent = d.height;
+      $('fWeight').textContent = d.weight;
+      $('fDiet').textContent = DIET[d.diet];
+      $('fFun').textContent = d.fun;
+      renderSwatches(d);
+    }
+    function renderSwatches(d) {
+      const sw = $('swatches');
+      sw.innerHTML = '';
+      d.skins.forEach((s, k) => {
+        const b = document.createElement('button');
+        b.className = 'swatch' + (k === state.skin ? ' active' : '');
+        b.style.background = `linear-gradient(135deg, #${s.main.toString(16).padStart(6, '0')} 55%, #${s.accent.toString(16).padStart(6, '0')} 55%)`;
+        b.title = 'צבע ' + (k + 1);
+        b.addEventListener('click', () => changeSkin(k));
+        sw.appendChild(b);
+      });
+    }
+    let toastTimer;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    btn.roar.addEventListener('click', doRoar);
+    btn.walk.addEventListener('click', () => { state.walking = !state.walking; btn.walk.classList.toggle('on', state.walking); audio(); });
+    btn.spin.addEventListener('click', () => { controls.autoRotate = !controls.autoRotate; btn.spin.classList.toggle('on', controls.autoRotate); });
+    btn.compare.addEventListener('click', () => setCompare(!state.compare));
+    btn.xray.addEventListener('click', () => {
+      state.xray = !state.xray;
+      btn.xray.classList.toggle('on', state.xray);
+      if (state.cur) applyXray(state.cur.root, state.xray);
+    });
+    btn.night.addEventListener('click', () => {
+      state.nightTarget = state.nightTarget ? 0 : 1;
+      btn.night.classList.toggle('on', !!state.nightTarget);
+      btn.night.querySelector('.ic').textContent = state.nightTarget ? '☀️' : '🌙';
+      btn.night.querySelector('.lb').textContent = state.nightTarget ? 'יום' : 'לילה';
+    });
+    btn.shot.addEventListener('click', () => {
+      renderer.render(scene, camera);
+      const a = document.createElement('a');
+      a.download = `dino-${state.cur ? state.cur.def.id : 'shot'}.png`;
+      a.href = renderer.domElement.toDataURL('image/png');
+      a.click();
+      toast('התמונה נשמרה! 📸');
+    });
+    btn.full.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen?.();
+    });
+    document.querySelectorAll('.vbtn').forEach((b) => b.addEventListener('click', () => flyTo(b.dataset.view, 0.9)));
+    $('factsToggle').addEventListener('click', () => $('facts').classList.toggle('open'));
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      if (e.key === 'ArrowLeft') selectDino((state.index + 1) % DINOS.length);
+      else if (e.key === 'ArrowRight') selectDino((state.index - 1 + DINOS.length) % DINOS.length);
+      else if (e.key === ' ') { e.preventDefault(); doRoar(); }
+      else if (e.key.toLowerCase() === 'w') btn.walk.click();
+      else if (e.key.toLowerCase() === 'n') btn.night.click();
+    });
+    const hideHint = () => $('hint').classList.add('hide');
+    setTimeout(hideHint, 7000);
+    canvas.addEventListener('pointerdown', hideHint, { once: true });
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    //  Animation loop
+    // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    const clock = new THREE.Clock();
+    const hemiDay = { sky: new THREE.Color(0xcfe9ff), ground: new THREE.Color(0x6b8f3a) };
+    const hemiNight = { sky: new THREE.Color(0x4a5f9a), ground: new THREE.Color(0x1c2636) };
+    const sunDay = new THREE.Color(0xfff1d6), sunNight = new THREE.Color(0xa9c2ff);
+    const ballDay = new THREE.Color(0xfff3b0), ballNight = new THREE.Color(0xe9eefc);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.05);
+      state.t += dt;
+      const t = state.t;
+      stepTweens(dt);
+
+      // Day / night blend.
+      state.night = lerp(state.night, state.nightTarget, 1 - Math.pow(0.001, dt));
+      const n = state.night;
+      scene.background.lerpColors(SKY.day, SKY.night, n);
+      scene.fog.color.copy(scene.background);
+      hemi.color.lerpColors(hemiDay.sky, hemiNight.sky, n);
+      hemi.groundColor.lerpColors(hemiDay.ground, hemiNight.ground, n);
+      hemi.intensity = lerp(0.95, 0.8, n);
+      sun.color.lerpColors(sunDay, sunNight, n);
+      sun.intensity = lerp(2.4, 1.5, n);
+      fill.intensity = lerp(0.5, 0.35, n);
+      skyBall.material.color.lerpColors(ballDay, ballNight, n);
+      skyBall.scale.setScalar(lerp(1, 0.7, n));
+      starMat.opacity = n * 0.95;
+      renderer.toneMappingExposure = lerp(1.05, 0.95, n);
+      lavaMat.emissiveIntensity = lerp(1.4, 3.2, n);
+
+      // Volcano smoke.
+      for (const s of smoke) {
+        s.userData.t = (s.userData.t + dt * 0.12) % 1;
+        const k = s.userData.t;
+        s.position.set(-150 + Math.sin(k * 9) * 7 + k * 18, 78 + k * 70, -250 + Math.cos(k * 7) * 7);
+        s.scale.setScalar(0.6 + k * 2.2);
+        s.material.opacity = 0.55 * (1 - k) * (k < 0.1 ? k / 0.1 : 1);
+      }
+
+      const d = state.cur;
+      if (d) {
+        const s = d.def.spec, H = s.body.H;
+        state.walkAmt = lerp(state.walkAmt, state.walking ? 1 : 0, 1 - Math.pow(0.002, dt));
+        const wa = state.walkAmt;
+        const wf = clamp(5.5 / Math.sqrt(d.def.lengthM), 1.6, 5.5);
+        const wt = t * wf;
+
+        // Roar envelope.
+        let lift = 0, open = 0, pulse = 0;
+        if (state.roar >= 0) {
+          state.roar += dt;
+          const p = state.roar / 1.5;
+          if (p >= 1) state.roar = -1;
+          else {
+            const env = Math.sin(Math.PI * clamp(p, 0, 1));
+            lift = env * 0.45;
+            open = Math.pow(env, 0.7) * 0.55;
+            pulse = env;
+            const shake = state.frame.radius * 0.006 * env;
+            scene.position.set((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake, 0);
+          }
+        }
+        if (state.roar < 0 && scene.position.lengthSq() > 0) scene.position.set(0, 0, 0);
+
+        // Breathing + walk bob.
+        const breathe = Math.sin(t * 1.6);
+        d.body.position.y = d.body.userData.baseY + breathe * H * 0.006 + Math.abs(Math.sin(wt)) * H * 0.02 * wa;
+        d.body.scale.set(1 + pulse * 0.02, 1 + breathe * 0.012 + pulse * 0.03, 1 + breathe * 0.008 + pulse * 0.02);
+        d.body.rotation.x = Math.sin(wt) * 0.02 * wa;
+
+        // Tail sway.
+        d.tail.groups.forEach((g, i) => {
+          g.rotation.y = Math.sin(t * 1.4 - i * 0.55) * 0.045 * (1 + wa * 1.6) * (i ? 1 : 0.4) + Math.sin(wt - i * 0.5) * 0.04 * wa;
+          g.rotation.z = g.userData.baseZ + Math.sin(t * 1.1 - i * 0.4) * 0.012;
+        });
+        // Neck sway + roar lift.
+        const nc = d.neck.groups.length;
+        d.neck.groups.forEach((g, i) => {
+          g.rotation.y = Math.sin(t * 0.9 - i * 0.4) * 0.02;
+          g.rotation.z = g.userData.baseZ + lift / nc + Math.sin(wt * 0.5) * 0.015 * wa;
+        });
+        d.hd.g.rotation.z = d.hd.g.userData.baseZ + Math.sin(t * 0.9) * 0.025 + lift * 0.4;
+        d.hd.g.rotation.y = Math.sin(t * 0.6) * 0.06 * (1 - pulse);
+        d.hd.jaw.rotation.z = -(0.02 + open);
+
+        // Blink.
+        state.blinkIn -= dt;
+        if (state.blinkIn <= 0) { state.blinkT = 0.14; state.blinkIn = 2 + Math.random() * 3.5; }
+        if (state.blinkT > 0) state.blinkT -= dt;
+        const eyeY = state.blinkT > 0 ? 0.12 : 1;
+        for (const e of d.hd.eyes) e.scale.y = eyeY;
+
+        // Legs.
+        for (const l of d.legs) {
+          const ph = wt + l.phase;
+          const sw = Math.sin(ph);
+          l.hip.rotation.z = l.hip.userData.baseZ + sw * 0.38 * wa;
+          l.knee.rotation.z = l.knee.userData.baseZ - Math.max(0, Math.cos(ph)) * 0.55 * wa;
+          l.foot.rotation.z = -(l.hip.rotation.z + l.knee.rotation.z) + Math.max(0, -Math.cos(ph)) * 0.3 * wa;
+          if (wa > 0.5) {
+            const sign = Math.sign(Math.cos(ph + 0.9));
+            if (l.prev > 0 && sign < 0) playSound('step', d.def.mass);
+            l.prev = sign;
+          }
+        }
+        for (const a of d.arms) {
+          a.hip.rotation.z = a.hip.userData.baseZ + Math.sin(wt + a.phase) * 0.25 * wa + lift * 0.5;
+        }
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.__dinoState = state;
+    // ── Boot ──────────────────────────────────────────────────────────────────────────────────────────────────────
+    renderChips();
+    selectDino(0).then(() => {
+      window.__dinoReady = true;
+      document.getElementById('loading').classList.add('hide');
+    });
+    animate();
+    window.__dinoReady = true;
+    setTimeout(() => document.getElementById('loading').classList.add('hide'), 600);
+  </script>
+</body>
+</html>
