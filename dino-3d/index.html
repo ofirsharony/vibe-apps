@@ -149,6 +149,42 @@
     #loading p { font-size: 18px; font-weight: 500; }
     #loading .err { color: #fca5a5; font-size: 15px; max-width: 320px; text-align: center; line-height: 1.5; display: none; }
 
+    /* ── Help overlay ────────────────────────────────── */
+    .help {
+      position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 16px;
+      background: rgba(3, 8, 20, 0.62); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    .help.open { display: flex; }
+    .help-card {
+      width: min(720px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; padding: 26px 28px 22px; position: relative;
+      background: linear-gradient(160deg, rgba(20, 40, 70, 0.92), rgba(8, 18, 38, 0.95));
+      animation: helpIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+    }
+    @keyframes helpIn { from { transform: translateY(24px) scale(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
+    .help-card h2 { font-size: 30px; font-weight: 900; margin-bottom: 4px; }
+    .help-card .sub { color: var(--dim); font-size: 17px; margin-bottom: 18px; line-height: 1.6; }
+    .help-card h3 { font-size: 21px; font-weight: 700; margin: 18px 0 8px; color: #fcd34d; }
+    .help-list { list-style: none; display: grid; gap: 8px; }
+    .help-list li {
+      display: flex; gap: 12px; align-items: flex-start; background: rgba(255,255,255,0.07); border-radius: 14px; padding: 10px 12px;
+      font-size: 18px; line-height: 1.7;
+    }
+    .help-list .hi { font-size: 26px; line-height: 1.3; flex: 0 0 34px; text-align: center; }
+    .help-list b { color: #fff; }
+    .help-close {
+      display: block; width: 100%; margin-top: 20px; padding: 14px; border: none; border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent3)); color: #fff; font: inherit; font-size: 20px; font-weight: 700;
+      cursor: pointer; min-height: 56px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .help-x {
+      position: absolute; top: 14px; left: 14px; width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.12); color: #fff; font-size: 20px; cursor: pointer;
+    }
+    kbd {
+      display: inline-block; padding: 0 8px; border-radius: 6px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      font-family: inherit; font-size: 15px; line-height: 1.6; direction: ltr;
+    }
+
     /* ── Mobile ──────────────────────────────────────── */
     @media (max-width: 820px) {
       .brand p { display: none; }
@@ -186,7 +222,10 @@
         <p>סובבו, התקרבו והכירו את הדינוזאורים מקרוב</p>
       </div>
     </div>
-    <a class="home glass" href="../index.html">🏠 <span>חזרה</span></a>
+    <div style="display:flex; gap:8px;">
+      <button class="home glass" id="btnHelp" style="cursor:pointer;">❓ <span>הוראות</span></button>
+      <a class="home glass" href="../index.html">🏠 <span>חזרה</span></a>
+    </div>
   </header>
 
   <aside class="facts glass" id="facts">
@@ -233,6 +272,47 @@
   </nav>
 
   <footer class="dock glass" id="dock"></footer>
+
+  <div class="help" id="help">
+    <div class="help-card glass" role="dialog" aria-labelledby="helpTitle">
+      <button class="help-x" id="helpX" aria-label="סגירה">✕</button>
+      <h2 id="helpTitle">אֵיךְ מְשַׂחֲקִים? 🦕</h2>
+      <p class="sub">בְּרוּכִים הַבָּאִים לְעוֹלַם הַדִּינוֹזָאוּרִים! כָּאן אֶפְשָׁר לְסוֹבֵב, לְהִתְקָרֵב, לִשְׁמֹעַ שְׁאָגוֹת וּלְלַמֵּד הַמּוֹן דְּבָרִים חֲדָשִׁים.</p>
+
+      <h3>בּוֹחֲרִים דִּינוֹזָאוּר</h3>
+      <ul class="help-list">
+        <li><span class="hi">🦖</span><span>לוֹחֲצִים עַל הַשֵּׁם שֶׁל הַדִּינוֹזָאוּר בַּפַּס שֶׁלְּמַטָּה. אֶפְשָׁר לִגְלֹל אֶת הַפַּס הַצִּדָּה כְּדֵי לִרְאוֹת אֶת כֻּלָּם.</span></li>
+        <li><span class="hi">📖</span><span><b>כַּרְטִיס הַמֵּידָע</b> מְסַפֵּר עַל כָּל דִּינוֹזָאוּר: בְּאֵיזוֹ תְּקוּפָה הוּא חַי, כַּמָּה הוּא אָרֹךְ, גָּבוֹהַּ וְכָבֵד, מָה הוּא אָכַל, וְעוּבְדָה מְעַנְיֶנֶת בִּמְיֻחָד!</span></li>
+        <li><span class="hi">🎨</span><span><b>צֶבַע:</b> בַּכַּרְטִיס אֶפְשָׁר לִבְחֹר לַדִּינוֹזָאוּר צֶבַע אַחֵר.</span></li>
+      </ul>
+
+      <h3>מְסוֹבְבִים וּמִתְקָרְבִים</h3>
+      <ul class="help-list">
+        <li><span class="hi">👆</span><span>גּוֹרְרִים עִם הָאֶצְבַּע אוֹ עִם הָעַכְבָּר כְּדֵי לְסוֹבֵב אֶת הַדִּינוֹזָאוּר וְלִרְאוֹת אוֹתוֹ מִכָּל הַצְּדָדִים.</span></li>
+        <li><span class="hi">🔍</span><span>מְגַלְגְּלִים אֶת הָעַכְבָּר אוֹ צוֹבְטִים בַּמָּסָךְ כְּדֵי לְהִתְקָרֵב וּלְהִתְרַחֵק.</span></li>
+        <li><span class="hi">📷</span><span><b>מַבָּטִים:</b> לוֹחֲצִים עַל "מִלְּפָנִים", "מֵהַצַּד", "מִלְמַעְלָה" אוֹ "בְּגֹבַהּ יֶלֶד", וְהַמַּצְלֵמָה עָפָה לַמָּקוֹם הַנָּכוֹן.</span></li>
+      </ul>
+
+      <h3>הַכַּפְתּוֹרִים</h3>
+      <ul class="help-list">
+        <li><span class="hi">🔊</span><span><b>שְׁאָגָה:</b> לְכָל דִּינוֹזָאוּר יֵשׁ קוֹל מִשֶּׁלּוֹ! לוֹחֲצִים וּמַקְשִׁיבִים.</span></li>
+        <li><span class="hi">🚶</span><span><b>הֲלִיכָה:</b> הַדִּינוֹזָאוּר מַתְחִיל לָלֶכֶת, וְאֶפְשָׁר לִשְׁמֹעַ אֶת הַצְּעָדִים שֶׁלּוֹ. הַגְּדוֹלִים רוֹעֲמִים יוֹתֵר!</span></li>
+        <li><span class="hi">🔄</span><span><b>סִיבוּב:</b> הַדִּינוֹזָאוּר מִסְתּוֹבֵב לְבַד, כְּמוֹ עַל בָּמָה.</span></li>
+        <li><span class="hi">🧒</span><span><b>גֹּדֶל:</b> יֶלֶד בְּגֹבַהּ מֶטֶר וּשְׁלוֹשִׁים עוֹמֵד לְיַד הַדִּינוֹזָאוּר, וְקַו צָהֹב מַרְאֶה כַּמָּה הוּא אָרֹךְ.</span></li>
+        <li><span class="hi">🦴</span><span><b>שֶׁלֶד:</b> רוֹאִים אֶת הַדִּינוֹזָאוּר כְּמוֹ בְּצִלּוּם רֶנְטְגֶן.</span></li>
+        <li><span class="hi">🌙</span><span><b>לַיְלָה:</b> הַשָּׁמַיִם מַחְשִׁיכִים, הַכּוֹכָבִים יוֹצְאִים וְהַר הַגַּעַשׁ זוֹהֵר.</span></li>
+        <li><span class="hi">📸</span><span><b>צִלּוּם:</b> שׁוֹמְרִים תְּמוּנָה שֶׁל הַדִּינוֹזָאוּר לַמַּחְשֵׁב.</span></li>
+        <li><span class="hi">⛶</span><span><b>מָסָךְ מָלֵא:</b> הַמִּשְׂחָק מִתְפַּשֵּׂט עַל כָּל הַמָּסָךְ.</span></li>
+      </ul>
+
+      <h3>קִצּוּרֵי מִקְלֶדֶת</h3>
+      <ul class="help-list">
+        <li><span class="hi">⌨️</span><span><kbd>→</kbd> <kbd>←</kbd> מַחְלִיפִים דִּינוֹזָאוּר &nbsp;•&nbsp; <kbd>רֶוַח</kbd> שְׁאָגָה &nbsp;•&nbsp; <kbd>W</kbd> הֲלִיכָה &nbsp;•&nbsp; <kbd>N</kbd> לַיְלָה וָיוֹם</span></li>
+      </ul>
+
+      <button class="help-close" id="helpClose">הֵבַנְתִּי, בּוֹאוּ נְשַׂחֵק! 🦖</button>
+    </div>
+  </div>
 
   <div class="hint glass" id="hint">גררו כדי לסובב 🔄 &nbsp;•&nbsp; גלגלו או צבטו כדי להתקרב 🔍</div>
   <div class="toast glass" id="toast"></div>
@@ -430,6 +510,161 @@
           ],
         },
         extras: extrasParasaurolophus,
+      },
+      {
+        id: 'diplo', name: 'דיפלודוקוס', latin: 'Diplodocus carnegii', emoji: '🦕', diet: 'herbivore', sound: 'rumble',
+        period: 'יורה מאוחר, לפני 154–152 מיליון שנה', length: '27 מטר', height: '5 מטר', weight: '15 טון', lengthM: 27, mass: 1.3,
+        fun: 'הזנב של הדיפלודוקוס היה ארוך במיוחד ודק בקצה, כמו שוט! חוקרים חושבים שהוא יכול היה להצליף בו ולהשמיע קול חזק.',
+        skins: [
+          { main: 0x6f8f6a, belly: 0xd9d7b2, accent: 0x4d6a4a },
+          { main: 0x9a8a6a, belly: 0xe8dfc6, accent: 0x6b5a3c },
+          { main: 0x5c7fa3, belly: 0xc9d9e6, accent: 0x3b5a78 },
+        ],
+        spec: {
+          body: { L: 7.0, H: 3.2, W: 2.8, y: 4.0, tilt: 0 },
+          neck: { count: 10, length: 8.0, r0: 0.9, r1: 0.3, pitch0: 20 * DEG, bend: -1.5 * DEG, attach: [2.8, 0.7] },
+          head: { len: 0.9, h: 0.5, w: 0.4, snout: 0.45, taper: 0.7, teeth: false, eye: 0.05, pitch: -10 * DEG },
+          tail: { count: 14, length: 13, r0: 1.0, r1: 0.03, pitch0: 6 * DEG, bend: -1.2 * DEG, attach: [-2.9, 0.2] },
+          legs: [
+            { x: -2.2, y: 3.2, z: 1.2, thick: 0.5, a1: 5 * DEG, a2: -10 * DEG, footH: 0.35, toes: 4 },
+            { x: 2.2, y: 3.0, z: 1.15, thick: 0.45, a1: 3 * DEG, a2: -6 * DEG, footH: 0.35, toes: 4, fore: true },
+          ],
+        },
+      },
+      {
+        id: 'allo', name: 'אלוזאורוס', latin: 'Allosaurus fragilis', emoji: '🦖', diet: 'carnivore', sound: 'roar',
+        period: 'יורה מאוחר, לפני 155–145 מיליון שנה', length: '9 מטר', height: '3 מטר', weight: '2 טון', lengthM: 9, mass: 0.7,
+        fun: 'האלוזאורוס היה הטורף הגדול של תקופת היורה, מיליוני שנים לפני טי-רקס! מעל העיניים היו לו שתי קרניים קטנות.',
+        skins: [
+          { main: 0x8c6a3f, belly: 0xe2d2ae, accent: 0x5a3a1e },
+          { main: 0x6f7f4f, belly: 0xd8d8b0, accent: 0xc0392b },
+          { main: 0x7a5a6e, belly: 0xdcd0da, accent: 0x3e2c38 },
+        ],
+        spec: {
+          body: { L: 3.6, H: 1.8, W: 1.4, y: 2.4, tilt: 0 },
+          neck: { count: 4, length: 1.3, r0: 0.55, r1: 0.38, pitch0: 30 * DEG, bend: -12 * DEG, attach: [1.45, 0.3] },
+          head: { len: 1.3, h: 0.75, w: 0.6, snout: 0.55, taper: 0.55, teeth: true, eye: 0.07, pitch: 0 },
+          tail: { count: 9, length: 4.5, r0: 0.65, r1: 0.05, pitch0: 6 * DEG, bend: -1.5 * DEG, attach: [-1.45, 0.1] },
+          legs: [{ x: -0.7, y: 2.0, z: 0.6, thick: 0.32, a1: 25 * DEG, a2: -50 * DEG, footH: 0.25, toes: 3 }],
+          arms: [{ x: 1.2, y: -0.2, z: 0.55, len: 1.1, thick: 0.1, a1: 30 * DEG, a2: -45 * DEG }],
+        },
+        extras: extrasAllosaurus,
+      },
+      {
+        id: 'pachy', name: 'פכיצפלוזאורוס', latin: 'Pachycephalosaurus wyomingensis', emoji: '🦕', diet: 'herbivore', sound: 'honk',
+        period: 'קרטיקון מאוחר, לפני 70–66 מיליון שנה', length: '4.5 מטר', height: '2 מטר', weight: '450 ק"ג', lengthM: 4.5, mass: 0.45,
+        fun: 'לפכיצפלוזאורוס הייתה גולגולת עבה במיוחד, בעובי של 25 סנטימטרים! כנראה שהוא נגח בה כמו איל, אבל בזהירות.',
+        skins: [
+          { main: 0x7d8f4e, belly: 0xdcdcb0, accent: 0xb85c38 },
+          { main: 0x9a6f4f, belly: 0xe6d5bd, accent: 0x4a3222 },
+          { main: 0x5e7c9c, belly: 0xcad8e6, accent: 0xe0a458 },
+        ],
+        spec: {
+          body: { L: 2.0, H: 1.1, W: 0.9, y: 1.4, tilt: 0 },
+          neck: { count: 3, length: 0.8, r0: 0.35, r1: 0.25, pitch0: 20 * DEG, bend: -10 * DEG, attach: [0.8, 0.15] },
+          head: { len: 0.7, h: 0.5, w: 0.45, snout: 0.45, taper: 0.5, teeth: false, eye: 0.045, pitch: -5 * DEG },
+          tail: { count: 7, length: 2.2, r0: 0.4, r1: 0.03, pitch0: 4 * DEG, bend: -2 * DEG, attach: [-0.8, 0.05] },
+          legs: [{ x: -0.4, y: 1.15, z: 0.35, thick: 0.17, a1: 25 * DEG, a2: -50 * DEG, footH: 0.12, toes: 3 }],
+          arms: [{ x: 0.7, y: -0.15, z: 0.35, len: 0.6, thick: 0.06, a1: 30 * DEG, a2: -45 * DEG }],
+        },
+        extras: extrasPachy,
+      },
+      {
+        id: 'iguan', name: 'איגואנודון', latin: 'Iguanodon bernissartensis', emoji: '🦕', diet: 'herbivore', sound: 'honk',
+        period: 'קרטיקון מוקדם, לפני 126–122 מיליון שנה', length: '10 מטר', height: '3 מטר', weight: '3 טון', lengthM: 10, mass: 0.75,
+        fun: 'האיגואנודון היה מהדינוזאורים הראשונים שהתגלו אי פעם! על כל יד היה לו קוץ אגודל חד שעזר לו להתגונן ולקטוף ענפים.',
+        skins: [
+          { main: 0x7e9a4a, belly: 0xdfe2b4, accent: 0x4c6a2a },
+          { main: 0x9a7a4a, belly: 0xe8dcc0, accent: 0x5c4426 },
+          { main: 0x6a8f8f, belly: 0xcfe2e0, accent: 0x3c6161 },
+        ],
+        spec: {
+          body: { L: 4.2, H: 2.2, W: 1.7, y: 2.3, tilt: 0 },
+          neck: { count: 4, length: 1.6, r0: 0.6, r1: 0.4, pitch0: 35 * DEG, bend: -8 * DEG, attach: [1.7, 0.4] },
+          head: { len: 1.1, h: 0.55, w: 0.45, snout: 0.5, taper: 0.5, teeth: false, eye: 0.06, pitch: -15 * DEG },
+          tail: { count: 8, length: 4.5, r0: 0.7, r1: 0.05, pitch0: 3 * DEG, bend: -2 * DEG, attach: [-1.7, 0.1], tall: 1.3 },
+          legs: [
+            { x: -1.0, y: 1.9, z: 0.65, thick: 0.34, a1: 20 * DEG, a2: -40 * DEG, footH: 0.26, toes: 3 },
+            { x: 1.3, y: 1.5, z: 0.6, thick: 0.2, a1: 5 * DEG, a2: -10 * DEG, footH: 0.16, toes: 3, fore: true },
+          ],
+        },
+        extras: extrasIguanodon,
+      },
+      {
+        id: 'dilo', name: 'דילופוזאורוס', latin: 'Dilophosaurus wetherilli', emoji: '🦖', diet: 'carnivore', sound: 'screech',
+        period: 'יורה מוקדם, לפני 193 מיליון שנה', length: '7 מטר', height: '2 מטר', weight: '400 ק"ג', lengthM: 7, mass: 0.45,
+        fun: 'על ראשו של הדילופוזאורוס היו שתי ציציות עצם דקות בצורת חצי עיגול. בסרטים הוא יורק רעל, אבל זה רק דמיון!',
+        skins: [
+          { main: 0x6f8f5a, belly: 0xdad9b0, accent: 0xe07a2f },
+          { main: 0x8a5f4a, belly: 0xe4cdb6, accent: 0xf0c04a },
+          { main: 0x4f6f9a, belly: 0xc6d4e6, accent: 0xe05a5a },
+        ],
+        spec: {
+          body: { L: 2.6, H: 1.2, W: 0.95, y: 1.7, tilt: 0 },
+          neck: { count: 4, length: 1.1, r0: 0.38, r1: 0.25, pitch0: 40 * DEG, bend: -14 * DEG, attach: [1.05, 0.2] },
+          head: { len: 0.85, h: 0.42, w: 0.32, snout: 0.6, taper: 0.5, teeth: true, eye: 0.045, pitch: 0 },
+          tail: { count: 9, length: 3.6, r0: 0.42, r1: 0.03, pitch0: 6 * DEG, bend: -1 * DEG, attach: [-1.05, 0.05] },
+          legs: [{ x: -0.5, y: 1.4, z: 0.38, thick: 0.2, a1: 28 * DEG, a2: -55 * DEG, footH: 0.15, toes: 3 }],
+          arms: [{ x: 0.85, y: -0.15, z: 0.38, len: 0.7, thick: 0.06, a1: 30 * DEG, a2: -45 * DEG }],
+        },
+        extras: extrasDilophosaurus,
+      },
+      {
+        id: 'theri', name: 'תריזינוזאורוס', latin: 'Therizinosaurus cheloniformis', emoji: '🦕', diet: 'herbivore', sound: 'honk',
+        period: 'קרטיקון מאוחר, לפני 70 מיליון שנה', length: '10 מטר', height: '5 מטר', weight: '5 טון', lengthM: 10, mass: 0.9,
+        fun: 'לתריזינוזאורוס היו הציפורניים הארוכות ביותר של כל חיה שחיה אי פעם, כמעט מטר שלם! למרות זאת הוא אכל רק צמחים.',
+        skins: [
+          { main: 0x8a7a55, belly: 0xe2d8b8, accent: 0x3a3028 },
+          { main: 0x6f8a6a, belly: 0xd6dfc4, accent: 0x2e3a2a },
+          { main: 0x9a6a7a, belly: 0xe6d2da, accent: 0x3e2a32 },
+        ],
+        spec: {
+          body: { L: 3.2, H: 2.4, W: 2.0, y: 2.6, tilt: 8 * DEG },
+          neck: { count: 6, length: 2.4, r0: 0.45, r1: 0.25, pitch0: 60 * DEG, bend: -6 * DEG, attach: [1.2, 0.8] },
+          head: { len: 0.6, h: 0.32, w: 0.28, snout: 0.5, taper: 0.55, teeth: false, eye: 0.04, pitch: -10 * DEG },
+          tail: { count: 6, length: 2.2, r0: 0.6, r1: 0.1, pitch0: -10 * DEG, bend: -2 * DEG, attach: [-1.3, -0.1] },
+          legs: [{ x: -0.5, y: 2.0, z: 0.75, thick: 0.38, a1: 15 * DEG, a2: -30 * DEG, footH: 0.3, toes: 3 }],
+          arms: [{ x: 1.1, y: -0.1, z: 0.85, len: 1.4, thick: 0.12, a1: 45 * DEG, a2: -70 * DEG }],
+        },
+        extras: extrasTherizinosaurus,
+      },
+      {
+        id: 'compy', name: 'קומפסוגנתוס', latin: 'Compsognathus longipes', emoji: '🦖', diet: 'carnivore', sound: 'screech',
+        period: 'יורה מאוחר, לפני 150 מיליון שנה', length: '1 מטר', height: '40 ס"מ', weight: '3 ק"ג', lengthM: 1, mass: 0.05,
+        fun: 'הקומפסוגנתוס היה בגודל של תרנגולת! הוא היה זריז מאוד וצד לטאות וחרקים. בבטן של אחד המאובנים מצאו לטאה שלמה.',
+        skins: [
+          { main: 0xa8804a, belly: 0xe8dcbc, accent: 0x4a6a3a },
+          { main: 0x6f9a5a, belly: 0xdde6c0, accent: 0xd97742 },
+          { main: 0x8a6a9a, belly: 0xe0d6e8, accent: 0xf0b429 },
+        ],
+        spec: {
+          body: { L: 0.4, H: 0.2, W: 0.15, y: 0.3, tilt: 0 },
+          neck: { count: 4, length: 0.25, r0: 0.07, r1: 0.045, pitch0: 50 * DEG, bend: -18 * DEG, attach: [0.17, 0.03] },
+          head: { len: 0.18, h: 0.09, w: 0.07, snout: 0.55, taper: 0.5, teeth: true, eye: 0.014, pitch: 0 },
+          tail: { count: 8, length: 0.6, r0: 0.07, r1: 0.008, pitch0: 5 * DEG, bend: -0.5 * DEG, attach: [-0.17, 0.01] },
+          legs: [{ x: -0.08, y: 0.25, z: 0.07, thick: 0.03, a1: 30 * DEG, a2: -60 * DEG, footH: 0.025, toes: 3 }],
+          arms: [{ x: 0.15, y: -0.02, z: 0.07, len: 0.16, thick: 0.012, a1: 35 * DEG, a2: -50 * DEG }],
+        },
+      },
+      {
+        id: 'ptera', name: 'פטרנודון', latin: 'Pteranodon longiceps', emoji: '🦅', diet: 'fish', sound: 'screech',
+        period: 'קרטיקון מאוחר, לפני 86–84 מיליון שנה', length: '1.8 מטר', height: 'מוטת כנפיים 7 מטר', weight: '25 ק"ג', lengthM: 7, mass: 0.2,
+        fun: 'הפטרנודון בכלל לא היה דינוזאור אלא זוחל מעופף! מוטת הכנפיים שלו הייתה כמו של מטוס קטן, ולא היו לו שיניים בכלל.',
+        skins: [
+          { main: 0x8a7a6a, belly: 0xe6dccb, accent: 0xc0523a },
+          { main: 0x5f7f8f, belly: 0xd2e0e8, accent: 0xe0a040 },
+          { main: 0x7a6a8f, belly: 0xdcd4e8, accent: 0xd94f70 },
+        ],
+        spec: {
+          body: { L: 1.2, H: 0.6, W: 0.5, y: 4.2, tilt: 8 * DEG },
+          neck: { count: 4, length: 0.9, r0: 0.22, r1: 0.15, pitch0: 35 * DEG, bend: -10 * DEG, attach: [0.5, 0.15] },
+          head: { len: 1.3, h: 0.3, w: 0.22, snout: 0.7, taper: 0.3, teeth: false, eye: 0.04, pitch: -15 * DEG },
+          tail: { count: 2, length: 0.3, r0: 0.12, r1: 0.03, pitch0: -10 * DEG, bend: 0, attach: [-0.5, 0] },
+          legs: [],
+          arms: [{ x: -0.25, y: -0.2, z: 0.15, len: 0.7, thick: 0.045, a1: -25 * DEG, a2: 10 * DEG }],
+        },
+        extras: extrasPteranodon,
+        animate: animatePteranodon,
       },
     ];
 
@@ -719,6 +954,88 @@
       hd.g.add(crest);
     }
 
+
+    function extrasAllosaurus({ hd, mats, s }) {
+      for (const sgn of [-1, 1]) {
+        const horn = mesh(new THREE.ConeGeometry(0.08, 0.32, 6), mats.accent, hd.skullL * 0.55, s.head.h * 0.45, sgn * s.head.w * 0.4);
+        horn.rotation.z = -0.4;
+        horn.rotation.x = sgn * 0.5;
+        hd.g.add(horn);
+      }
+    }
+    function extrasPachy({ hd, mats, s }) {
+      const dome = mesh(new THREE.SphereGeometry(0.3, 10, 8), mats.accent, hd.skullL * 0.35, s.head.h * 0.3, 0);
+      dome.scale.set(1.05, 0.85, 0.9);
+      hd.g.add(dome);
+      for (let i = 0; i < 7; i++) {
+        const t = (i / 6 - 0.5) * Math.PI;
+        const b = mesh(new THREE.ConeGeometry(0.035, 0.12, 5), mats.accent, -0.05, s.head.h * 0.05 + Math.cos(t) * 0.1, Math.sin(t) * 0.26);
+        b.rotation.x = Math.sin(t) * 1.2;
+        b.rotation.z = 0.9;
+        hd.g.add(b);
+      }
+    }
+    function extrasIguanodon({ legs, mats }) {
+      for (const l of legs.filter((x) => x.fore)) {
+        const spike = mesh(new THREE.ConeGeometry(0.06, 0.35, 6), mats.claw, 0.1, 0.05, -Math.sign(l.hip.position.z) * 0.22);
+        spike.rotation.x = -Math.sign(l.hip.position.z) * 1.1;
+        spike.rotation.z = -0.4;
+        l.foot.add(spike);
+      }
+    }
+    function extrasDilophosaurus({ hd, mats, s }) {
+      for (const sgn of [-1, 1]) {
+        const sh = new THREE.Shape();
+        sh.absellipse(0, 0, 0.36, 0.3, 0, Math.PI, false, 0);
+        const g = new THREE.ExtrudeGeometry(sh, { depth: 0.035, bevelEnabled: false });
+        g.translate(0, 0, -0.0175);
+        const crest = mesh(g, mats.accent);
+        crest.position.set(hd.skullL * 0.45, s.head.h * 0.35, sgn * 0.09);
+        crest.rotation.z = 0.35;
+        hd.g.add(crest);
+      }
+    }
+    function extrasTherizinosaurus({ arms, mats }) {
+      for (const a of arms) {
+        for (const dz of [-1, 0, 1]) {
+          const c = mesh(new THREE.ConeGeometry(0.05, 0.65, 6), mats.claw, 0.28, -0.12, dz * 0.1);
+          c.rotation.z = -Math.PI / 2 + 0.35;
+          a.foot.add(c);
+        }
+      }
+    }
+    function extrasPteranodon(ctx) {
+      const { hd, body, mats, s } = ctx;
+      const a = 0.35, len = 1.0;
+      const crest = mesh(new THREE.ConeGeometry(0.1, len, 8), mats.accent, 0.05 - Math.cos(a) * len / 2, s.head.h * 0.1 + Math.sin(a) * len / 2, 0);
+      crest.rotation.z = Math.PI / 2 - a;
+      hd.g.add(crest);
+      ctx.custom.wings = [];
+      for (const sgn of [-1, 1]) {
+        const sh = new THREE.Shape();
+        sh.moveTo(0.55, 0); sh.lineTo(0.1, 1.6); sh.lineTo(-0.35, 3.4); sh.lineTo(-1.1, 2.2); sh.lineTo(-1.5, 0.9); sh.lineTo(-0.7, 0);
+        sh.closePath();
+        const g = new THREE.ExtrudeGeometry(sh, { depth: 0.05, bevelEnabled: false });
+        g.rotateX(-Math.PI / 2);
+        const wing = mesh(g, mats.wing);
+        wing.scale.z = sgn;
+        const pivot = new THREE.Group();
+        pivot.position.set(0.15, 0.15, sgn * s.body.W * 0.4);
+        pivot.add(wing);
+        const bone = mesh(new THREE.CylinderGeometry(0.05, 0.07, 3.3, 6), mats.main, -0.1, 0.02, sgn * 1.65);
+        bone.rotation.x = Math.PI / 2;
+        pivot.add(bone);
+        body.add(pivot);
+        ctx.custom.wings.push({ pivot, sgn });
+      }
+    }
+    function animatePteranodon(d, t, wa) {
+      const flap = Math.sin(t * (2.2 + wa * 2.5));
+      for (const w of d.custom.wings) w.pivot.rotation.x = w.sgn * (flap * 0.45 - 0.1);
+      d.body.position.y += Math.sin(t * 2.2 - 0.6) * 0.18;
+      d.body.rotation.z = (d.def.spec.body.tilt || 0) + Math.sin(t * 0.7) * 0.05;
+    }
+
     // ── Assemble a whole dinosaur from its spec ───────────────────────────────────────────────────────────────────
     function buildDino(def, skin) {
       const s = def.spec;
@@ -727,6 +1044,7 @@
         eye: mkMat(0xffffff, { flatShading: false, roughness: 0.3 }), pupil: mkMat(0x111111, { flatShading: false, roughness: 0.2 }),
         claw: mkMat(0xe9dfc8), tooth: mkMat(0xf5f1e6, { flatShading: false }), dark: mkMat(0x1d1d1d),
         frill: mkMat(skin.main, { side: THREE.DoubleSide }),
+        wing: mkMat(skin.accent, { side: THREE.DoubleSide }),
       };
       const root = new THREE.Group();
       const { L, H, W } = s.body;
@@ -760,6 +1078,7 @@
           root.add(l.hip);
           // Diagonal gait: left hind with right fore.
           l.phase = (sgn > 0 ? 0 : Math.PI) + (lg.fore ? Math.PI : 0);
+          l.fore = !!lg.fore;
           l.prev = 1;
           legs.push(l);
         }
@@ -773,9 +1092,10 @@
           arms.push(a);
         }
       }
-      if (def.extras) def.extras({ root, body, neck, tail, hd, legs, mats, s });
+      const ctx = { root, body, neck, tail, hd, legs, arms, mats, s, custom: {} };
+      if (def.extras) def.extras(ctx);
       root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-      return { root, body, neck, tail, hd, legs, arms, mats, def };
+      return { ...ctx, def };
     }
 
     // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -1271,6 +1591,7 @@
       state.cur.mats.belly.color.setHex(skin.belly);
       state.cur.mats.accent.color.setHex(skin.accent);
       state.cur.mats.frill.color.setHex(skin.main);
+      state.cur.mats.wing.color.setHex(skin.accent);
       renderSwatches(def);
       playSound('pop');
     }
@@ -1365,8 +1686,18 @@
     });
     document.querySelectorAll('.vbtn').forEach((b) => b.addEventListener('click', () => flyTo(b.dataset.view, 0.9)));
     $('factsToggle').addEventListener('click', () => $('facts').classList.toggle('open'));
+
+    const help = $('help');
+    const openHelp = () => help.classList.add('open');
+    const closeHelp = () => help.classList.remove('open');
+    $('btnHelp').addEventListener('click', openHelp);
+    $('helpClose').addEventListener('click', closeHelp);
+    $('helpX').addEventListener('click', closeHelp);
+    help.addEventListener('click', (e) => { if (e.target === help) closeHelp(); });
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
+      if (e.key === 'Escape') return closeHelp();
+      if (help.classList.contains('open')) return;
       if (e.key === 'ArrowLeft') selectDino((state.index + 1) % DINOS.length);
       else if (e.key === 'ArrowRight') selectDino((state.index - 1 + DINOS.length) % DINOS.length);
       else if (e.key === ' ') { e.preventDefault(); doRoar(); }
@@ -1493,6 +1824,7 @@
         for (const a of d.arms) {
           a.hip.rotation.z = a.hip.userData.baseZ + Math.sin(wt + a.phase) * 0.25 * wa + lift * 0.5;
         }
+        if (d.def.animate) d.def.animate(d, t, wa, pulse);
       }
 
       controls.update();
