@@ -97,7 +97,7 @@
 
     /* ── Tools ───────────────────────────────────────── */
     .tools {
-      position: fixed; left: 12px; top: 90px; display: flex; flex-direction: column; gap: 6px; z-index: 5; padding: 8px;
+      position: fixed; left: 12px; top: 90px; display: grid; grid-template-columns: repeat(2, 66px); gap: 6px; z-index: 5; padding: 8px;
     }
     .tool {
       width: 66px; height: 62px; border-radius: 16px; border: none; background: rgba(255,255,255,0.07); color: var(--text);
@@ -149,6 +149,44 @@
     #loading p { font-size: 18px; font-weight: 500; }
     #loading .err { color: #fca5a5; font-size: 15px; max-width: 320px; text-align: center; line-height: 1.5; display: none; }
 
+    /* ── Food tray ───────────────────────────────────── */
+    .food {
+      position: fixed; bottom: 96px; left: 50%; transform: translate(-50%, 30px); padding: 12px 18px; z-index: 6;
+      display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
+    }
+    .food.open { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+    .food-title { font-size: 14px; color: var(--dim); white-space: nowrap; }
+    .food-row { display: flex; gap: 12px; }
+    .food-item {
+      width: 68px; height: 68px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.1);
+      font-size: 36px; cursor: grab; touch-action: none; transition: transform 0.15s, background 0.15s; user-select: none; -webkit-user-select: none;
+    }
+    .food-item:hover { background: rgba(255,255,255,0.2); transform: translateY(-3px) scale(1.05); }
+    .food-item:active { cursor: grabbing; transform: scale(0.95); }
+    .food-ghost {
+      position: fixed; z-index: 50; font-size: 48px; pointer-events: none; transform: translate(-50%, -60%);
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.4)); animation: foodPop 0.25s ease;
+    }
+    @keyframes foodPop { from { transform: translate(-50%, -60%) scale(0.5); } to { transform: translate(-50%, -60%) scale(1); } }
+
+    /* ── Timeline ────────────────────────────────────── */
+    .timeline {
+      position: fixed; top: 90px; left: 50%; transform: translate(-50%, -16px); width: min(620px, calc(100vw - 340px)); padding: 12px 18px 10px;
+      z-index: 6; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
+    }
+    .timeline.open { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+    .tl-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .tl-era-name { font-size: 20px; font-weight: 900; color: #fcd34d; }
+    .tl-year { font-size: 14px; color: var(--dim); }
+    .tl-track { position: relative; display: flex; height: 26px; border-radius: 8px; overflow: hidden; font-size: 13px; font-weight: 700; }
+    .tl-seg { display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.92); }
+    .tl-seg.k { background: #2f855a; } .tl-seg.j { background: #2b6cb0; } .tl-seg.t { background: #c05621; }
+    .tl-marker { position: absolute; top: 0; bottom: 0; width: 4px; background: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,0.35); transform: translateX(-2px); pointer-events: none; }
+    #tlRange { width: 100%; margin: 8px 0 2px; accent-color: #fcd34d; height: 32px; cursor: pointer; }
+    .tl-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); }
+    .tl-alive { margin-top: 8px; font-size: 14px; line-height: 1.5; min-height: 1.5em; }
+    .chip.dim { opacity: 0.35; filter: grayscale(0.7); }
+
     /* ── Help overlay ────────────────────────────────── */
     .help {
       position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 16px;
@@ -189,7 +227,7 @@
     @media (max-width: 820px) {
       .brand p { display: none; }
       .brand h1 { font-size: 17px; }
-      .tools { top: auto; bottom: 86px; left: 8px; right: 8px; flex-direction: row; overflow-x: auto; scrollbar-width: none; padding: 6px; }
+      .tools { top: auto; bottom: 86px; left: 8px; right: 8px; display: flex; flex-direction: row; overflow-x: auto; scrollbar-width: none; padding: 6px; }
       .tool { width: 60px; height: 56px; flex: 0 0 auto; }
       .facts { right: 8px; left: 8px; top: 74px; width: auto; max-height: 56px; overflow: hidden; padding: 8px 14px; transition: max-height 0.3s; }
       .facts.open { max-height: calc(100vh - 260px); overflow-y: auto; padding: 14px; }
@@ -201,6 +239,10 @@
         font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 999px; cursor: pointer; min-height: 36px; align-items: center;
       }
       .hint { bottom: 156px; font-size: 13px; }
+      .food { bottom: 160px; }
+      .food-title { display: none; }
+      .timeline { top: 136px; width: calc(100vw - 16px); padding: 10px 12px; }
+      .tl-alive { display: none; }
       .dock { bottom: 8px; left: 8px; right: 8px; }
     }
   </style>
@@ -243,6 +285,7 @@
       <div class="fact"><span class="fact-k">גובה</span><span class="fact-v" id="fHeight"></span></div>
       <div class="fact"><span class="fact-k">משקל</span><span class="fact-v" id="fWeight"></span></div>
       <div class="fact"><span class="fact-k">תזונה</span><span class="fact-v" id="fDiet"></span></div>
+      <div class="fact wide"><span class="fact-k">בית גידול</span><span class="fact-v" id="fHabitat"></span></div>
     </div>
     <div class="fun"><strong>ידעת?</strong> <span id="fFun"></span></div>
     <div class="row">
@@ -263,6 +306,11 @@
   <nav class="tools glass" id="tools">
     <button class="tool" id="btnRoar"><span class="ic">🔊</span><span class="lb">שאגה</span></button>
     <button class="tool" id="btnWalk"><span class="ic">🚶</span><span class="lb">הליכה</span></button>
+    <button class="tool" id="btnFeed"><span class="ic">🍖</span><span class="lb">האכלה</span></button>
+    <button class="tool" id="btnEgg"><span class="ic">🥚</span><span class="lb">ביצה</span></button>
+    <button class="tool" id="btnParade"><span class="ic">🎪</span><span class="lb">מצעד</span></button>
+    <button class="tool" id="btnTime"><span class="ic">🕰️</span><span class="lb">ציר זמן</span></button>
+    <button class="tool" id="btnWeather"><span class="ic">☀️</span><span class="lb">בהיר</span></button>
     <button class="tool" id="btnSpin"><span class="ic">🔄</span><span class="lb">סיבוב</span></button>
     <button class="tool" id="btnCompare"><span class="ic">🧒</span><span class="lb">גודל</span></button>
     <button class="tool" id="btnXray"><span class="ic">🦴</span><span class="lb">שלד</span></button>
@@ -305,13 +353,45 @@
         <li><span class="hi">⛶</span><span><b>מָסָךְ מָלֵא:</b> הַמִּשְׂחָק מִתְפַּשֵּׂט עַל כָּל הַמָּסָךְ.</span></li>
       </ul>
 
+      <h3>עוֹד הַרְפַּתְקָאוֹת</h3>
+      <ul class="help-list">
+        <li><span class="hi">🍖</span><span><b>הַאֲכָלָה:</b> גּוֹרְרִים עָלִים, בָּשָׂר אוֹ דָּג אֶל הַדִּינוֹזָאוּר. אִם זֶה הָאֹכֶל הַנָּכוֹן, הוּא יִלְעַס בְּשִׂמְחָה!</span></li>
+        <li><span class="hi">🥚</span><span><b>בֵּיצָה:</b> לוֹחֲצִים עַל הַבֵּיצָה שָׁלוֹשׁ פְּעָמִים, וְדִינוֹזָאוּר מַפְתִּיעַ בּוֹקֵעַ מִמֶּנָּה!</span></li>
+        <li><span class="hi">🎪</span><span><b>מִצְעָד:</b> כָּל הַדִּינוֹזָאוּרִים עוֹמְדִים בְּמַעְגָּל מִסְּבִיבְכֶם, מֵהַקָּטָן לַגָּדוֹל. גּוֹרְרִים כְּדֵי לְהִסְתַּכֵּל מִסָּבִיב, וְלוֹחֲצִים עַל דִּינוֹזָאוּר כְּדֵי לְהִתְקָרֵב אֵלָיו.</span></li>
+        <li><span class="hi">🕰️</span><span><b>צִיר זְמַן:</b> מַזִּיזִים אֶת הַסַּרְגֵּל בֵּין הַתְּקוּפוֹת וְרוֹאִים מִי חַי בְּכָל תְּקוּפָה. גַּם הַנּוֹף מִשְׁתַּנֶּה!</span></li>
+        <li><span class="hi">🌦️</span><span><b>מֶזֶג אֲוִיר:</b> יוֹם בָּהִיר, גֶּשֶׁם אוֹ שְׁקִיעָה. לְכָל דִּינוֹזָאוּר יֵשׁ גַּם בֵּית גִּידּוּל מִשֶּׁלּוֹ: מִישׁוֹרִים, יַעַר, בִּצָּה, מִדְבָּר אוֹ חוֹף.</span></li>
+        <li><span class="hi">👆</span><span><b>לוֹחֲצִים עַל הַדִּינוֹזָאוּר</b> עַצְמוֹ, וְהוּא שׁוֹאֵג!</span></li>
+      </ul>
+
       <h3>קִצּוּרֵי מִקְלֶדֶת</h3>
       <ul class="help-list">
-        <li><span class="hi">⌨️</span><span><kbd>→</kbd> <kbd>←</kbd> מַחְלִיפִים דִּינוֹזָאוּר &nbsp;•&nbsp; <kbd>רֶוַח</kbd> שְׁאָגָה &nbsp;•&nbsp; <kbd>W</kbd> הֲלִיכָה &nbsp;•&nbsp; <kbd>N</kbd> לַיְלָה וָיוֹם</span></li>
+        <li><span class="hi">⌨️</span><span><kbd>→</kbd> <kbd>←</kbd> מַחְלִיפִים דִּינוֹזָאוּר &nbsp;•&nbsp; <kbd>רֶוַח</kbd> שְׁאָגָה &nbsp;•&nbsp; <kbd>W</kbd> הֲלִיכָה &nbsp;•&nbsp; <kbd>N</kbd> לַיְלָה וָיוֹם &nbsp;•&nbsp; <kbd>P</kbd> מִצְעָד &nbsp;•&nbsp; <kbd>E</kbd> בֵּיצָה &nbsp;•&nbsp; <kbd>T</kbd> צִיר זְמַן &nbsp;•&nbsp; <kbd>R</kbd> מֶזֶג אֲוִיר</span></li>
       </ul>
 
       <button class="help-close" id="helpClose">הֵבַנְתִּי, בּוֹאוּ נְשַׂחֵק! 🦖</button>
     </div>
+  </div>
+
+  <div class="food glass" id="food">
+    <span class="food-title">מה הדינוזאור אוכל? גררו אל הדינוזאור או לחצו 👇</span>
+    <div class="food-row">
+      <button class="food-item" data-food="leaf" title="עלים">🌿</button>
+      <button class="food-item" data-food="meat" title="בשר">🍖</button>
+      <button class="food-item" data-food="fish" title="דגים">🐟</button>
+    </div>
+  </div>
+
+  <div class="timeline glass" id="timeline">
+    <div class="tl-head"><span class="tl-era-name" id="tlEra">קרטיקון מאוחר</span><span class="tl-year" id="tlYear">לפני 67 מיליון שנה</span></div>
+    <div class="tl-track" dir="ltr">
+      <div class="tl-seg k" style="width:46.7%">קרטיקון</div>
+      <div class="tl-seg j" style="width:33.1%">יורה</div>
+      <div class="tl-seg t" style="width:20.2%">טריאס</div>
+      <div class="tl-marker" id="tlMarker"></div>
+    </div>
+    <input type="range" id="tlRange" min="66" max="235" step="1" value="67" dir="ltr" aria-label="ציר זמן" />
+    <div class="tl-ends" dir="ltr"><span>לפני 66 מיליון שנה</span><span>לפני 235 מיליון שנה</span></div>
+    <div class="tl-alive" id="tlAlive"></div>
   </div>
 
   <div class="hint glass" id="hint">גררו כדי לסובב 🔄 &nbsp;•&nbsp; גלגלו או צבטו כדי להתקרב 🔍</div>
@@ -666,7 +746,41 @@
         extras: extrasPteranodon,
         animate: animatePteranodon,
       },
+      {
+        id: 'coelo', name: 'קואלופיזיס', latin: 'Coelophysis bauri', emoji: '🦖', diet: 'carnivore', sound: 'screech',
+        period: 'טריאס מאוחר, לפני 216–196 מיליון שנה', length: '3 מטר', height: '1 מטר', weight: '20 ק"ג', lengthM: 3, mass: 0.12,
+        fun: 'הקואלופיזיס הוא מהדינוזאורים הקדומים ביותר שאנחנו מכירים! הוא חי בלהקות, ומאות שלדים שלו נמצאו יחד במקום אחד.',
+        skins: [
+          { main: 0x9a7a4a, belly: 0xe6d8b8, accent: 0x5a3a2a },
+          { main: 0x6a8a5a, belly: 0xd8e0c0, accent: 0xc9532b },
+          { main: 0x7a6a9a, belly: 0xdcd4e8, accent: 0xe0a040 },
+        ],
+        spec: {
+          body: { L: 1.0, H: 0.45, W: 0.35, y: 0.75, tilt: 0 },
+          neck: { count: 5, length: 0.7, r0: 0.15, r1: 0.09, pitch0: 45 * DEG, bend: -14 * DEG, attach: [0.42, 0.07] },
+          head: { len: 0.45, h: 0.2, w: 0.15, snout: 0.6, taper: 0.5, teeth: true, eye: 0.03, pitch: 0 },
+          tail: { count: 9, length: 1.7, r0: 0.16, r1: 0.01, pitch0: 5 * DEG, bend: -0.6 * DEG, attach: [-0.42, 0.02] },
+          legs: [{ x: -0.2, y: 0.62, z: 0.16, thick: 0.07, a1: 30 * DEG, a2: -60 * DEG, footH: 0.05, toes: 3 }],
+          arms: [{ x: 0.4, y: -0.05, z: 0.16, len: 0.4, thick: 0.03, a1: 35 * DEG, a2: -50 * DEG }],
+        },
+      },
     ];
+
+    // Habitat (drives the scenery) and the range of years each species lived, in millions of years ago.
+    const META = {
+      trex: { habitat: 'plains', from: 68, to: 66 }, trike: { habitat: 'plains', from: 68, to: 66 },
+      stego: { habitat: 'forest', from: 155, to: 150 }, brachio: { habitat: 'forest', from: 154, to: 150 },
+      raptor: { habitat: 'desert', from: 75, to: 71 }, spino: { habitat: 'swamp', from: 99, to: 93 },
+      anky: { habitat: 'plains', from: 68, to: 66 }, para: { habitat: 'swamp', from: 76, to: 73 },
+      diplo: { habitat: 'forest', from: 154, to: 152 }, allo: { habitat: 'forest', from: 155, to: 145 },
+      pachy: { habitat: 'plains', from: 70, to: 66 }, iguan: { habitat: 'forest', from: 126, to: 122 },
+      dilo: { habitat: 'desert', from: 193, to: 190 }, theri: { habitat: 'plains', from: 70, to: 68 },
+      compy: { habitat: 'forest', from: 150, to: 148 }, ptera: { habitat: 'coast', from: 86, to: 84 },
+      coelo: { habitat: 'desert', from: 216, to: 196 },
+    };
+    DINOS.forEach((d) => Object.assign(d, META[d.id]));
+    const HABITAT_NAME = { plains: 'מישורים 🌾', forest: 'יער 🌲', swamp: 'ביצה 🪷', desert: 'מדבר 🏜️', coast: 'חוף 🌊' };
+    const FOOD_NAME = { leaf: 'עלים 🌿', meat: 'בשר 🍖', fish: 'דגים 🐟' };
 
     // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
     //  Geometry helpers
@@ -1178,9 +1292,11 @@
       g.rotation.y = rnd(0, Math.PI * 2);
       return g;
     }
+    const baseTrees = new THREE.Group();
+    env.add(baseTrees);
     for (let i = 0; i < 46; i++) {
       const a = rnd(0, Math.PI * 2), r = rnd(34, 140);
-      env.add(tree(Math.cos(a) * r, Math.sin(a) * r, rnd(5, 11)));
+      baseTrees.add(tree(Math.cos(a) * r, Math.sin(a) * r, rnd(5, 11)));
     }
     const rockMat = mkMat(0x8b8b86);
     for (let i = 0; i < 24; i++) {
@@ -1226,6 +1342,137 @@
     const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 2.4, sizeAttenuation: true, transparent: true, opacity: 0, fog: false });
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
+
+    // ── Habitats: each species gets its own scenery, blended in when it is selected ─────────────────────────────
+    const HABITATS = {
+      plains: { ground: 0x6f9e4c, patch: 0x5d8a3f, sky: 0x8fd0f0 },
+      forest: { ground: 0x4f8a3c, patch: 0x3f7431, sky: 0x9ad4ea },
+      swamp: { ground: 0x5c7f3a, patch: 0x4a6a2e, sky: 0xa9c9c2 },
+      desert: { ground: 0xc9a86a, patch: 0xb8945a, sky: 0xf1d9ad },
+      coast: { ground: 0x8fb56a, patch: 0x7aa05a, sky: 0x8ad0f8 },
+    };
+    const ERAS = {
+      triassic: { ground: 0xb59a5a, sky: 0xf0c8a0 },
+      jurassic: { ground: 0x4f8a3c, sky: 0x9ad4ea },
+      cretaceous: null,
+    };
+    const habitatGroups = {};
+    function habitatGroup(name) {
+      const g = new THREE.Group();
+      g.visible = false;
+      scene.add(g);
+      habitatGroups[name] = g;
+      return g;
+    }
+    {
+      const g = habitatGroup('forest');
+      for (let i = 0; i < 34; i++) { const a = rnd(0, Math.PI * 2), r = rnd(18, 40); g.add(tree(Math.cos(a) * r, Math.sin(a) * r, rnd(7, 14))); }
+    }
+    const waterMat = new THREE.MeshStandardMaterial({ color: 0x3f8fa8, transparent: true, opacity: 0.82, roughness: 0.25, metalness: 0.1 });
+    {
+      const g = habitatGroup('swamp');
+      const pond = new THREE.Mesh(new THREE.CircleGeometry(24, 24), waterMat);
+      pond.rotation.x = -Math.PI / 2;
+      pond.position.set(-6, 0.05, -34);
+      g.add(pond);
+      const reedMat = mkMat(0x4f7a2a);
+      for (let i = 0; i < 70; i++) {
+        const a = rnd(0, Math.PI * 2), r = rnd(22, 29), h = rnd(1.5, 3.4);
+        const reed = mesh(new THREE.CylinderGeometry(0.05, 0.1, h, 5), reedMat, -6 + Math.cos(a) * r, h / 2, -34 + Math.sin(a) * r);
+        reed.rotation.z = rnd(-0.15, 0.15);
+        g.add(reed);
+      }
+      for (let i = 0; i < 8; i++) { const a = rnd(0, Math.PI * 2), r = rnd(27, 42); g.add(tree(-6 + Math.cos(a) * r, -34 + Math.sin(a) * r, rnd(6, 10))); }
+    }
+    {
+      const g = habitatGroup('desert');
+      const spireMat = mkMat(0xb97d4a), deadMat = mkMat(0x7a6650);
+      for (let i = 0; i < 9; i++) {
+        const a = rnd(0, Math.PI * 2), r = rnd(30, 90), h = rnd(8, 22);
+        g.add(mesh(new THREE.CylinderGeometry(rnd(1, 2.5), rnd(3, 5), h, 6), spireMat, Math.cos(a) * r, h / 2, Math.sin(a) * r));
+      }
+      for (let i = 0; i < 12; i++) {
+        const a = rnd(0, Math.PI * 2), r = rnd(18, 70), h = rnd(3, 6);
+        const tr = mesh(new THREE.CylinderGeometry(0.12, 0.3, h, 5), deadMat, Math.cos(a) * r, h / 2, Math.sin(a) * r);
+        tr.rotation.z = rnd(-0.2, 0.2);
+        const br = mesh(new THREE.CylinderGeometry(0.06, 0.14, h * 0.5, 5), deadMat, 0, h * 0.3, 0);
+        br.rotation.z = 0.9;
+        tr.add(br);
+        g.add(tr);
+      }
+    }
+    {
+      const g = habitatGroup('coast');
+      const sea = new THREE.Mesh(new THREE.CircleGeometry(95, 32), waterMat);
+      sea.rotation.x = -Math.PI / 2;
+      sea.position.set(0, 0.05, -115);
+      g.add(sea);
+      const sand = new THREE.Mesh(new THREE.RingGeometry(93, 108, 32), new THREE.MeshStandardMaterial({ color: 0xe6d3a3, roughness: 1 }));
+      sand.rotation.x = -Math.PI / 2;
+      sand.position.set(0, 0.04, -115);
+      g.add(sand);
+    }
+    const envColor = {
+      ground: new THREE.Color(HABITATS.plains.ground), patch: new THREE.Color(HABITATS.plains.patch), sky: new THREE.Color(HABITATS.plains.sky),
+      tGround: new THREE.Color(HABITATS.plains.ground), tPatch: new THREE.Color(HABITATS.plains.patch), tSky: new THREE.Color(HABITATS.plains.sky),
+    };
+    let currentHabitat = 'plains';
+    function setHabitat(name) {
+      currentHabitat = name;
+      for (const [k, g] of Object.entries(habitatGroups)) g.visible = k === name;
+      baseTrees.visible = name !== 'desert' && name !== 'coast';
+      refreshEnvTargets();
+    }
+    function refreshEnvTargets() {
+      const h = HABITATS[currentHabitat];
+      envColor.tGround.setHex(h.ground); envColor.tPatch.setHex(h.patch); envColor.tSky.setHex(h.sky);
+      const era = timelineOpen ? ERAS[eraKey(state.year)] : null;
+      if (era) {
+        envColor.tGround.lerp(new THREE.Color(era.ground), 0.6);
+        envColor.tSky.lerp(new THREE.Color(era.sky), 0.6);
+        envColor.tPatch.copy(envColor.tGround).multiplyScalar(0.85);
+      }
+    }
+
+    // ── Weather: clear / rain / sunset ───────────────────────────────────────────────────────────────────────────
+    const WEATHER = [
+      { id: 'clear', icon: '☀️', label: 'בהיר' },
+      { id: 'rain', icon: '🌧️', label: 'גשם' },
+      { id: 'sunset', icon: '🌇', label: 'שקיעה' },
+    ];
+    const RAIN_N = 2600;
+    const rainGeo = new THREE.BufferGeometry();
+    const rainPos = new Float32Array(RAIN_N * 3);
+    rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+    const rainTex = (() => {
+      const c = document.createElement('canvas');
+      c.width = 16; c.height = 64;
+      const x = c.getContext('2d');
+      const g = x.createLinearGradient(0, 0, 0, 64);
+      g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,0.9)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+      x.fillStyle = g;
+      x.fillRect(6, 0, 4, 64);
+      const t = new THREE.CanvasTexture(c);
+      return t;
+    })();
+    const rainMat = new THREE.PointsMaterial({ color: 0xcfe3ff, size: 0.35, map: rainTex, transparent: true, opacity: 0, sizeAttenuation: true, depthWrite: false });
+    const rain = new THREE.Points(rainGeo, rainMat);
+    rain.frustumCulled = false;
+    scene.add(rain);
+    let rainBox = 20;
+    function resetRain() {
+      rainBox = clamp((state.frame ? state.frame.radius : 6) * 3, 8, 70);
+      const c = controls.target;
+      for (let i = 0; i < RAIN_N; i++) {
+        rainPos[i * 3] = c.x + rnd(-rainBox, rainBox);
+        rainPos[i * 3 + 1] = rnd(0, rainBox * 1.4);
+        rainPos[i * 3 + 2] = c.z + rnd(-rainBox, rainBox);
+      }
+      rainMat.size = clamp(rainBox * 0.02, 0.15, 1.2);
+      rainGeo.attributes.position.needsUpdate = true;
+    }
+    const SUNSET = { sky: new THREE.Color(0xff9d5c), sun: new THREE.Color(0xffb070), hemi: new THREE.Color(0xffc9a0) };
+    const RAINY = { sky: new THREE.Color(0x7d8b9a), ground: 0.72 };
 
     // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
     //  Sound (Web Audio, no files)
@@ -1355,6 +1602,63 @@
         ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.08);
         n.connect(nf).connect(ng).connect(master);
         n.start(t0);
+      } else if (kind === 'crack' || kind === 'burst') {
+        const big = kind === 'burst';
+        const n = ctx.createBufferSource();
+        n.buffer = noiseBuffer(ctx, big ? 0.5 : 0.12);
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass'; f.frequency.value = big ? 900 : 1800;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(big ? 0.6 : 0.35, t0);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + (big ? 0.5 : 0.12));
+        n.connect(f).connect(g).connect(master);
+        n.start(t0);
+        const o = ctx.createOscillator();
+        o.type = 'square';
+        o.frequency.setValueAtTime(big ? 180 : 320, t0);
+        o.frequency.exponentialRampToValueAtTime(big ? 60 : 120, t0 + 0.1);
+        const og = ctx.createGain();
+        og.gain.setValueAtTime(0.15, t0);
+        og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.1);
+        o.connect(og).connect(master);
+        o.start(t0); o.stop(t0 + 0.1);
+        if (big) setTimeout(() => playSound('pop'), 120);
+      } else if (kind === 'chomp') {
+        for (let k = 0; k < 3; k++) {
+          const st = t0 + k * 0.22;
+          const n = ctx.createBufferSource();
+          n.buffer = noiseBuffer(ctx, 0.1);
+          const f = ctx.createBiquadFilter();
+          f.type = 'lowpass'; f.frequency.value = 500;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.5, st);
+          g.gain.exponentialRampToValueAtTime(0.0001, st + 0.1);
+          n.connect(f).connect(g).connect(master);
+          n.start(st);
+        }
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(520, t0 + 0.7);
+        o.frequency.linearRampToValueAtTime(780, t0 + 0.95);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t0 + 0.7);
+        g.gain.exponentialRampToValueAtTime(0.2, t0 + 0.75);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.05);
+        o.connect(g).connect(master);
+        o.start(t0 + 0.7); o.stop(t0 + 1.05);
+      } else if (kind === 'no') {
+        for (const [k, f] of [[0, 260], [1, 210]]) {
+          const st = t0 + k * 0.2;
+          const o = ctx.createOscillator();
+          o.type = 'triangle';
+          o.frequency.value = f;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, st);
+          g.gain.exponentialRampToValueAtTime(0.22, st + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001, st + 0.18);
+          o.connect(g).connect(master);
+          o.start(st); o.stop(st + 0.18);
+        }
       } else if (kind === 'pop') {
         const o = ctx.createOscillator();
         o.type = 'sine';
@@ -1365,6 +1669,30 @@
         g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
         o.connect(g).connect(master);
         o.start(t0); o.stop(t0 + 0.2);
+      }
+    }
+
+    let rainAudio = null;
+    function setRainAudio(on) {
+      const ctx = audio();
+      if (on && !rainAudio) {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuffer(ctx, 2);
+        src.loop = true;
+        const f = ctx.createBiquadFilter();
+        f.type = 'lowpass'; f.frequency.value = 1400;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 1.2);
+        src.connect(f).connect(g).connect(ctx.destination);
+        src.start();
+        rainAudio = { src, g };
+      } else if (!on && rainAudio) {
+        const { src, g } = rainAudio;
+        rainAudio = null;
+        g.gain.setValueAtTime(g.gain.value, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1);
+        setTimeout(() => src.stop(), 1100);
       }
     }
 
@@ -1435,7 +1763,14 @@
       index: 0, skin: 0, cur: null, busy: false, t: 0,
       walking: false, walkAmt: 0, roar: -1, night: 0, nightTarget: 0, xray: false, compare: false,
       blinkIn: 3, blinkT: 0, compareGroup: null, frame: null,
+      weather: 0, rainAmt: 0, sunsetAmt: 0, year: 67, chomp: -1, shake: -1, lastHatched: -1,
     };
+    let timelineOpen = false;
+    function eraKey(y) { return y > 201 ? 'triassic' : y > 145 ? 'jurassic' : 'cretaceous'; }
+    function eraName(y) {
+      if (y > 201) return 'טריאס מאוחר'; if (y > 174) return 'יורה מוקדם'; if (y > 163) return 'יורה תיכון';
+      if (y > 145) return 'יורה מאוחר'; if (y > 100) return 'קרטיקון מוקדם'; return 'קרטיקון מאוחר';
+    }
 
     function disposeGroup(g) {
       g.traverse((o) => {
@@ -1558,11 +1893,15 @@
     async function selectDino(i, { keepSkin = false } = {}) {
       if (state.busy) return;
       state.busy = true;
+      clearEgg();
+      clearParade();
       state.index = i;
       if (!keepSkin) state.skin = 0;
       const def = DINOS[i];
       renderChips();
       renderFacts(def);
+      setHabitat(def.habitat);
+      setYear(Math.round((def.from + def.to) / 2), { fromSelect: true });
       if (state.cur) {
         const old = state.cur;
         await tween(0.28, easeInOut, (k) => old.root.scale.setScalar(Math.max(0.001, 1 - k)));
@@ -1579,10 +1918,298 @@
       dino.root.scale.setScalar(0.001);
       if (state.compare) setCompare(true); else flyTo('default', 0.9);
       playSound('pop');
+      resetRain();
       await tween(0.6, easeBack, (k) => dino.root.scale.setScalar(Math.max(0.001, k)));
       dino.root.scale.setScalar(1);
       state.busy = false;
     }
+
+    // ── Picking (taps on the 3D scene) ───────────────────────────────────────────────────────────────────────────
+    const raycaster = new THREE.Raycaster();
+    function pick(clientX, clientY, root) {
+      if (!root) return null;
+      const ndc = new THREE.Vector2((clientX / window.innerWidth) * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);
+      raycaster.setFromCamera(ndc, camera);
+      const hits = raycaster.intersectObject(root, true);
+      return hits.length ? hits[0] : null;
+    }
+    let downPos = null;
+    canvas.addEventListener('pointerdown', (e) => { downPos = { x: e.clientX, y: e.clientY }; });
+    canvas.addEventListener('pointerup', (e) => {
+      if (!downPos) return;
+      const moved = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
+      downPos = null;
+      if (moved > 8) return;
+      if (egg && pick(e.clientX, e.clientY, egg.group)) return tapEgg();
+      if (parade) {
+        const hit = pick(e.clientX, e.clientY, parade.group);
+        if (hit) {
+          let o = hit.object;
+          while (o && o.userData.dinoIndex === undefined) o = o.parent;
+          if (o) { exitParade(); selectDino(o.userData.dinoIndex); }
+        }
+        return;
+      }
+      if (state.cur && pick(e.clientX, e.clientY, state.cur.root)) doRoar();
+    });
+
+    // ── Egg hatching ─────────────────────────────────────────────────────────────────────────────────────────────
+    let egg = null;
+    const EGG_DEF = {
+      emoji: '🥚', name: 'ביצה מסתורית', latin: 'Ovum mysteriosum', period: '???', length: '???', height: '???', weight: '???', diet: null,
+      fun: 'מי מתחבא בפנים? לחצו על הביצה שלוש פעמים כדי לבקוע אותה!', skins: [],
+    };
+    function buildEgg(size = 1.8) {
+      const g = new THREE.Group();
+      const shellMat = mkMat(0xf3e9d2, { flatShading: false, roughness: 0.6 });
+      const spotMat = mkMat(0x8fb3a0, { flatShading: false });
+      const shell = mesh(new THREE.SphereGeometry(1, 20, 16), shellMat);
+      shell.scale.set(size * 0.55, size * 0.7, size * 0.55);
+      shell.position.y = size * 0.7;
+      g.add(shell);
+      for (let i = 0; i < 12; i++) {
+        const th = rnd(0, Math.PI * 2), ph = rnd(0.5, 2.4);
+        const sp = mesh(new THREE.SphereGeometry(size * rnd(0.05, 0.11), 8, 6), spotMat);
+        sp.position.set(Math.sin(ph) * Math.cos(th) * size * 0.55, size * 0.7 + Math.cos(ph) * size * 0.7, Math.sin(ph) * Math.sin(th) * size * 0.55);
+        sp.scale.z = 0.35;
+        sp.lookAt(0, size * 0.7, 0);
+        g.add(sp);
+      }
+      const nest = mesh(new THREE.TorusGeometry(size * 0.75, size * 0.18, 8, 14), mkMat(0x8a6a3a), 0, size * 0.12, 0);
+      nest.rotation.x = Math.PI / 2;
+      g.add(nest);
+      return { group: g, taps: 0, size, shellMat };
+    }
+    function clearEgg() {
+      if (!egg) return;
+      scene.remove(egg.group);
+      disposeGroup(egg.group);
+      egg = null;
+    }
+    async function startEgg() {
+      if (state.busy) return;
+      state.busy = true;
+      clearParade();
+      clearEgg();
+      if (state.cur) {
+        const old = state.cur;
+        state.cur = null;
+        await tween(0.28, easeInOut, (k) => old.root.scale.setScalar(Math.max(0.001, 1 - k)));
+        scene.remove(old.root);
+        disposeGroup(old.root);
+      }
+      if (state.compareGroup) { scene.remove(state.compareGroup); disposeGroup(state.compareGroup); state.compareGroup = null; }
+      egg = buildEgg();
+      scene.add(egg.group);
+      state.index = -1;
+      renderChips();
+      renderFacts(EGG_DEF);
+      state.frame = computeFrame(egg.group);
+      state.frame.radius *= 1.6;
+      updateSun(state.frame);
+      egg.group.scale.setScalar(0.001);
+      flyTo('default', 0.9);
+      playSound('pop');
+      await tween(0.6, easeBack, (k) => egg.group.scale.setScalar(Math.max(0.001, k)));
+      egg.group.scale.setScalar(1);
+      state.busy = false;
+      toast('לחצו על הביצה כדי לבקוע אותה! 🥚');
+    }
+    function tapEgg() {
+      if (!egg || state.busy) return;
+      egg.taps++;
+      playSound('crack');
+      const g = egg.group;
+      const amp = 0.18 + egg.taps * 0.08;
+      tween(0.45, (k) => k, (k) => {
+        g.rotation.z = Math.sin(k * Math.PI * 5) * amp * (1 - k);
+        g.scale.set(1 + Math.sin(k * Math.PI) * 0.08, 1 - Math.sin(k * Math.PI) * 0.06, 1 + Math.sin(k * Math.PI) * 0.08);
+      });
+      egg.shellMat.color.lerp(new THREE.Color(0xd9c8a8), 0.35);
+      if (egg.taps >= 3) hatch();
+      else toast(egg.taps === 1 ? 'משהו זז בפנים... 👀' : 'עוד לחיצה אחת! 🐣');
+    }
+    async function hatch() {
+      state.busy = true;
+      playSound('burst');
+      const { group, size } = egg;
+      const pieces = [];
+      for (let i = 0; i < 16; i++) {
+        const m = new THREE.Mesh(new THREE.TetrahedronGeometry(size * rnd(0.1, 0.2)), mkMat(0xf3e9d2, { flatShading: true, transparent: true }));
+        const th = rnd(0, Math.PI * 2), ph = rnd(0.3, 2.6);
+        const dir = new THREE.Vector3(Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th));
+        m.position.copy(dir).multiply(new THREE.Vector3(size * 0.55, size * 0.7, size * 0.55)).add(new THREE.Vector3(0, size * 0.7, 0));
+        m.userData.v = dir.clone().multiplyScalar(size * rnd(3, 6)).add(new THREE.Vector3(0, size * 3, 0));
+        m.userData.spin = new THREE.Vector3(rnd(-8, 8), rnd(-8, 8), rnd(-8, 8));
+        scene.add(m);
+        pieces.push(m);
+      }
+      const shellAndSpots = group.children.filter((c) => !(c.geometry instanceof THREE.TorusGeometry));
+      shellAndSpots.forEach((c) => (c.visible = false));
+      let last = 0;
+      await tween(0.95, (k) => k, (k) => {
+        const dt = (k - last) * 0.95;
+        last = k;
+        for (const m of pieces) {
+          m.userData.v.y -= size * 14 * dt;
+          m.position.addScaledVector(m.userData.v, dt);
+          if (m.position.y < 0.02) { m.position.y = 0.02; m.userData.v.set(0, 0, 0); }
+          m.rotation.x += m.userData.spin.x * dt; m.rotation.y += m.userData.spin.y * dt;
+          m.material.opacity = 1 - Math.max(0, (k - 0.6) / 0.4);
+        }
+      });
+      pieces.forEach((m) => { scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
+      let idx = Math.floor(Math.random() * DINOS.length);
+      if (idx === state.lastHatched) idx = (idx + 1) % DINOS.length;
+      state.lastHatched = idx;
+      state.busy = false;
+      await selectDino(idx);
+      toast(`בקע ${DINOS[idx].name}! 🎉`);
+    }
+
+    // ── Parade: every species standing in a ring, sorted by size ─────────────────────────────────────────────────
+    let parade = null;
+    const PARADE_DEF = {
+      emoji: '🎪', name: 'מצעד הדינוזאורים', latin: 'Parade', period: 'כל התקופות', length: 'מהקטן לגדול', height: `${DINOS.length} דינוזאורים`,
+      weight: 'הרבה טונות!', diet: null,
+      fun: 'כל הדינוזאורים עומדים במעגל מסביבכם, מהקטן לגדול. גררו כדי להסתכל מסביב, גלגלו כדי להתרחק, ולחצו על דינוזאור כדי להתקרב אליו!',
+      skins: [],
+    };
+    let paradePrev = null;
+    function enterParade() {
+      if (state.busy || parade) return;
+      state.busy = true;
+      clearEgg();
+      if (state.cur) { scene.remove(state.cur.root); disposeGroup(state.cur.root); state.cur = null; }
+      if (state.compareGroup) { scene.remove(state.compareGroup); disposeGroup(state.compareGroup); state.compareGroup = null; }
+      const group = new THREE.Group();
+      const order = DINOS.map((d, i) => i).sort((a, b) => DINOS[a].lengthM - DINOS[b].lengthM);
+      const R = 36;
+      const dinos = [];
+      order.forEach((idx, k) => {
+        const def = DINOS[idx];
+        const d = buildDino(def, def.skins[0]);
+        const a = (k / order.length) * Math.PI * 2;
+        d.root.position.set(Math.cos(a) * R, 0, Math.sin(a) * R);
+        d.root.rotation.y = Math.PI - a;
+        d.root.userData.dinoIndex = idx;
+        d.root.traverse((o) => { if (o.isMesh) o.castShadow = false; });
+        const frame = computeFrame(d.root);
+        const lbl = textSprite(`${def.name} • ${def.length}`, clamp(frame.size.y * 0.16, 0.9, 2.2));
+        lbl.position.set(d.root.position.x * 0.92, frame.box.max.y + 1.2, d.root.position.z * 0.92);
+        group.add(lbl);
+        group.add(d.root);
+        dinos.push(d);
+      });
+      scene.add(group);
+      parade = { group, dinos };
+      applyXray(group, state.xray);
+      state.index = -1;
+      renderChips();
+      renderFacts(PARADE_DEF);
+      setHabitat('plains');
+      state.frame = { center: new THREE.Vector3(0, 4, 0), radius: R + 12, size: new THREE.Vector3(2 * R + 28, 14, 2 * R + 28), box: new THREE.Box3() };
+      updateSun(state.frame);
+      paradePrev = { auto: controls.autoRotate, speed: controls.autoRotateSpeed };
+      controls.minDistance = 0.5;
+      controls.maxDistance = 150;
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.6;
+      btn.spin.classList.add('on');
+      btn.parade.classList.add('on');
+      const p0 = camera.position.clone(), t0 = controls.target.clone();
+      const pos = new THREE.Vector3(0.6, 4.5, 3.2), target = new THREE.Vector3(0, 4.5, 0);
+      tween(1.1, easeInOut, (k) => { camera.position.lerpVectors(p0, pos, k); controls.target.lerpVectors(t0, target, k); })
+        .then(() => { state.busy = false; toast('גררו כדי להסתכל מסביב 👀'); });
+    }
+    function clearParade() {
+      if (!parade) return;
+      scene.remove(parade.group);
+      disposeGroup(parade.group);
+      parade = null;
+      controls.autoRotate = paradePrev ? paradePrev.auto : false;
+      controls.autoRotateSpeed = paradePrev ? paradePrev.speed : 1.4;
+      btn.spin.classList.toggle('on', controls.autoRotate);
+      btn.parade.classList.remove('on');
+    }
+    function exitParade() {
+      clearParade();
+      if (state.index < 0) selectDino(0);
+    }
+
+    // ── Timeline ─────────────────────────────────────────────────────────────────────────────────────────────────
+    function setYear(y, { fromSelect = false } = {}) {
+      state.year = y;
+      $('tlRange').value = y;
+      $('tlEra').textContent = eraName(y);
+      $('tlYear').textContent = `לפני ${y} מיליון שנה`;
+      const alive = DINOS.filter((d) => y <= d.from && y >= d.to);
+      document.querySelectorAll('.chip').forEach((c, i) => c.classList.toggle('dim', timelineOpen && !alive.includes(DINOS[i])));
+      $('tlAlive').textContent = alive.length ? `חיו אז: ${alive.map((d) => d.name).join(', ')}` : 'אף אחד מהדינוזאורים שלנו לא חי בדיוק אז. המשיכו לחפש!';
+      const pct = ((y - 66) / (235 - 66)) * 100;
+      $('tlMarker').style.left = `${pct}%`;
+      refreshEnvTargets();
+      if (!fromSelect && !parade && !egg) {
+        // Jump to a dinosaur that lived at this time when the current one did not.
+        const cur = state.cur && state.cur.def;
+        if (alive.length && cur && !alive.includes(cur) && !state.busy) selectDino(DINOS.indexOf(alive[Math.floor(Math.random() * alive.length)]), { keepSkin: false });
+      }
+    }
+    function setTimeline(open) {
+      timelineOpen = open;
+      $('timeline').classList.toggle('open', open);
+      btn.time.classList.toggle('on', open);
+      setYear(state.year, { fromSelect: true });
+    }
+
+    // ── Feeding ──────────────────────────────────────────────────────────────────────────────────────────────────
+    function feed(kind) {
+      const d = state.cur;
+      if (!d || parade || egg) return;
+      const diet = d.def.diet;
+      const ok = (diet === 'herbivore' && kind === 'leaf') || (diet === 'carnivore' && kind === 'meat') || (diet === 'fish' && (kind === 'fish' || kind === 'meat'));
+      if (ok) {
+        state.chomp = 0;
+        playSound('chomp');
+        toast(`😋 טעים! ${d.def.name} אוהב ${FOOD_NAME[kind]}`);
+      } else {
+        state.shake = 0;
+        playSound('no');
+        const wants = diet === 'herbivore' ? 'רק צמחים 🌿' : diet === 'fish' ? 'דגים 🐟' : 'רק בשר 🍖';
+        toast(`הממ... ${d.def.name} אוכל ${wants}. נסו שוב! 💪`);
+      }
+    }
+    let ghost = null, foodDown = null;
+    document.querySelectorAll('.food-item').forEach((el) => {
+      el.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        el.setPointerCapture(e.pointerId);
+        foodDown = { x: e.clientX, y: e.clientY, kind: el.dataset.food };
+        ghost = document.createElement('div');
+        ghost.className = 'food-ghost';
+        ghost.textContent = el.textContent;
+        ghost.style.left = e.clientX + 'px';
+        ghost.style.top = e.clientY + 'px';
+        document.body.appendChild(ghost);
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (!ghost) return;
+        ghost.style.left = e.clientX + 'px';
+        ghost.style.top = e.clientY + 'px';
+      });
+      const finish = (e) => {
+        if (!foodDown) return;
+        const moved = Math.hypot(e.clientX - foodDown.x, e.clientY - foodDown.y);
+        const kind = foodDown.kind;
+        foodDown = null;
+        if (ghost) { ghost.remove(); ghost = null; }
+        if (moved < 10) return feed(kind);
+        if (state.cur && pick(e.clientX, e.clientY, state.cur.root)) feed(kind);
+        else toast('קרוב! גררו את האוכל עד הדינוזאור 🎯');
+      };
+      el.addEventListener('pointerup', finish);
+      el.addEventListener('pointercancel', finish);
+    });
     function changeSkin(k) {
       if (!state.cur || state.busy) return;
       state.skin = k;
@@ -1596,9 +2223,10 @@
       playSound('pop');
     }
     function doRoar() {
-      if (!state.cur || state.roar >= 0) return;
+      if ((!state.cur && !parade) || state.roar >= 0) return;
       state.roar = 0;
-      playSound(state.cur.def.sound);
+      if (parade) { playSound('roar'); setTimeout(() => playSound('trumpet'), 150); setTimeout(() => playSound('screech'), 300); }
+      else playSound(state.cur.def.sound);
       btn.roar.classList.remove('pulse');
       void btn.roar.offsetWidth;
       btn.roar.classList.add('pulse');
@@ -1611,6 +2239,7 @@
     const btn = {
       roar: $('btnRoar'), walk: $('btnWalk'), spin: $('btnSpin'), compare: $('btnCompare'),
       xray: $('btnXray'), night: $('btnNight'), shot: $('btnShot'), full: $('btnFull'),
+      feed: $('btnFeed'), egg: $('btnEgg'), parade: $('btnParade'), time: $('btnTime'), weather: $('btnWeather'),
     };
     const dock = $('dock');
     function renderChips() {
@@ -1632,7 +2261,8 @@
       $('fLength').textContent = d.length;
       $('fHeight').textContent = d.height;
       $('fWeight').textContent = d.weight;
-      $('fDiet').textContent = DIET[d.diet];
+      $('fDiet').textContent = d.diet ? DIET[d.diet] : '???';
+      $('fHabitat').textContent = d.habitat ? HABITAT_NAME[d.habitat] : '???';
       $('fFun').textContent = d.fun;
       renderSwatches(d);
     }
@@ -1660,11 +2290,35 @@
     btn.roar.addEventListener('click', doRoar);
     btn.walk.addEventListener('click', () => { state.walking = !state.walking; btn.walk.classList.toggle('on', state.walking); audio(); });
     btn.spin.addEventListener('click', () => { controls.autoRotate = !controls.autoRotate; btn.spin.classList.toggle('on', controls.autoRotate); });
-    btn.compare.addEventListener('click', () => setCompare(!state.compare));
+    btn.compare.addEventListener('click', () => {
+      if (parade || egg) return toast('קודם בוחרים דינוזאור 🦕');
+      setCompare(!state.compare);
+    });
+    btn.feed.addEventListener('click', () => {
+      if (parade || egg) return toast('קודם בוחרים דינוזאור 🦕');
+      const open = !$('food').classList.contains('open');
+      $('food').classList.toggle('open', open);
+      btn.feed.classList.toggle('on', open);
+      audio();
+    });
+    btn.egg.addEventListener('click', () => { audio(); startEgg(); });
+    btn.parade.addEventListener('click', () => { audio(); if (parade) exitParade(); else enterParade(); });
+    btn.time.addEventListener('click', () => setTimeline(!timelineOpen));
+    $('tlRange').addEventListener('input', (e) => setYear(Number(e.target.value)));
+    btn.weather.addEventListener('click', () => {
+      state.weather = (state.weather + 1) % WEATHER.length;
+      const w = WEATHER[state.weather];
+      btn.weather.querySelector('.ic').textContent = w.icon;
+      btn.weather.querySelector('.lb').textContent = w.label;
+      btn.weather.classList.toggle('on', w.id !== 'clear');
+      if (w.id === 'rain') { resetRain(); setRainAudio(true); } else setRainAudio(false);
+      toast(w.id === 'rain' ? 'התחיל לרדת גשם! 🌧️' : w.id === 'sunset' ? 'השמש שוקעת... 🌇' : 'יום בהיר ושמשי! ☀️');
+    });
     btn.xray.addEventListener('click', () => {
       state.xray = !state.xray;
       btn.xray.classList.toggle('on', state.xray);
       if (state.cur) applyXray(state.cur.root, state.xray);
+      if (parade) applyXray(parade.group, state.xray);
     });
     btn.night.addEventListener('click', () => {
       state.nightTarget = state.nightTarget ? 0 : 1;
@@ -1703,6 +2357,10 @@
       else if (e.key === ' ') { e.preventDefault(); doRoar(); }
       else if (e.key.toLowerCase() === 'w') btn.walk.click();
       else if (e.key.toLowerCase() === 'n') btn.night.click();
+      else if (e.key.toLowerCase() === 'p') btn.parade.click();
+      else if (e.key.toLowerCase() === 'e') btn.egg.click();
+      else if (e.key.toLowerCase() === 't') btn.time.click();
+      else if (e.key.toLowerCase() === 'r') btn.weather.click();
     });
     const hideHint = () => $('hint').classList.add('hide');
     setTimeout(hideHint, 7000);
@@ -1722,6 +2380,49 @@
     const sunDay = new THREE.Color(0xfff1d6), sunNight = new THREE.Color(0xa9c2ff);
     const ballDay = new THREE.Color(0xfff3b0), ballNight = new THREE.Color(0xe9eefc);
 
+    function animateDino(d, dt, t, o) {
+      const s = d.def.spec, H = s.body.H;
+      const wa = o.wa;
+      const wf = clamp(5.5 / Math.sqrt(d.def.lengthM), 1.6, 5.5);
+      const wt = t * wf;
+      const breathe = Math.sin(t * 1.6);
+      d.body.position.y = d.body.userData.baseY + breathe * H * 0.006 + Math.abs(Math.sin(wt)) * H * 0.02 * wa + o.hop * H * 0.06;
+      d.body.scale.set(1 + o.pulse * 0.02, 1 + breathe * 0.012 + o.pulse * 0.03, 1 + breathe * 0.008 + o.pulse * 0.02);
+      d.body.rotation.x = Math.sin(wt) * 0.02 * wa;
+      d.tail.groups.forEach((g, i) => {
+        g.rotation.y = Math.sin(t * 1.4 - i * 0.55) * 0.045 * (1 + wa * 1.6) * (i ? 1 : 0.4) + Math.sin(wt - i * 0.5) * 0.04 * wa;
+        g.rotation.z = g.userData.baseZ + Math.sin(t * 1.1 - i * 0.4) * 0.012;
+      });
+      const nc = d.neck.groups.length;
+      d.neck.groups.forEach((g, i) => {
+        g.rotation.y = Math.sin(t * 0.9 - i * 0.4) * 0.02;
+        g.rotation.z = g.userData.baseZ + o.lift / nc + Math.sin(wt * 0.5) * 0.015 * wa;
+      });
+      d.hd.g.rotation.z = d.hd.g.userData.baseZ + Math.sin(t * 0.9) * 0.025 + o.lift * 0.4;
+      d.hd.g.rotation.y = Math.sin(t * 0.6) * 0.06 * (1 - o.pulse) + o.shakeY;
+      d.hd.jaw.rotation.z = -(0.02 + o.open);
+      // Blink (per dinosaur so a parade doesn't blink in unison).
+      d.blinkIn = (d.blinkIn ?? 2 + Math.random() * 3) - dt;
+      if (d.blinkIn <= 0) { d.blinkT = 0.14; d.blinkIn = 2 + Math.random() * 3.5; }
+      if (d.blinkT > 0) d.blinkT -= dt;
+      const eyeY = d.blinkT > 0 ? 0.12 : 1;
+      for (const e of d.hd.eyes) e.scale.y = eyeY;
+      for (const l of d.legs) {
+        const ph = wt + l.phase;
+        const sw = Math.sin(ph);
+        l.hip.rotation.z = l.hip.userData.baseZ + sw * 0.38 * wa;
+        l.knee.rotation.z = l.knee.userData.baseZ - Math.max(0, Math.cos(ph)) * 0.55 * wa;
+        l.foot.rotation.z = -(l.hip.rotation.z + l.knee.rotation.z) + Math.max(0, -Math.cos(ph)) * 0.3 * wa;
+        if (o.steps && wa > 0.5) {
+          const sign = Math.sign(Math.cos(ph + 0.9));
+          if (l.prev > 0 && sign < 0) playSound('step', d.def.mass);
+          l.prev = sign;
+        }
+      }
+      for (const a of d.arms) a.hip.rotation.z = a.hip.userData.baseZ + Math.sin(wt + a.phase) * 0.25 * wa + o.lift * 0.5;
+      if (d.def.animate) d.def.animate(d, t, wa, o.pulse);
+    }
+
     function animate() {
       requestAnimationFrame(animate);
       const dt = Math.min(clock.getDelta(), 0.05);
@@ -1729,22 +2430,58 @@
       const t = state.t;
       stepTweens(dt);
 
+      // Habitat colors ease toward their targets; weather and night are layered on top.
+      const ek = 1 - Math.pow(0.02, dt);
+      envColor.ground.lerp(envColor.tGround, ek);
+      envColor.patch.lerp(envColor.tPatch, ek);
+      envColor.sky.lerp(envColor.tSky, ek);
+      const wk = 1 - Math.pow(0.01, dt);
+      const w = WEATHER[state.weather].id;
+      state.rainAmt = lerp(state.rainAmt, w === 'rain' ? 1 : 0, wk);
+      state.sunsetAmt = lerp(state.sunsetAmt, w === 'sunset' ? 1 : 0, wk);
+      const ra = state.rainAmt, sa = state.sunsetAmt;
+      const daySky = envColor.sky.clone().lerp(SUNSET.sky, sa).lerp(RAINY.sky, ra);
+      groundMat.color.copy(envColor.ground).multiplyScalar(lerp(1, RAINY.ground, ra)).lerp(new THREE.Color(0xc07a5a), sa * 0.18);
+      patchMat.color.copy(envColor.patch).multiplyScalar(lerp(1, RAINY.ground, ra));
+
       // Day / night blend.
       state.night = lerp(state.night, state.nightTarget, 1 - Math.pow(0.001, dt));
       const n = state.night;
-      scene.background.lerpColors(SKY.day, SKY.night, n);
+      scene.background.lerpColors(daySky, SKY.night, n);
       scene.fog.color.copy(scene.background);
-      hemi.color.lerpColors(hemiDay.sky, hemiNight.sky, n);
+      scene.fog.near = lerp(60, 25, ra);
+      scene.fog.far = lerp(320, 160, ra);
+      const hemiSkyDay = hemiDay.sky.clone().lerp(SUNSET.hemi, sa);
+      hemi.color.lerpColors(hemiSkyDay, hemiNight.sky, n);
       hemi.groundColor.lerpColors(hemiDay.ground, hemiNight.ground, n);
-      hemi.intensity = lerp(0.95, 0.8, n);
-      sun.color.lerpColors(sunDay, sunNight, n);
-      sun.intensity = lerp(2.4, 1.5, n);
+      hemi.intensity = lerp(lerp(0.95, 0.6, ra), 0.8, n);
+      const sunColDay = sunDay.clone().lerp(SUNSET.sun, sa);
+      sun.color.lerpColors(sunColDay, sunNight, n);
+      sun.intensity = lerp(lerp(2.4, 1.1, ra) * lerp(1, 0.75, sa), 1.5, n);
       fill.intensity = lerp(0.5, 0.35, n);
-      skyBall.material.color.lerpColors(ballDay, ballNight, n);
-      skyBall.scale.setScalar(lerp(1, 0.7, n));
+      const ballDayCol = ballDay.clone().lerp(new THREE.Color(0xff8a3a), sa);
+      skyBall.material.color.lerpColors(ballDayCol, ballNight, n);
+      skyBall.scale.setScalar(lerp(lerp(1, 1.6, sa), 0.7, n));
+      skyBall.position.y = lerp(150, 28, sa * (1 - n));
       starMat.opacity = n * 0.95;
-      renderer.toneMappingExposure = lerp(1.05, 0.95, n);
+      renderer.toneMappingExposure = lerp(lerp(1.05, 0.9, ra), 0.95, n);
       lavaMat.emissiveIntensity = lerp(1.4, 3.2, n);
+
+      // Rain drops fall inside a box around the camera target and wrap back to the top.
+      rainMat.opacity = ra * 0.85;
+      if (ra > 0.01) {
+        const c = controls.target, speed = rainBox * 0.9;
+        for (let i = 0; i < RAIN_N; i++) {
+          let y = rainPos[i * 3 + 1] - speed * dt;
+          if (y < 0) {
+            y = rainBox * 1.4;
+            rainPos[i * 3] = c.x + rnd(-rainBox, rainBox);
+            rainPos[i * 3 + 2] = c.z + rnd(-rainBox, rainBox);
+          }
+          rainPos[i * 3 + 1] = y;
+        }
+        rainGeo.attributes.position.needsUpdate = true;
+      }
 
       // Volcano smoke.
       for (const s of smoke) {
@@ -1755,86 +2492,50 @@
         s.material.opacity = 0.55 * (1 - k) * (k < 0.1 ? k / 0.1 : 1);
       }
 
-      const d = state.cur;
-      if (d) {
-        const s = d.def.spec, H = s.body.H;
-        state.walkAmt = lerp(state.walkAmt, state.walking ? 1 : 0, 1 - Math.pow(0.002, dt));
-        const wa = state.walkAmt;
-        const wf = clamp(5.5 / Math.sqrt(d.def.lengthM), 1.6, 5.5);
-        const wt = t * wf;
-
-        // Roar envelope.
-        let lift = 0, open = 0, pulse = 0;
-        if (state.roar >= 0) {
-          state.roar += dt;
-          const p = state.roar / 1.5;
-          if (p >= 1) state.roar = -1;
-          else {
-            const env = Math.sin(Math.PI * clamp(p, 0, 1));
-            lift = env * 0.45;
-            open = Math.pow(env, 0.7) * 0.55;
-            pulse = env;
-            const shake = state.frame.radius * 0.006 * env;
-            scene.position.set((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake, 0);
-          }
+      // Shared animation drivers.
+      state.walkAmt = lerp(state.walkAmt, state.walking ? 1 : 0, 1 - Math.pow(0.002, dt));
+      const wa = state.walkAmt;
+      let lift = 0, open = 0, pulse = 0;
+      if (state.roar >= 0) {
+        state.roar += dt;
+        const p = state.roar / 1.5;
+        if (p >= 1) state.roar = -1;
+        else {
+          const env = Math.sin(Math.PI * clamp(p, 0, 1));
+          lift = env * 0.45;
+          open = Math.pow(env, 0.7) * 0.55;
+          pulse = env;
+          const shake = (state.frame ? state.frame.radius : 5) * 0.006 * env;
+          scene.position.set((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake, 0);
         }
-        if (state.roar < 0 && scene.position.lengthSq() > 0) scene.position.set(0, 0, 0);
-
-        // Breathing + walk bob.
-        const breathe = Math.sin(t * 1.6);
-        d.body.position.y = d.body.userData.baseY + breathe * H * 0.006 + Math.abs(Math.sin(wt)) * H * 0.02 * wa;
-        d.body.scale.set(1 + pulse * 0.02, 1 + breathe * 0.012 + pulse * 0.03, 1 + breathe * 0.008 + pulse * 0.02);
-        d.body.rotation.x = Math.sin(wt) * 0.02 * wa;
-
-        // Tail sway.
-        d.tail.groups.forEach((g, i) => {
-          g.rotation.y = Math.sin(t * 1.4 - i * 0.55) * 0.045 * (1 + wa * 1.6) * (i ? 1 : 0.4) + Math.sin(wt - i * 0.5) * 0.04 * wa;
-          g.rotation.z = g.userData.baseZ + Math.sin(t * 1.1 - i * 0.4) * 0.012;
-        });
-        // Neck sway + roar lift.
-        const nc = d.neck.groups.length;
-        d.neck.groups.forEach((g, i) => {
-          g.rotation.y = Math.sin(t * 0.9 - i * 0.4) * 0.02;
-          g.rotation.z = g.userData.baseZ + lift / nc + Math.sin(wt * 0.5) * 0.015 * wa;
-        });
-        d.hd.g.rotation.z = d.hd.g.userData.baseZ + Math.sin(t * 0.9) * 0.025 + lift * 0.4;
-        d.hd.g.rotation.y = Math.sin(t * 0.6) * 0.06 * (1 - pulse);
-        d.hd.jaw.rotation.z = -(0.02 + open);
-
-        // Blink.
-        state.blinkIn -= dt;
-        if (state.blinkIn <= 0) { state.blinkT = 0.14; state.blinkIn = 2 + Math.random() * 3.5; }
-        if (state.blinkT > 0) state.blinkT -= dt;
-        const eyeY = state.blinkT > 0 ? 0.12 : 1;
-        for (const e of d.hd.eyes) e.scale.y = eyeY;
-
-        // Legs.
-        for (const l of d.legs) {
-          const ph = wt + l.phase;
-          const sw = Math.sin(ph);
-          l.hip.rotation.z = l.hip.userData.baseZ + sw * 0.38 * wa;
-          l.knee.rotation.z = l.knee.userData.baseZ - Math.max(0, Math.cos(ph)) * 0.55 * wa;
-          l.foot.rotation.z = -(l.hip.rotation.z + l.knee.rotation.z) + Math.max(0, -Math.cos(ph)) * 0.3 * wa;
-          if (wa > 0.5) {
-            const sign = Math.sign(Math.cos(ph + 0.9));
-            if (l.prev > 0 && sign < 0) playSound('step', d.def.mass);
-            l.prev = sign;
-          }
-        }
-        for (const a of d.arms) {
-          a.hip.rotation.z = a.hip.userData.baseZ + Math.sin(wt + a.phase) * 0.25 * wa + lift * 0.5;
-        }
-        if (d.def.animate) d.def.animate(d, t, wa, pulse);
       }
+      if (state.roar < 0 && scene.position.lengthSq() > 0) scene.position.set(0, 0, 0);
+      let chompOpen = 0, hop = 0, shakeY = 0;
+      if (state.chomp >= 0) {
+        state.chomp += dt;
+        if (state.chomp > 1.3) state.chomp = -1;
+        else { const e = 1 - state.chomp / 1.3; chompOpen = Math.abs(Math.sin(state.chomp * 14)) * 0.4 * e; hop = Math.max(0, Math.sin(state.chomp * 9)) * e; }
+      }
+      if (state.shake >= 0) {
+        state.shake += dt;
+        if (state.shake > 0.9) state.shake = -1;
+        else shakeY = Math.sin(state.shake * 18) * 0.3 * (1 - state.shake / 0.9);
+      }
+
+      if (state.cur) animateDino(state.cur, dt, t, { wa, lift, open: open + chompOpen, pulse, hop, shakeY, steps: true });
+      if (parade) for (const pd of parade.dinos) animateDino(pd, dt, t, { wa, lift, open, pulse, hop: 0, shakeY: 0, steps: false });
+      if (egg) egg.group.rotation.y += dt * 0.4;
 
       controls.update();
       renderer.render(scene, camera);
     }
 
     window.__dinoState = state;
+    window.__dino = { tapEgg, startEgg, enterParade, exitParade, setTimeline, setYear, feed, selectDino, get parade() { return parade; }, get egg() { return egg; } };
     // ── Boot ──────────────────────────────────────────────────────────────────────────────────────────────────────
     renderChips();
-    selectDino(0).then(() => {
+    setHabitat('plains');
+    startEgg().then(() => {
       window.__dinoReady = true;
       document.getElementById('loading').classList.add('hide');
     });
