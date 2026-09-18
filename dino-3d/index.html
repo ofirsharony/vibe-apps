@@ -187,6 +187,57 @@
     .tl-alive { margin-top: 8px; font-size: 14px; line-height: 1.5; min-height: 1.5em; }
     .chip.dim { opacity: 0.35; filter: grayscale(0.7); }
 
+    /* ── Story button, growth meter, story overlay ───── */
+    .story-btn {
+      display: block; width: 100%; margin-bottom: 10px; padding: 12px; border: none; border-radius: 14px; min-height: 48px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent3)); color: #fff; font: inherit; font-size: 17px; font-weight: 700;
+      cursor: pointer; transition: transform 0.15s, filter 0.15s;
+    }
+    .story-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+    .grow { font-size: 15px; letter-spacing: 1px; }
+    .story-head { display: flex; gap: 14px; align-items: center; margin-bottom: 8px; }
+    .story-head .latin { font-size: 13px; color: var(--dim); font-style: italic; direction: ltr; text-align: right; }
+    .story-emoji { font-size: 54px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+    .story-text { font-size: 22px; line-height: 2; margin: 10px 0 18px; }
+    .story-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .story-actions .help-close { margin-top: 0; flex: 1; }
+    .story-read { font-size: 17px; min-height: 56px; padding: 10px 20px; }
+    .story-read.on { background: linear-gradient(135deg, var(--accent), #ef4444); }
+
+    /* ── Battle HUD and touch pad ────────────────────── */
+    .battle {
+      position: fixed; top: 90px; left: 50%; transform: translate(-50%, -16px); width: min(560px, calc(100vw - 340px)); padding: 12px 18px;
+      z-index: 6; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
+    }
+    .battle.open { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+    .b-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .b-stage { font-size: 20px; font-weight: 900; color: #fcd34d; }
+    .b-tier { font-size: 14px; color: var(--dim); }
+    .b-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+    .b-name { font-size: 15px; font-weight: 700; flex: 0 0 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .b-bar { flex: 1; height: 18px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; direction: rtl; }
+    .b-fill { height: 100%; width: 100%; border-radius: 999px; transition: width 0.25s; }
+    .b-fill.p { background: linear-gradient(90deg, #22c55e, #86efac); }
+    .b-fill.e { background: linear-gradient(90deg, #ef4444, #fca5a5); }
+    .b-msg { margin-top: 8px; font-size: 16px; font-weight: 700; min-height: 1.5em; line-height: 1.5; }
+    .b-actions { display: none; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .b-actions.show { display: flex; }
+    .b-btn { min-height: 44px; font-size: 15px; font-weight: 700; }
+    .b-btn[hidden] { display: none; }
+    .dpad {
+      position: fixed; right: 12px; bottom: 96px; display: none; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 6px; z-index: 7;
+    }
+    .dpad.open { display: grid; }
+    .dp {
+      border: none; border-radius: 16px; background: rgba(255,255,255,0.14); color: #fff; font-size: 26px; cursor: pointer; touch-action: none;
+      user-select: none; -webkit-user-select: none; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .dp:active, .dp.held { background: rgba(255,255,255,0.35); }
+    .dp.up { grid-column: 2; grid-row: 1; } .dp.left { grid-column: 3; grid-row: 2; } .dp.roar { grid-column: 2; grid-row: 2; background: rgba(245,158,11,0.45); }
+    .dp.right { grid-column: 1; grid-row: 2; } .dp.down { grid-column: 2; grid-row: 3; }
+    .dp.left, .dp.right { direction: ltr; }
+    @media (hover: hover) and (pointer: fine) and (min-width: 821px) { .dpad.open { display: none; } }
+
     /* ── Help overlay ────────────────────────────────── */
     .help {
       position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center; padding: 16px;
@@ -243,6 +294,10 @@
       .food-title { display: none; }
       .timeline { top: 136px; width: calc(100vw - 16px); padding: 10px 12px; }
       .tl-alive { display: none; }
+      .story-text { font-size: 19px; line-height: 1.9; }
+      .battle { top: 136px; width: calc(100vw - 16px); padding: 10px 12px; }
+      .b-name { flex: 0 0 110px; font-size: 13px; }
+      .dpad { bottom: 160px; right: 8px; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(3, 52px); }
       .dock { bottom: 8px; left: 8px; right: 8px; }
     }
   </style>
@@ -286,8 +341,14 @@
       <div class="fact"><span class="fact-k">משקל</span><span class="fact-v" id="fWeight"></span></div>
       <div class="fact"><span class="fact-k">תזונה</span><span class="fact-v" id="fDiet"></span></div>
       <div class="fact wide"><span class="fact-k">בית גידול</span><span class="fact-v" id="fHabitat"></span></div>
+      <div class="fact wide" id="fBattleRow"><span class="fact-k">שיא בקרב ⚔️</span><span class="fact-v" id="fBattle"></span></div>
     </div>
     <div class="fun"><strong>ידעת?</strong> <span id="fFun"></span></div>
+    <button class="story-btn" id="btnStory">📖 קִרְאוּ עָלַי</button>
+    <div class="row" id="growRow">
+      <span class="label">גדילה</span>
+      <span class="grow" id="fGrow"></span>
+    </div>
     <div class="row">
       <span class="label">צבע</span>
       <div class="swatches" id="swatches"></div>
@@ -308,6 +369,7 @@
     <button class="tool" id="btnWalk"><span class="ic">🚶</span><span class="lb">הליכה</span></button>
     <button class="tool" id="btnFeed"><span class="ic">🍖</span><span class="lb">האכלה</span></button>
     <button class="tool" id="btnEgg"><span class="ic">🥚</span><span class="lb">ביצה</span></button>
+    <button class="tool" id="btnBattle"><span class="ic">⚔️</span><span class="lb">קרב</span></button>
     <button class="tool" id="btnParade"><span class="ic">🎪</span><span class="lb">מצעד</span></button>
     <button class="tool" id="btnTime"><span class="ic">🕰️</span><span class="lb">ציר זמן</span></button>
     <button class="tool" id="btnWeather"><span class="ic">☀️</span><span class="lb">בהיר</span></button>
@@ -332,6 +394,7 @@
         <li><span class="hi">🦖</span><span>לוֹחֲצִים עַל הַשֵּׁם שֶׁל הַדִּינוֹזָאוּר בַּפַּס שֶׁלְּמַטָּה. אֶפְשָׁר לִגְלֹל אֶת הַפַּס הַצִּדָּה כְּדֵי לִרְאוֹת אֶת כֻּלָּם.</span></li>
         <li><span class="hi">📖</span><span><b>כַּרְטִיס הַמֵּידָע</b> מְסַפֵּר עַל כָּל דִּינוֹזָאוּר: בְּאֵיזוֹ תְּקוּפָה הוּא חַי, כַּמָּה הוּא אָרֹךְ, גָּבוֹהַּ וְכָבֵד, מָה הוּא אָכַל, וְעוּבְדָה מְעַנְיֶנֶת בִּמְיֻחָד!</span></li>
         <li><span class="hi">🎨</span><span><b>צֶבַע:</b> בַּכַּרְטִיס אֶפְשָׁר לִבְחֹר לַדִּינוֹזָאוּר צֶבַע אַחֵר.</span></li>
+        <li><span class="hi">📖</span><span><b>קִרְאוּ עָלַי:</b> לוֹחֲצִים עַל הַכַּפְתּוֹר בַּכַּרְטִיס, וְנִפְתַּח סִפּוּר שָׁלֵם עַל הַדִּינוֹזָאוּר, עִם נִקּוּד. אֶפְשָׁר גַּם לִלְחֹץ עַל "הַקְרָאָה" וְלִשְׁמֹעַ אוֹתוֹ.</span></li>
       </ul>
 
       <h3>מְסוֹבְבִים וּמִתְקָרְבִים</h3>
@@ -344,7 +407,7 @@
       <h3>הַכַּפְתּוֹרִים</h3>
       <ul class="help-list">
         <li><span class="hi">🔊</span><span><b>שְׁאָגָה:</b> לְכָל דִּינוֹזָאוּר יֵשׁ קוֹל מִשֶּׁלּוֹ! לוֹחֲצִים וּמַקְשִׁיבִים.</span></li>
-        <li><span class="hi">🚶</span><span><b>הֲלִיכָה:</b> הַדִּינוֹזָאוּר מַתְחִיל לָלֶכֶת, וְאֶפְשָׁר לִשְׁמֹעַ אֶת הַצְּעָדִים שֶׁלּוֹ. הַגְּדוֹלִים רוֹעֲמִים יוֹתֵר!</span></li>
+        <li><span class="hi">🚶</span><span><b>הֲלִיכָה:</b> הַדִּינוֹזָאוּר יוֹצֵא לְטִיּוּל אֲמִתִּי בַּשֶּׁטַח, מִסְתּוֹבֵב בֵּין הָעֵצִים, וְהַמַּצְלֵמָה עוֹקֶבֶת אַחֲרָיו. אֶפְשָׁר לִשְׁמֹעַ אֶת הַצְּעָדִים שֶׁלּוֹ, וְהַגְּדוֹלִים רוֹעֲמִים יוֹתֵר!</span></li>
         <li><span class="hi">🔄</span><span><b>סִיבוּב:</b> הַדִּינוֹזָאוּר מִסְתּוֹבֵב לְבַד, כְּמוֹ עַל בָּמָה.</span></li>
         <li><span class="hi">🧒</span><span><b>גֹּדֶל:</b> יֶלֶד בְּגֹבַהּ מֶטֶר וּשְׁלוֹשִׁים עוֹמֵד לְיַד הַדִּינוֹזָאוּר, וְקַו צָהֹב מַרְאֶה כַּמָּה הוּא אָרֹךְ.</span></li>
         <li><span class="hi">🦴</span><span><b>שֶׁלֶד:</b> רוֹאִים אֶת הַדִּינוֹזָאוּר כְּמוֹ בְּצִלּוּם רֶנְטְגֶן.</span></li>
@@ -355,9 +418,10 @@
 
       <h3>עוֹד הַרְפַּתְקָאוֹת</h3>
       <ul class="help-list">
-        <li><span class="hi">🍖</span><span><b>הַאֲכָלָה:</b> גּוֹרְרִים עָלִים, בָּשָׂר אוֹ דָּג אֶל הַדִּינוֹזָאוּר. אִם זֶה הָאֹכֶל הַנָּכוֹן, הוּא יִלְעַס בְּשִׂמְחָה!</span></li>
+        <li><span class="hi">🍖</span><span><b>הַאֲכָלָה:</b> גּוֹרְרִים עָלִים, בָּשָׂר אוֹ דָּג אֶל הַדִּינוֹזָאוּר. אִם זֶה הָאֹכֶל הַנָּכוֹן, הוּא יִלְעַס בְּשִׂמְחָה וְגַם יִגְדַּל קְצָת! אַחֲרֵי שֶׁבַע אֲרוּחוֹת הוּא מַגִּיעַ לַגֹּדֶל הַמַּקְסִימָלִי וּמְקַבֵּל גָּבִיעַ.</span></li>
         <li><span class="hi">🥚</span><span><b>בֵּיצָה:</b> לוֹחֲצִים עַל הַבֵּיצָה שָׁלוֹשׁ פְּעָמִים, וְדִינוֹזָאוּר מַפְתִּיעַ בּוֹקֵעַ מִמֶּנָּה!</span></li>
         <li><span class="hi">🎪</span><span><b>מִצְעָד:</b> כָּל הַדִּינוֹזָאוּרִים עוֹמְדִים בְּמַעְגָּל מִסְּבִיבְכֶם, מֵהַקָּטָן לַגָּדוֹל. גּוֹרְרִים כְּדֵי לְהִסְתַּכֵּל מִסָּבִיב, וְלוֹחֲצִים עַל דִּינוֹזָאוּר כְּדֵי לְהִתְקָרֵב אֵלָיו.</span></li>
+        <li><span class="hi">⚔️</span><span><b>קְרַב דִּינוֹזָאוּרִים:</b> בּוֹחֲרִים דִּינוֹזָאוּר וְלוֹחֲצִים עַל "קְרָב". הַמַּחְשֵׁב מֵבִיא יָרִיב, וַאֲנַחְנוּ מְנַוְּטִים עִם הַחִצִּים: לְמַעְלָה קָדִימָה, לְמַטָּה אֲחוֹרָה, וְהַצְּדָדִים מְסוֹבְבִים. מִתְנַגְּשִׁים בַּיָּרִיב כְּדֵי לִפְגֹּעַ בּוֹ! שְׁאָגָה (רֶוַח) מִקָּרוֹב מְשַׁתֶּקֶת אוֹתוֹ לְרֶגַע וְהַמַּכָּה הַבָּאָה חֲזָקָה פִּי שְׁתַּיִם. יֵשׁ חֲמִשָּׁה שְׁלַבִּים, מֵהַיָּרִיב הַחַלָּשׁ בְּיוֹתֵר עַד הֶחָזָק בְּיוֹתֵר, וְהַשִּׂיא שֶׁל כָּל דִּינוֹזָאוּר נִשְׁמָר.</span></li>
         <li><span class="hi">🕰️</span><span><b>צִיר זְמַן:</b> מַזִּיזִים אֶת הַסַּרְגֵּל בֵּין הַתְּקוּפוֹת וְרוֹאִים מִי חַי בְּכָל תְּקוּפָה. גַּם הַנּוֹף מִשְׁתַּנֶּה!</span></li>
         <li><span class="hi">🌦️</span><span><b>מֶזֶג אֲוִיר:</b> יוֹם בָּהִיר, גֶּשֶׁם אוֹ שְׁקִיעָה. לְכָל דִּינוֹזָאוּר יֵשׁ גַּם בֵּית גִּידּוּל מִשֶּׁלּוֹ: מִישׁוֹרִים, יַעַר, בִּצָּה, מִדְבָּר אוֹ חוֹף.</span></li>
         <li><span class="hi">👆</span><span><b>לוֹחֲצִים עַל הַדִּינוֹזָאוּר</b> עַצְמוֹ, וְהוּא שׁוֹאֵג!</span></li>
@@ -365,10 +429,44 @@
 
       <h3>קִצּוּרֵי מִקְלֶדֶת</h3>
       <ul class="help-list">
-        <li><span class="hi">⌨️</span><span><kbd>→</kbd> <kbd>←</kbd> מַחְלִיפִים דִּינוֹזָאוּר &nbsp;•&nbsp; <kbd>רֶוַח</kbd> שְׁאָגָה &nbsp;•&nbsp; <kbd>W</kbd> הֲלִיכָה &nbsp;•&nbsp; <kbd>N</kbd> לַיְלָה וָיוֹם &nbsp;•&nbsp; <kbd>P</kbd> מִצְעָד &nbsp;•&nbsp; <kbd>E</kbd> בֵּיצָה &nbsp;•&nbsp; <kbd>T</kbd> צִיר זְמַן &nbsp;•&nbsp; <kbd>R</kbd> מֶזֶג אֲוִיר</span></li>
+        <li><span class="hi">⌨️</span><span><kbd>→</kbd> <kbd>←</kbd> מַחְלִיפִים דִּינוֹזָאוּר &nbsp;•&nbsp; <kbd>רֶוַח</kbd> שְׁאָגָה &nbsp;•&nbsp; <kbd>W</kbd> הֲלִיכָה &nbsp;•&nbsp; <kbd>N</kbd> לַיְלָה וָיוֹם &nbsp;•&nbsp; <kbd>P</kbd> מִצְעָד &nbsp;•&nbsp; <kbd>E</kbd> בֵּיצָה &nbsp;•&nbsp; <kbd>T</kbd> צִיר זְמַן &nbsp;•&nbsp; <kbd>R</kbd> מֶזֶג אֲוִיר &nbsp;•&nbsp; <kbd>I</kbd> סִפּוּר &nbsp;•&nbsp; <kbd>B</kbd> קְרָב</span></li>
       </ul>
 
       <button class="help-close" id="helpClose">הֵבַנְתִּי, בּוֹאוּ נְשַׂחֵק! 🦖</button>
+    </div>
+  </div>
+
+  <div class="battle glass" id="battle">
+    <div class="b-head"><span class="b-stage" id="bStage">שלב 1 מתוך 5</span><span class="b-tier" id="bTier"></span></div>
+    <div class="b-row"><span class="b-name" id="bPName"></span><div class="b-bar"><div class="b-fill p" id="bPFill"></div></div></div>
+    <div class="b-row"><span class="b-name" id="bEName"></span><div class="b-bar"><div class="b-fill e" id="bEFill"></div></div></div>
+    <div class="b-msg" id="bMsg"></div>
+    <div class="b-actions" id="bActions">
+      <button class="vbtn b-btn" id="bRetry">🔁 נסו שוב</button>
+      <button class="vbtn b-btn" id="bNext">➡️ לשלב הבא</button>
+      <button class="vbtn b-btn" id="bExit">🚪 יציאה מהקרב</button>
+    </div>
+  </div>
+  <div class="dpad" id="dpad">
+    <button class="dp up" data-k="ArrowUp" aria-label="קדימה">⬆️</button>
+    <button class="dp left" data-k="ArrowLeft" aria-label="שמאלה">⬅️</button>
+    <button class="dp roar" data-k=" " aria-label="שאגה">🔊</button>
+    <button class="dp right" data-k="ArrowRight" aria-label="ימינה">➡️</button>
+    <button class="dp down" data-k="ArrowDown" aria-label="אחורה">⬇️</button>
+  </div>
+
+  <div class="help" id="story">
+    <div class="help-card story-card glass" role="dialog" aria-labelledby="storyTitle">
+      <button class="help-x" id="storyX" aria-label="סגירה">✕</button>
+      <div class="story-head">
+        <span class="story-emoji" id="storyEmoji">🦖</span>
+        <div><h2 id="storyTitle"></h2><div class="latin" id="storyLatin"></div></div>
+      </div>
+      <p class="story-text" id="storyText"></p>
+      <div class="story-actions">
+        <button class="vbtn story-read" id="storyRead">🔊 הַקְרָאָה</button>
+        <button class="help-close" id="storyClose">סָגַרְתִּי, תּוֹדָה! 📖</button>
+      </div>
     </div>
   </div>
 
@@ -764,6 +862,46 @@
           arms: [{ x: 0.4, y: -0.05, z: 0.16, len: 0.4, thick: 0.03, a1: 35 * DEG, a2: -50 * DEG }],
         },
       },
+      {
+        id: 'carno', name: 'קרנוטאורוס', latin: 'Carnotaurus sastrei', emoji: '🐂', diet: 'carnivore', sound: 'roar',
+        period: 'קרטיקון מאוחר, לפני 72–70 מיליון שנה', length: '8 מטר', height: '3 מטר', weight: '1.5 טון', lengthM: 8, mass: 0.65,
+        fun: 'לקרנוטאורוס היו שתי קרניים עבות מעל העיניים כמו לשור, ולכן שמו פירושו "שור אוכל בשר". הזרועות שלו היו קטנות אפילו יותר משל טי-רקס!',
+        skins: [
+          { main: 0x9a4a3a, belly: 0xe2c9a8, accent: 0x4a2418 },
+          { main: 0x5e6b4a, belly: 0xd6d6b0, accent: 0x2f3a24 },
+          { main: 0x6b4f7a, belly: 0xd8cfe0, accent: 0xf0b429 },
+        ],
+        spec: {
+          body: { L: 3.4, H: 1.7, W: 1.3, y: 2.5, tilt: 0 },
+          neck: { count: 4, length: 1.2, r0: 0.5, r1: 0.36, pitch0: 32 * DEG, bend: -12 * DEG, attach: [1.35, 0.3] },
+          head: { len: 1.0, h: 0.85, w: 0.7, snout: 0.5, taper: 0.5, teeth: true, eye: 0.07, pitch: 0 },
+          tail: { count: 9, length: 4.2, r0: 0.6, r1: 0.05, pitch0: 6 * DEG, bend: -1.5 * DEG, attach: [-1.4, 0.1] },
+          legs: [{ x: -0.7, y: 2.15, z: 0.55, thick: 0.3, a1: 22 * DEG, a2: -45 * DEG, footH: 0.25, toes: 3 }],
+          arms: [{ x: 1.2, y: -0.25, z: 0.5, len: 0.45, thick: 0.07, a1: 30 * DEG, a2: -40 * DEG }],
+        },
+        extras: extrasCarnotaurus,
+      },
+      {
+        id: 'amarga', name: 'אמרגזאורוס', latin: 'Amargasaurus cazaui', emoji: '🦕', diet: 'herbivore', sound: 'rumble',
+        period: 'קרטיקון מוקדם, לפני 129–122 מיליון שנה', length: '10 מטר', height: '3 מטר', weight: '2.5 טון', lengthM: 10, mass: 0.8,
+        fun: 'לאמרגזאורוס היו שתי שורות של קוצים ארוכים על הצוואר והגב, כמו מסרק ענק! אף אחד לא יודע בוודאות למה הם שימשו.',
+        skins: [
+          { main: 0x6d8a5a, belly: 0xd9dcb0, accent: 0xc98a3a },
+          { main: 0x8a6f5a, belly: 0xe6d8c0, accent: 0x3e2e22 },
+          { main: 0x5a7a9a, belly: 0xcfdde8, accent: 0xe0a040 },
+        ],
+        spec: {
+          body: { L: 3.2, H: 1.7, W: 1.4, y: 2.1, tilt: 0 },
+          neck: { count: 7, length: 3.2, r0: 0.5, r1: 0.25, pitch0: 22 * DEG, bend: -1.5 * DEG, attach: [1.3, 0.35] },
+          head: { len: 0.6, h: 0.32, w: 0.26, snout: 0.45, taper: 0.7, teeth: false, eye: 0.04, pitch: -10 * DEG },
+          tail: { count: 11, length: 5.5, r0: 0.55, r1: 0.03, pitch0: 6 * DEG, bend: -1.2 * DEG, attach: [-1.35, 0.1] },
+          legs: [
+            { x: -1.0, y: 1.7, z: 0.6, thick: 0.3, a1: 5 * DEG, a2: -10 * DEG, footH: 0.2, toes: 4 },
+            { x: 1.0, y: 1.55, z: 0.55, thick: 0.26, a1: 3 * DEG, a2: -6 * DEG, footH: 0.2, toes: 4, fore: true },
+          ],
+        },
+        extras: extrasAmargasaurus,
+      },
     ];
 
     // Habitat (drives the scenery) and the range of years each species lived, in millions of years ago.
@@ -777,8 +915,57 @@
       dilo: { habitat: 'desert', from: 193, to: 190 }, theri: { habitat: 'plains', from: 70, to: 68 },
       compy: { habitat: 'forest', from: 150, to: 148 }, ptera: { habitat: 'coast', from: 86, to: 84 },
       coelo: { habitat: 'desert', from: 216, to: 196 },
+      carno: { habitat: 'plains', from: 72, to: 70 }, amarga: { habitat: 'forest', from: 129, to: 122 },
     };
     DINOS.forEach((d) => Object.assign(d, META[d.id]));
+
+    // Every species gets its own voice. `f` is a pitch contour as [fraction of duration, Hz] pairs; `pulses` repeats the call.
+    const VOICES = {
+      trex:    { type: 'sawtooth', dur: 1.7, f: [[0, 85], [0.25, 130], [1, 45]], vib: { rate: 22, depth: 14 }, filter: ['lowpass', 900, 220], dist: 70, noise: { amt: 0.28, freq: 380 }, sub: true, gain: 0.7 },
+      allo:    { type: 'sawtooth', dur: 1.1, f: [[0, 130], [0.2, 190], [1, 90]], vib: { rate: 30, depth: 18 }, filter: ['lowpass', 1400, 400], dist: 110, noise: { amt: 0.2, freq: 700 }, gain: 0.6 },
+      spino:   { type: 'sawtooth', dur: 1.5, f: [[0, 70], [0.5, 75], [1, 55]], trem: { rate: 13, depth: 0.8 }, filter: ['bandpass', 320, 320], dist: 40, noise: { amt: 0.7, freq: 900, sweep: 300 }, sub: true, gain: 0.7 },
+      raptor:  { type: 'sawtooth', dur: 0.32, pulses: 2, gap: 0.1, f: [[0, 700], [0.3, 1500], [1, 520]], filter: ['highpass', 500, 500], gain: 0.35 },
+      dilo:    { type: 'sawtooth', dur: 0.13, pulses: 3, gap: 0.09, f: [[0, 950], [0.5, 1200], [1, 600]], filter: ['highpass', 600, 600], gain: 0.32 },
+      coelo:   { type: 'triangle', dur: 0.22, pulses: 2, gap: 0.14, f: [[0, 620], [0.4, 760], [1, 440]], vib: { rate: 18, depth: 20 }, gain: 0.35 },
+      compy:   { type: 'sine', dur: 0.09, pulses: 4, gap: 0.07, f: [[0, 1800], [0.5, 2500], [1, 1700]], gain: 0.28 },
+      ptera:   { type: 'sawtooth', dur: 0.7, pulses: 2, gap: 0.12, f: [[0, 1150], [0.3, 1350], [1, 850]], vib: { rate: 26, depth: 45 }, filter: ['highpass', 700, 700], gain: 0.3 },
+      trike:   { type: 'square', dur: 0.55, pulses: 2, gap: 0.18, f: [[0, 150], [0.4, 125], [1, 95]], vib: { rate: 5, depth: 8 }, filter: ['lowpass', 650, 450], gain: 0.5 },
+      stego:   { type: 'triangle', dur: 1.3, f: [[0, 120], [0.4, 105], [1, 70]], vib: { rate: 3.2, depth: 9 }, filter: ['lowpass', 800, 500], dist: 12, gain: 0.55 },
+      anky:    { type: 'square', dur: 0.24, pulses: 3, gap: 0.12, f: [[0, 110], [1, 65]], filter: ['lowpass', 500, 300], dist: 25, gain: 0.55 },
+      brachio: { type: 'sawtooth', dur: 2.4, f: [[0, 48], [0.5, 56], [1, 38]], vib: { rate: 4, depth: 3 }, filter: ['lowpass', 260, 160], dist: 20, sub: true, harmonic: 2, gain: 0.8 },
+      diplo:   { type: 'sine', dur: 1.6, f: [[0, 62], [0.2, 70], [1, 40]], filter: ['lowpass', 300, 200], sub: true, pre: 'whip', gain: 0.75 },
+      para:    { type: 'triangle', dur: 1.3, f: [[0, 180], [0.2, 330], [0.55, 290], [1, 240]], vib: { rate: 6, depth: 9 }, dist: 8, gain: 0.5 },
+      iguan:   { type: 'square', dur: 0.32, pulses: 2, gap: 0.14, f: [[0, 210], [0.5, 190], [1, 160]], filter: ['lowpass', 1300, 900], vib: { rate: 12, depth: 6 }, gain: 0.4 },
+      pachy:   { type: 'triangle', dur: 0.55, f: [[0, 250], [0.3, 300], [1, 210]], vib: { rate: 9, depth: 18 }, filter: ['bandpass', 600, 600], pre: 'thonk', gain: 0.45 },
+      theri:   { type: 'sine', dur: 0.8, pulses: 2, gap: 0.18, f: [[0, 300], [0.4, 340], [1, 260]], vib: { rate: 7, depth: 12 }, harmonic: 3, gain: 0.4 },
+      carno:   { type: 'sawtooth', dur: 0.45, pulses: 3, gap: 0.16, f: [[0, 110], [0.3, 170], [1, 80]], filter: ['lowpass', 1100, 350], dist: 90, noise: { amt: 0.25, freq: 500 }, sub: true, gain: 0.65 },
+      amarga:  { type: 'triangle', dur: 1.9, f: [[0, 90], [0.3, 120], [0.6, 110], [1, 60]], vib: { rate: 5.5, depth: 7 }, filter: ['lowpass', 500, 300], harmonic: 2, trem: { rate: 4, depth: 0.35 }, gain: 0.6 },
+    };
+    DINOS.forEach((d) => { d.voice = VOICES[d.id]; });
+
+    // A full paragraph about every species, with nikud so young readers can read it alone.
+    const STORIES = {
+      trex: 'טִירָנוֹזָאוּרוּס רֶקְס, אוֹ בְּקִצּוּר טִי־רֶקְס, הָיָה אֶחָד מֵהַטּוֹרְפִים הַגְּדוֹלִים בְּיוֹתֵר שֶׁחָיוּ אֵי־פַּעַם עַל כַּדּוּר הָאָרֶץ. הוּא חַי לִפְנֵי שִׁשִּׁים וָשֵׁשׁ מִילְיוֹן שָׁנִים, בִּצְפוֹן אָמֶרִיקָה. הָאֹרֶךְ שֶׁלּוֹ הָיָה כְּמוֹ שֶׁל אוֹטוֹבּוּס, וְהַשִּׁנַּיִם שֶׁלּוֹ הָיוּ אֲרֻכּוֹת כְּמוֹ בַּנָנָה! לַטִּי־רֶקְס הָיָה חוּשׁ רֵיחַ מְצֻיָּן, וְהוּא יָכוֹל הָיָה לְהָרִיחַ אֹכֶל מֵרָחוֹק. הַזְּרוֹעוֹת שֶׁלּוֹ הָיוּ קְטַנּוֹת מְאוֹד, אֲבָל חֲזָקוֹת. מַדְעָנִים חוֹשְׁבִים שֶׁהוּא לֹא רָץ מַהֵר מְאוֹד, אֲבָל צָעַד בִּצְעָדִים עֲנָקִיִּים.',
+      trike: 'טְרִיצֶרָטוֹפְּס הָיָה דִּינוֹזָאוּר אוֹכֵל צְמָחִים גָּדוֹל וְכָבֵד, שֶׁחַי בְּאוֹתָהּ תְּקוּפָה וּבְאוֹתוֹ מָקוֹם כְּמוֹ טִי־רֶקְס. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "פָּנִים עִם שָׁלוֹשׁ קַרְנַיִם". שְׁתֵּי קַרְנַיִם אֲרֻכּוֹת צָמְחוּ מֵעַל הָעֵינַיִם שֶׁלּוֹ, וְקֶרֶן קְצָרָה עַל הָאַף. מֵאֲחוֹרֵי הָרֹאשׁ הָיָה לוֹ מָגֵן עֲצָמוֹת עָנָק, שֶׁהֵגֵן עַל הַצַּוָּאר. הוּא אָכַל שִׂיחִים וְעָלִים קָשִׁים, וְחָתַךְ אוֹתָם עִם מַקּוֹר חָזָק כְּמוֹ שֶׁל תֻּכִּי. טְרִיצֶרָטוֹפְּס הָיָה כַּנִּרְאֶה חַיָּה שְׁקֵטָה, אֲבָל כְּשֶׁטּוֹרֵף הִתְקָרֵב, הוּא יָדַע לְהָגֵן עַל עַצְמוֹ.',
+      stego: 'סְטֶגוֹזָאוּרוּס חַי בִּתְקוּפַת הַיּוּרָה, לִפְנֵי כְּמֵאָה וַחֲמִשִּׁים מִילְיוֹן שָׁנִים. עַל הַגַּב שֶׁלּוֹ הָיוּ שְׁתֵּי שׁוּרוֹת שֶׁל לוּחוֹת עֲצָמוֹת גְּדוֹלִים בְּצוּרַת מְשֻׁלָּשׁ. הַלּוּחוֹת כַּנִּרְאֶה עָזְרוּ לוֹ לְהִתְחַמֵּם בַּשֶּׁמֶשׁ וּלְהִתְקָרֵר בַּצֵּל, וְאוּלַי גַּם שִׁנּוּ צֶבַע כְּדֵי לְהַרְשִׁים. בִּקְצֵה הַזָּנָב הָיוּ לוֹ אַרְבָּעָה קוֹצִים אֲרֻכִּים וַחֲדִים, שֶׁאִתָּם הוּא הִכָּה טוֹרְפִים. הָרֹאשׁ שֶׁלּוֹ הָיָה קָטָן מְאוֹד, וְהַמּוֹחַ שֶׁלּוֹ הָיָה בְּגֹדֶל שֶׁל אֱגוֹז מֶלֶךְ. הוּא הָלַךְ עַל אַרְבַּע רַגְלַיִם וְאָכַל צְמָחִים נְמוּכִים.',
+      brachio: 'בְּרַכְיוֹזָאוּרוּס הָיָה אֶחָד מֵהַדִּינוֹזָאוּרִים הַגְּבוֹהִים בְּיוֹתֵר שֶׁחָיוּ אֵי־פַּעַם. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "לְטָאַת הַזְּרוֹעַ", כִּי הָרַגְלַיִם הַקִּדְמִיּוֹת שֶׁלּוֹ הָיוּ אֲרֻכּוֹת מֵהָאֲחוֹרִיּוֹת. בִּזְכוּת הַצַּוָּאר הָאָרֹךְ שֶׁלּוֹ הוּא הִגִּיעַ לְעָלִים בְּצַמְּרוֹת הָעֵצִים, כְּמוֹ גִ\'ירָפָה עֲנָקִית. הוּא הָיָה צָרִיךְ לֶאֱכֹל מֵאוֹת קִילוֹגְרָמִים שֶׁל עָלִים בְּכָל יוֹם! הַלֵּב שֶׁלּוֹ הָיָה חָזָק בִּמְיֻחָד, כְּדֵי לִדְחֹף אֶת הַדָּם עַד לָרֹאשׁ הַגָּבוֹהַּ. בְּרַכְיוֹזָאוּרוּס הָלַךְ לְאַט, בִּקְבוּצוֹת, וְלֹא פָּחַד מֵרֹב הַטּוֹרְפִים בִּגְלַל גֹּדְלוֹ הָעֲנָקִי.',
+      raptor: 'וֶלוֹצִירַפְּטוֹר הָיָה דִּינוֹזָאוּר טוֹרֵף קָטָן וְזָרִיז, בְּגֹדֶל שֶׁל תַּרְנְגוֹל הֹדּוּ גָּדוֹל. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "גַּנָּב מָהִיר". הוּא הָיָה מְכֻסֶּה בְּנוֹצוֹת, אֲבָל לֹא יָדַע לָעוּף. עַל כָּל רֶגֶל הָיָה לוֹ טֹפֶר גָּדוֹל וּמְעֻקָּל בְּצוּרַת חֶרְמֵשׁ, שֶׁעָזַר לוֹ לִתְפֹּס טֶרֶף. וֶלוֹצִירַפְּטוֹר חַי בַּמִּדְבָּר שֶׁל מוֹנְגוֹלְיָה, לִפְנֵי כְּשִׁבְעִים וַחֲמִשָּׁה מִילְיוֹן שָׁנִים. מַדְעָנִים מָצְאוּ מְאֻבָּן מְפֻרְסָם שֶׁל וֶלוֹצִירַפְּטוֹר שֶׁנִּלְחַם בִּפְרוֹטוֹצֶרָטוֹפְּס, וְהַשְּׁנַיִם נִקְבְּרוּ יַחַד בְּאֶמְצַע הַקְּרָב!',
+      spino: 'סְפִּינוֹזָאוּרוּס הָיָה הַדִּינוֹזָאוּר הַטּוֹרֵף הָאָרֹךְ בְּיוֹתֵר שֶׁאָנוּ מַכִּירִים, אָרֹךְ אֲפִלּוּ מִטִּי־רֶקְס. עַל הַגַּב שֶׁלּוֹ הָיָה מִפְרָשׂ עָנָק מֵעֲצָמוֹת אֲרֻכּוֹת, גָּבוֹהַּ כְּמוֹ אָדָם. הוּא חַי בִּצְפוֹן אַפְרִיקָה, לְיַד נְהָרוֹת וּבִצּוֹת, לִפְנֵי כְּתִשְׁעִים וַחֲמִשָּׁה מִילְיוֹן שָׁנִים. הַפֶּה שֶׁלּוֹ הָיָה אָרֹךְ וְצַר כְּמוֹ שֶׁל תַּנִּין, וְהַשִּׁנַּיִם שֶׁלּוֹ הָיוּ יְשָׁרוֹת וּמְחֻדָּדוֹת, מֻשְׁלָמוֹת לִתְפִיסַת דָּגִים. מַדְעָנִים חוֹשְׁבִים שֶׁהוּא יָדַע לִשְׂחוֹת, וְשֶׁהַזָּנָב הָרָחָב שֶׁלּוֹ עָזַר לוֹ לָנוּעַ בַּמַּיִם. סְפִּינוֹזָאוּרוּס הוּא אֶחָד מֵהַדִּינוֹזָאוּרִים הַמִּסְתּוֹרִיִּים בְּיוֹתֵר, כִּי נִמְצְאוּ מִמֶּנּוּ רַק מְעַט מְאֻבָּנִים.',
+      anky: 'אַנְקִילוֹזָאוּרוּס הָיָה דִּינוֹזָאוּר מְשֻׁרְיָן, כְּמוֹ טַנְק חַי. כָּל הַגַּב שֶׁלּוֹ הָיָה מְכֻסֶּה בְּלוּחוֹת עֲצָמוֹת קָשִׁים וּבְקוֹצִים, וַאֲפִלּוּ הָעַפְעַפַּיִם שֶׁלּוֹ הָיוּ מְשֻׁרְיָנִים! בִּקְצֵה הַזָּנָב הָיְתָה לוֹ אַלָּה עֲנָקִית מֵעֶצֶם, שֶׁיָּכְלָה לִשְׁבֹּר אֶת הָרֶגֶל שֶׁל טִי־רֶקְס. הוּא הָיָה רָחָב וְנָמוּךְ, וְהָלַךְ לְאַט עַל אַרְבַּע רַגְלַיִם קְצָרוֹת. אַנְקִילוֹזָאוּרוּס אָכַל צְמָחִים נְמוּכִים, וְהָיְתָה לוֹ בֶּטֶן עֲנָקִית כְּדֵי לְעַכֵּל אוֹתָם. הוּא חַי בְּסוֹף תְּקוּפַת הַקְּרֵטִיקוֹן, בְּאוֹתוֹ זְמַן כְּמוֹ טִי־רֶקְס וּטְרִיצֶרָטוֹפְּס.',
+      para: 'פָּרָזָאוּרוֹלוֹפוּס הָיָה דִּינוֹזָאוּר אוֹכֵל צְמָחִים עִם קֶרֶן אֲרֻכָּה וַחֲלוּלָה עַל הָרֹאשׁ. הַקֶּרֶן הָיְתָה מְחֻבֶּרֶת לָאַף, וּכְשֶׁהוּא נָשַׁף דַּרְכָּהּ, נִשְׁמַע קוֹל עָמֹק וְרוֹעֵם כְּמוֹ חֲצוֹצְרָה. כָּךְ הוּא דִּבֵּר עִם חֲבֵרָיו בַּלַּהֲקָה, וְאוּלַי גַּם הִזְהִיר אוֹתָם מִטּוֹרְפִים. הוּא יָכוֹל הָיָה לָלֶכֶת עַל שְׁתַּיִם וְגַם עַל אַרְבַּע רַגְלַיִם. בַּפֶּה שֶׁלּוֹ הָיוּ מֵאוֹת שִׁנַּיִם קְטַנּוֹת, שֶׁטָּחֲנוּ עָלִים וַעֲנָפִים קָשִׁים. פָּרָזָאוּרוֹלוֹפוּס חַי בִּצְפוֹן אָמֶרִיקָה לִפְנֵי כְּשִׁבְעִים וַחֲמִשָּׁה מִילְיוֹן שָׁנִים.',
+      diplo: 'דִּיפְּלוֹדוֹקוּס הָיָה אֶחָד מֵהַדִּינוֹזָאוּרִים הָאֲרֻכִּים בְּיוֹתֵר, אָרֹךְ כִּשְׁלוֹשָׁה אוֹטוֹבּוּסִים בְּשׁוּרָה! רֹב הָאֹרֶךְ שֶׁלּוֹ הָיָה צַוָּאר וְזָנָב. הַזָּנָב הָיָה דַּק מְאוֹד בַּקָּצֶה, כְּמוֹ שׁוֹט, וְאוּלַי הוּא הִצְלִיף בּוֹ כְּדֵי לְהַבְרִיחַ טוֹרְפִים. לַמְרוֹת גֹּדְלוֹ, הָרֹאשׁ שֶׁלּוֹ הָיָה קָטָן, וְהַשִּׁנַּיִם שֶׁלּוֹ הָיוּ בְּצוּרַת עִפָּרוֹן, מְצֻיָּנוֹת לִקְטִיפַת עָלִים. הוּא לֹא לָעַס אֶת הָאֹכֶל, אֶלָּא בָּלַע אוֹתוֹ שָׁלֵם, וְאוּלַי בָּלַע גַּם אֲבָנִים שֶׁעָזְרוּ לוֹ לִטְחֹן אֶת הָעָלִים בַּבֶּטֶן. דִּיפְּלוֹדוֹקוּס חַי בִּתְקוּפַת הַיּוּרָה בִּצְפוֹן אָמֶרִיקָה.',
+      allo: 'אַלּוֹזָאוּרוּס הָיָה הַטּוֹרֵף הַגָּדוֹל וְהַמְּפֻרְסָם שֶׁל תְּקוּפַת הַיּוּרָה, מִילְיוֹנֵי שָׁנִים לִפְנֵי טִי־רֶקְס. הוּא הָלַךְ עַל שְׁתֵּי רַגְלַיִם חֲזָקוֹת, וְהָיוּ לוֹ שָׁלוֹשׁ אֶצְבָּעוֹת עִם טְפָרִים גְּדוֹלִים בְּכָל יָד. מֵעַל הָעֵינַיִם שֶׁלּוֹ צָמְחוּ שְׁתֵּי קַרְנַיִם קְטַנּוֹת. הַפֶּה שֶׁלּוֹ הָיָה מָלֵא שִׁנַּיִם מְשֻׂנָּנוֹת, וְהוּא יָכוֹל הָיָה לִפְתֹּחַ אוֹתוֹ רָחָב מְאוֹד. אַלּוֹזָאוּרוּס צָד דִּינוֹזָאוּרִים אוֹכְלֵי צְמָחִים כְּמוֹ סְטֶגוֹזָאוּרוּס, וְאוּלַי אֲפִלּוּ צָד בִּקְבוּצוֹת. מֵאוֹת שְׁלָדִים שֶׁלּוֹ נִמְצְאוּ בְּאַרְצוֹת הַבְּרִית.',
+      pachy: 'פָּכִיצֶפָלוֹזָאוּרוּס הָיָה דִּינוֹזָאוּר עִם רֹאשׁ מְיֻחָד בִּמְיֻחָד: הַגֻּלְגֹּלֶת שֶׁלּוֹ הָיְתָה עֲגֻלָּה וַעֲבָה מְאוֹד, כְּמוֹ קַסְדָּה מֵעֶצֶם. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "לְטָאָה עִם רֹאשׁ עָבֶה". מִסָּבִיב לַכִּפָּה הָיוּ לוֹ בְּלִיטוֹת וְקוֹצִים קְטַנִּים. מַדְעָנִים חוֹשְׁבִים שֶׁהוּא נָגַח בְּרֹאשׁוֹ בְּדִינוֹזָאוּרִים אֲחֵרִים, כְּמוֹ אַיִל, כְּדֵי לְהַרְאוֹת מִי הַחָזָק. הוּא הָלַךְ עַל שְׁתֵּי רַגְלַיִם, וְאָכַל עָלִים, פְּרָחִים וְאוּלַי גַּם חֲרָקִים. פָּכִיצֶפָלוֹזָאוּרוּס חַי בְּסוֹף תְּקוּפַת הַקְּרֵטִיקוֹן, בִּצְפוֹן אָמֶרִיקָה.',
+      iguan: 'אִיגּוּאָנוֹדוֹן הָיָה מֵהַדִּינוֹזָאוּרִים הָרִאשׁוֹנִים שֶׁהִתְגַּלּוּ אֵי־פַּעַם, לִפְנֵי כְּמָאתַיִם שָׁנָה בְּאַנְגְּלִיָּה. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "שֵׁן שֶׁל אִיגּוּאָנָה", כִּי הַשִּׁנַּיִם שֶׁלּוֹ הָיוּ דּוֹמוֹת לְשִׁנַּיִם שֶׁל הַלְּטָאָה הַזּוֹ. עַל כָּל יָד הָיָה לוֹ קוֹץ אֲגוּדָל חַד, שֶׁעָזַר לוֹ לְהִתְגּוֹנֵן וְלִקְטֹף עֲנָפִים. הוּא יָכוֹל הָיָה לָלֶכֶת עַל שְׁתֵּי רַגְלַיִם וְגַם עַל אַרְבַּע. אִיגּוּאָנוֹדוֹן חַי בְּלַהֲקוֹת גְּדוֹלוֹת, וְאָכַל צְמָחִים כָּל הַיּוֹם. בַּהַתְחָלָה חָשְׁבוּ שֶׁקּוֹץ הָאֲגוּדָל הָיָה קֶרֶן עַל הָאַף!',
+      dilo: 'דִּילוֹפוֹזָאוּרוּס הָיָה טוֹרֵף מִתְּקוּפַת הַיּוּרָה הַמֻּקְדֶּמֶת, לִפְנֵי כְּמֵאָה וְתִשְׁעִים מִילְיוֹן שָׁנִים. עַל הָרֹאשׁ שֶׁלּוֹ הָיוּ שְׁתֵּי צִיצוֹת עֶצֶם דַּקּוֹת בְּצוּרַת חֲצִי עִגּוּל, וְלָכֵן שְׁמוֹ פֵּרוּשׁוֹ "לְטָאָה עִם שְׁתֵּי צִיצוֹת". הַצִּיצוֹת הָיוּ שְׁבִירוֹת, אָז כַּנִּרְאֶה הוּא הִשְׁתַּמֵּשׁ בָּהֶן רַק כְּדֵי לְהַרְשִׁים. הוּא הָיָה קַל וּמָהִיר, וְצָד חַיּוֹת קְטַנּוֹת וְדָגִים. בַּסְּרָטִים מַרְאִים אוֹתוֹ יוֹרֵק רַעַל וּפוֹרֵשׂ צַוָּארוֹן, אֲבָל זֶה רַק דִּמְיוֹן, וּבַמְּצִיאוּת הוּא הָיָה גָּדוֹל הַרְבֵּה יוֹתֵר. הַמְּאֻבָּנִים שֶׁלּוֹ נִמְצְאוּ בַּאֲרִיזוֹנָה שֶׁבְּאַרְצוֹת הַבְּרִית.',
+      theri: 'תֶּרִיזִינוֹזָאוּרוּס הָיָה דִּינוֹזָאוּר מוּזָר וּמַפְתִּיעַ. הָיוּ לוֹ הַצִּפָּרְנַיִם הָאֲרֻכּוֹת בְּיוֹתֵר שֶׁל כָּל חַיָּה שֶׁחָיְתָה אֵי־פַּעַם, כִּמְעַט מֶטֶר שָׁלֵם! לַמְרוֹת הַטְּפָרִים הַמַּפְחִידִים, הוּא אָכַל רַק צְמָחִים, וְכַנִּרְאֶה הִשְׁתַּמֵּשׁ בָּהֶם כְּדֵי לִמְשֹׁךְ עֲנָפִים אֶל הַפֶּה. הַגּוּף שֶׁלּוֹ הָיָה גָּדוֹל וְעָגֹל, עִם צַוָּאר אָרֹךְ וְרֹאשׁ קָטָן עִם מַקּוֹר. מַדְעָנִים חוֹשְׁבִים שֶׁהוּא הָיָה מְכֻסֶּה בְּנוֹצוֹת, כְּמוֹ צִפּוֹר עֲנָקִית. תֶּרִיזִינוֹזָאוּרוּס חַי בְּמוֹנְגוֹלְיָה, לִפְנֵי כְּשִׁבְעִים מִילְיוֹן שָׁנִים.',
+      compy: 'קוֹמְפְּסוֹגְנָתוּס הָיָה אֶחָד מֵהַדִּינוֹזָאוּרִים הַקְּטַנִּים בְּיוֹתֵר, בְּגֹדֶל שֶׁל תַּרְנְגֹלֶת. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "לֶסֶת יָפָה". הוּא הָיָה זָרִיז וּמָהִיר מְאוֹד, וְרָץ עַל שְׁתֵּי רַגְלַיִם אֲרֻכּוֹת וְדַקּוֹת. הוּא צָד לְטָאוֹת, חֲרָקִים וְחַיּוֹת קְטַנּוֹת אֲחֵרוֹת. בַּבֶּטֶן שֶׁל אֶחָד הַמְּאֻבָּנִים שֶׁלּוֹ מָצְאוּ שֶׁלֶד שֶׁל לְטָאָה שְׁלֵמָה, וְכָךְ יָדְעוּ מָה הוּא אָכַל בָּאֲרוּחָה הָאַחֲרוֹנָה. קוֹמְפְּסוֹגְנָתוּס חַי בְּאֵירוֹפָּה בִּתְקוּפַת הַיּוּרָה, עַל אִיִּים קְטַנִּים בְּיָם חַם.',
+      ptera: 'פְּטֶרָנוֹדוֹן בִּכְלָל לֹא הָיָה דִּינוֹזָאוּר, אֶלָּא זוֹחֵל מְעוֹפֵף שֶׁחַי בְּאוֹתָהּ תְּקוּפָה. מוּטַת הַכְּנָפַיִם שֶׁלּוֹ הָיְתָה כְּשֶׁבַע מֶטְרִים, כְּמוֹ שֶׁל מָטוֹס קָטָן! הַכְּנָפַיִם הָיוּ עֲשׂוּיוֹת מֵעוֹר דַּק שֶׁנִּמְתַּח מֵהָאֶצְבַּע הָאֲרֻכָּה שֶׁלּוֹ וְעַד לָרַגְלַיִם. עַל הָרֹאשׁ הָיְתָה לוֹ צִיצַת עֶצֶם אֲרֻכָּה שֶׁפָּנְתָה לְאָחוֹר. לֹא הָיוּ לוֹ שִׁנַּיִם בִּכְלָל, וּשְׁמוֹ פֵּרוּשׁוֹ "כָּנָף בְּלִי שִׁנַּיִם". הוּא עָף מֵעַל הַיָּם, צָלַל וְתָפַס דָּגִים בַּמַּקּוֹר הָאָרֹךְ שֶׁלּוֹ, קְצָת כְּמוֹ שַׂקְנַאי שֶׁל יָמֵינוּ.',
+      coelo: 'קוֹאֵלוֹפִיזִיס הוּא אֶחָד מֵהַדִּינוֹזָאוּרִים הַקְּדוּמִים בְּיוֹתֵר שֶׁאָנוּ מַכִּירִים, וְהוּא חַי בִּתְקוּפַת הַטְּרִיאָס, לִפְנֵי יוֹתֵר מִמָּאתַיִם מִילְיוֹן שָׁנִים. הוּא הָיָה טוֹרֵף קַל וּמָהִיר, עִם גּוּף דַּק, צַוָּאר אָרֹךְ וְזָנָב אָרֹךְ. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "צוּרָה חֲלוּלָה", כִּי הָעֲצָמוֹת שֶׁלּוֹ הָיוּ חֲלוּלוֹת וְקַלּוֹת, כְּמוֹ שֶׁל צִפּוֹר. בְּמָקוֹם אֶחָד בִּנְיוּ מֶקְסִיקוֹ מָצְאוּ מֵאוֹת שְׁלָדִים שֶׁלּוֹ יַחַד, אָז כַּנִּרְאֶה הוּא חַי בְּלַהֲקוֹת גְּדוֹלוֹת. קוֹאֵלוֹפִיזִיס אָכַל חַיּוֹת קְטַנּוֹת, וְהוּא אֲפִלּוּ טָס לַחֲלָל: שֶׁלֶד שֶׁלּוֹ נִשְׁלַח לַחֲלָל בְּמַעְבֹּרֶת חָלָל בִּשְׁנַת 1998!',
+      carno: 'קַרְנוֹטָאוּרוּס הָיָה טוֹרֵף גָּדוֹל שֶׁחַי בִּדְרוֹם אָמֶרִיקָה, לִפְנֵי כְּשִׁבְעִים מִילְיוֹן שָׁנִים. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "שׁוֹר אוֹכֵל בָּשָׂר", כִּי מֵעַל הָעֵינַיִם שֶׁלּוֹ צָמְחוּ שְׁתֵּי קַרְנַיִם עָבוֹת כְּמוֹ שֶׁל שׁוֹר. הַזְּרוֹעוֹת שֶׁלּוֹ הָיוּ קְטַנְטַנּוֹת, אֲפִלּוּ קְטַנּוֹת מֵאֵלּוּ שֶׁל טִי־רֶקְס, וְכִמְעַט לֹא הִשְׁתַּמֵּשׁ בָּהֶן. לְעֻמַּת זֹאת, הָרַגְלַיִם שֶׁלּוֹ הָיוּ אֲרֻכּוֹת וַחֲזָקוֹת, וְהוּא הָיָה מֵהָרָצִים הַמְּהִירִים בֵּין הַטּוֹרְפִים הַגְּדוֹלִים. הַמְּאֻבָּן שֶׁלּוֹ נִשְׁמַר כָּל כָּךְ טוֹב, שֶׁאֶפְשָׁר לִרְאוֹת בּוֹ אֶת הָעוֹר: הוּא הָיָה מְכֻסֶּה בְּקַשְׂקַשִּׂים קְטַנִּים וּבִבְלִיטוֹת עֲגֻלּוֹת.',
+      amarga: 'אָמַרְגָּזָאוּרוּס הָיָה סָאוּרוֹפּוֹד, כְּלוֹמַר דִּינוֹזָאוּר עִם צַוָּאר אָרֹךְ שֶׁהָלַךְ עַל אַרְבַּע, אֲבָל הוּא הָיָה קָטָן יַחֲסִית לִקְרוֹבֵי מִשְׁפַּחְתּוֹ הָעֲנָקִיִּים. הַדָּבָר הַמְּיֻחָד בּוֹ הָיָה שְׁתֵּי שׁוּרוֹת שֶׁל קוֹצִים אֲרֻכִּים שֶׁצָּמְחוּ מֵהַצַּוָּאר וּמֵהַגַּב שֶׁלּוֹ, כְּמוֹ מַסְרֵק עָנָק. מַדְעָנִים לֹא בְּטוּחִים לְמָה הֵם שִׁמְּשׁוּ: אוּלַי לַהֲגָנָה, אוּלַי כְּדֵי לְהַרְשִׁים, וְאוּלַי הָיָה עֲלֵיהֶם מִפְרָשׂ שֶׁל עוֹר. הוּא חַי בְּאַרְגֶּנְטִינָה לִפְנֵי כְּמֵאָה וְעֶשְׂרִים וַחֲמִשָּׁה מִילְיוֹן שָׁנִים, וְקָרְאוּ לוֹ עַל שֵׁם הַנָּהָר לָה אָמַרְגָּה שֶׁלְּיָדוֹ נִמְצָא. הוּא אָכַל צְמָחִים נְמוּכִים, וְהַצַּוָּאר שֶׁלּוֹ הָיָה קָצָר יַחֲסִית, אָז כַּנִּרְאֶה לֹא הִגִּיעַ לְצַמְּרוֹת הָעֵצִים.',
+    };
+    DINOS.forEach((d) => { d.story = STORIES[d.id]; });
     const HABITAT_NAME = { plains: 'מישורים 🌾', forest: 'יער 🌲', swamp: 'ביצה 🪷', desert: 'מדבר 🏜️', coast: 'חוף 🌊' };
     const FOOD_NAME = { leaf: 'עלים 🌿', meat: 'בשר 🍖', fish: 'דגים 🐟' };
 
@@ -1077,6 +1264,39 @@
         hd.g.add(horn);
       }
     }
+    function extrasCarnotaurus({ hd, body, mats, s }) {
+      for (const sgn of [-1, 1]) {
+        const horn = mesh(new THREE.ConeGeometry(0.16, 0.5, 6), mats.accent, hd.skullL * 0.55, s.head.h * 0.5, sgn * s.head.w * 0.45);
+        horn.rotation.x = sgn * 1.05;
+        horn.rotation.z = -0.25;
+        hd.g.add(horn);
+      }
+      // Rows of round skin bumps along the back, like the fossil skin impressions show.
+      const { L, H } = s.body;
+      for (let i = 0; i < 9; i++) {
+        const t = -0.75 + (i / 8) * 1.5;
+        const y = (H / 2) * Math.sqrt(Math.max(0, 1 - t * t)) - 0.05;
+        for (const z of [-0.22, 0.22]) body.add(mesh(new THREE.DodecahedronGeometry(0.11, 0), mats.accent, t * L / 2, y, z));
+      }
+    }
+    function extrasAmargasaurus({ neck, body, mats, s }) {
+      const n = neck.groups.length;
+      neck.groups.forEach((g, i) => {
+        const h = 0.55 + 1.35 * Math.sin(Math.PI * (i + 1) / (n + 1));
+        for (const z of [-0.14, 0.14]) {
+          const sp = mesh(new THREE.ConeGeometry(0.07, h, 5), mats.accent, neck.seg * 0.5, h / 2 + 0.1, z);
+          sp.rotation.z = -0.25;
+          g.add(sp);
+        }
+      });
+      const { L, H } = s.body;
+      for (let i = 0; i < 6; i++) {
+        const t = -0.7 + (i / 5) * 1.4;
+        const y = (H / 2) * Math.sqrt(Math.max(0, 1 - t * t)) - 0.1;
+        const h = 0.7 - i * 0.07;
+        for (const z of [-0.16, 0.16]) body.add(mesh(new THREE.ConeGeometry(0.07, h, 5), mats.accent, t * L / 2, y + h / 2, z));
+      }
+    }
     function extrasPachy({ hd, mats, s }) {
       const dome = mesh(new THREE.SphereGeometry(0.3, 10, 8), mats.accent, hd.skullL * 0.35, s.head.h * 0.3, 0);
       dome.scale.set(1.05, 0.85, 0.9);
@@ -1290,6 +1510,7 @@
       }
       g.position.set(x, 0, z);
       g.rotation.y = rnd(0, Math.PI * 2);
+      g.userData.rad = hgt * 0.36;
       return g;
     }
     const baseTrees = new THREE.Group();
@@ -1304,6 +1525,7 @@
       const rk = mesh(new THREE.DodecahedronGeometry(sz, 0), rockMat, Math.cos(a) * r, sz * 0.4, Math.sin(a) * r);
       rk.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
       rk.scale.y = 0.7;
+      rk.userData.rad = sz;
       env.add(rk);
     }
     const hillMat = mkMat(0x4f7a46);
@@ -1374,6 +1596,7 @@
       const pond = new THREE.Mesh(new THREE.CircleGeometry(24, 24), waterMat);
       pond.rotation.x = -Math.PI / 2;
       pond.position.set(-6, 0.05, -34);
+      pond.userData.rad = 30;
       g.add(pond);
       const reedMat = mkMat(0x4f7a2a);
       for (let i = 0; i < 70; i++) {
@@ -1389,12 +1612,15 @@
       const spireMat = mkMat(0xb97d4a), deadMat = mkMat(0x7a6650);
       for (let i = 0; i < 9; i++) {
         const a = rnd(0, Math.PI * 2), r = rnd(30, 90), h = rnd(8, 22);
-        g.add(mesh(new THREE.CylinderGeometry(rnd(1, 2.5), rnd(3, 5), h, 6), spireMat, Math.cos(a) * r, h / 2, Math.sin(a) * r));
+        const spire = mesh(new THREE.CylinderGeometry(rnd(1, 2.5), rnd(3, 5), h, 6), spireMat, Math.cos(a) * r, h / 2, Math.sin(a) * r);
+        spire.userData.rad = 5;
+        g.add(spire);
       }
       for (let i = 0; i < 12; i++) {
         const a = rnd(0, Math.PI * 2), r = rnd(18, 70), h = rnd(3, 6);
         const tr = mesh(new THREE.CylinderGeometry(0.12, 0.3, h, 5), deadMat, Math.cos(a) * r, h / 2, Math.sin(a) * r);
         tr.rotation.z = rnd(-0.2, 0.2);
+        tr.userData.rad = 0.8;
         const br = mesh(new THREE.CylinderGeometry(0.06, 0.14, h * 0.5, 5), deadMat, 0, h * 0.3, 0);
         br.rotation.z = 0.9;
         tr.add(br);
@@ -1406,6 +1632,7 @@
       const sea = new THREE.Mesh(new THREE.CircleGeometry(95, 32), waterMat);
       sea.rotation.x = -Math.PI / 2;
       sea.position.set(0, 0.05, -115);
+      sea.userData.rad = 100;
       g.add(sea);
       const sand = new THREE.Mesh(new THREE.RingGeometry(93, 108, 32), new THREE.MeshStandardMaterial({ color: 0xe6d3a3, roughness: 1 }));
       sand.rotation.x = -Math.PI / 2;
@@ -1672,6 +1899,71 @@
       }
     }
 
+    // Generic animal-call synthesizer driven by a VOICES entry.
+    function playVoice(v, when = 0) {
+      const ctx = audio();
+      const start = ctx.currentTime + when;
+      const pulses = v.pulses || 1, gap = v.gap || 0;
+      if (v.pre === 'whip') {
+        const n = ctx.createBufferSource();
+        n.buffer = noiseBuffer(ctx, 0.12);
+        const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 2500;
+        const g = ctx.createGain(); g.gain.setValueAtTime(0.9, start); g.gain.exponentialRampToValueAtTime(0.0001, start + 0.12);
+        n.connect(f).connect(g).connect(ctx.destination); n.start(start);
+      } else if (v.pre === 'thonk') {
+        const o = ctx.createOscillator(); o.type = 'sine';
+        o.frequency.setValueAtTime(170, start); o.frequency.exponentialRampToValueAtTime(80, start + 0.18);
+        const g = ctx.createGain(); g.gain.setValueAtTime(0.6, start); g.gain.exponentialRampToValueAtTime(0.0001, start + 0.2);
+        o.connect(g).connect(ctx.destination); o.start(start); o.stop(start + 0.2);
+      }
+      for (let p = 0; p < pulses; p++) {
+        const t0 = start + (v.pre ? 0.15 : 0) + p * (v.dur + gap), dur = v.dur;
+        const master = ctx.createGain();
+        master.gain.setValueAtTime(0.0001, t0);
+        master.gain.exponentialRampToValueAtTime(v.gain || 0.5, t0 + Math.min(0.08, dur * 0.25));
+        master.gain.setValueAtTime(v.gain || 0.5, t0 + dur * 0.6);
+        master.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        master.connect(ctx.destination);
+        let chain = master;
+        if (v.filter) {
+          const f = ctx.createBiquadFilter();
+          f.type = v.filter[0];
+          f.frequency.setValueAtTime(v.filter[1], t0);
+          f.frequency.exponentialRampToValueAtTime(Math.max(40, v.filter[2]), t0 + dur);
+          f.connect(chain); chain = f;
+        }
+        if (v.dist) { const ws = distortion(ctx, v.dist); ws.connect(chain); chain = ws; }
+        const osc = (type, mul) => {
+          const o = ctx.createOscillator();
+          o.type = type;
+          v.f.forEach(([k, hz], i) => (i === 0 ? o.frequency.setValueAtTime(hz * mul, t0) : o.frequency.exponentialRampToValueAtTime(hz * mul, t0 + k * dur)));
+          if (v.vib) { const l = ctx.createOscillator(), lg = ctx.createGain(); l.frequency.value = v.vib.rate; lg.gain.value = v.vib.depth * mul; l.connect(lg).connect(o.frequency); l.start(t0); l.stop(t0 + dur); }
+          return o;
+        };
+        const o = osc(v.type, 1);
+        if (v.trem) {
+          const tg = ctx.createGain(); tg.gain.value = 1 - v.trem.depth / 2;
+          const l = ctx.createOscillator(), lg = ctx.createGain(); l.frequency.value = v.trem.rate; lg.gain.value = v.trem.depth / 2;
+          l.connect(lg).connect(tg.gain); l.start(t0); l.stop(t0 + dur);
+          o.connect(tg).connect(chain);
+        } else o.connect(chain);
+        o.start(t0); o.stop(t0 + dur);
+        if (v.sub) { const sg = ctx.createGain(); sg.gain.value = 0.6; const so = osc('sine', 0.5); so.connect(sg).connect(chain); so.start(t0); so.stop(t0 + dur); }
+        if (v.harmonic) { const hg = ctx.createGain(); hg.gain.value = 0.25; const ho = osc('sine', v.harmonic); ho.connect(hg).connect(master); ho.start(t0); ho.stop(t0 + dur); }
+        if (v.noise) {
+          const n = ctx.createBufferSource();
+          n.buffer = noiseBuffer(ctx, dur);
+          const nf = ctx.createBiquadFilter();
+          nf.type = 'bandpass'; nf.Q.value = 0.8;
+          nf.frequency.setValueAtTime(v.noise.freq, t0);
+          if (v.noise.sweep) nf.frequency.exponentialRampToValueAtTime(v.noise.sweep, t0 + dur);
+          const ng = ctx.createGain(); ng.gain.value = v.noise.amt;
+          n.connect(nf).connect(ng).connect(chain);
+          n.start(t0); n.stop(t0 + dur);
+        }
+      }
+    }
+
     let rainAudio = null;
     function setRainAudio(on) {
       const ctx = audio();
@@ -1717,24 +2009,28 @@
     }
 
     function textSprite(text, height) {
+      // The canvas is sized to the text so long labels (name, length and height) are never clipped.
       const c = document.createElement('canvas');
-      c.width = 1024; c.height = 256;
-      const x = c.getContext('2d');
+      const font = '700 110px Rubik, sans-serif';
+      let x = c.getContext('2d');
+      x.font = font;
+      const tw = Math.ceil(x.measureText(text).width) + 90;
+      c.width = Math.max(256, tw + 40); c.height = 256;
+      x = c.getContext('2d');
       x.direction = 'rtl';
-      x.font = '700 110px Rubik, sans-serif';
+      x.font = font;
       x.textAlign = 'center';
       x.textBaseline = 'middle';
-      const tw = x.measureText(text).width + 90;
       x.fillStyle = 'rgba(8,18,38,0.72)';
       x.beginPath();
-      x.roundRect(512 - tw / 2, 40, tw, 176, 60);
+      x.roundRect(c.width / 2 - tw / 2, 40, tw, 176, 60);
       x.fill();
       x.fillStyle = '#ffffff';
-      x.fillText(text, 512, 132);
+      x.fillText(text, c.width / 2, 132);
       const tex = new THREE.CanvasTexture(c);
       tex.colorSpace = THREE.SRGBColorSpace;
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
-      sp.scale.set(height * 4, height, 1);
+      sp.scale.set(height * (c.width / c.height), height, 1);
       sp.renderOrder = 10;
       return sp;
     }
@@ -1892,6 +2188,7 @@
 
     async function selectDino(i, { keepSkin = false } = {}) {
       if (state.busy) return;
+      if (battle) exitBattle();
       state.busy = true;
       clearEgg();
       clearParade();
@@ -1904,12 +2201,14 @@
       setYear(Math.round((def.from + def.to) / 2), { fromSelect: true });
       if (state.cur) {
         const old = state.cur;
-        await tween(0.28, easeInOut, (k) => old.root.scale.setScalar(Math.max(0.001, 1 - k)));
+        await tween(0.28, easeInOut, (k) => old.root.scale.setScalar(Math.max(0.001, (1 - k) * (old.grow || 1))));
         scene.remove(old.root);
         disposeGroup(old.root);
       }
       const dino = buildDino(def, def.skins[state.skin]);
+      dino.grow = 1;
       state.cur = dino;
+      renderGrow(dino);
       state.roar = -1;
       scene.add(dino.root);
       state.frame = computeFrame(dino.root);
@@ -1988,13 +2287,14 @@
     }
     async function startEgg() {
       if (state.busy) return;
+      if (battle) exitBattle();
       state.busy = true;
       clearParade();
       clearEgg();
       if (state.cur) {
         const old = state.cur;
         state.cur = null;
-        await tween(0.28, easeInOut, (k) => old.root.scale.setScalar(Math.max(0.001, 1 - k)));
+        await tween(0.28, easeInOut, (k) => old.root.scale.setScalar(Math.max(0.001, (1 - k) * (old.grow || 1))));
         scene.remove(old.root);
         disposeGroup(old.root);
       }
@@ -2078,6 +2378,7 @@
     let paradePrev = null;
     function enterParade() {
       if (state.busy || parade) return;
+      if (battle) exitBattle();
       state.busy = true;
       clearEgg();
       if (state.cur) { scene.remove(state.cur.root); disposeGroup(state.cur.root); state.cur = null; }
@@ -2095,7 +2396,9 @@
         d.root.userData.dinoIndex = idx;
         d.root.traverse((o) => { if (o.isMesh) o.castShadow = false; });
         const frame = computeFrame(d.root);
-        const lbl = textSprite(`${def.name} • ${def.length}`, clamp(frame.size.y * 0.16, 0.9, 2.2));
+        // Show both measurements: a long-necked sauropod can be taller yet shorter than a long-tailed one, which looks like a mistake with length alone.
+        const hgt = def.height.startsWith('מוטת') ? def.height : `גובה ${def.height}`;
+        const lbl = textSprite(`${def.name} • אורך ${def.length} • ${hgt}`, clamp(frame.size.y * 0.16, 0.9, 2.2));
         lbl.position.set(d.root.position.x * 0.92, frame.box.max.y + 1.2, d.root.position.z * 0.92);
         group.add(lbl);
         group.add(d.root);
@@ -2163,15 +2466,95 @@
     }
 
     // ── Feeding ──────────────────────────────────────────────────────────────────────────────────────────────────
+    // Every correct meal makes the dinosaur a bit bigger, up to a cap, so feeding has a visible reward.
+    const GROW_STEP = 0.09, GROW_STEPS = 7;
+    function growSteps(d) { return Math.round(((d.grow || 1) - 1) / GROW_STEP); }
+    function renderGrow(d) {
+      const el = $('fGrow');
+      if (!d) { el.textContent = ''; return; }
+      const n = growSteps(d);
+      el.textContent = '🟢'.repeat(n) + '⚪'.repeat(Math.max(0, GROW_STEPS - n)) + (n >= GROW_STEPS ? ' 🏆' : '');
+    }
+    function growDino(d) {
+      if (growSteps(d) >= GROW_STEPS) return false;
+      const from = d.grow || 1, to = from + GROW_STEP;
+      d.grow = to;
+      renderGrow(d);
+      tween(0.55, easeBack, (k) => d.root.scale.setScalar(lerp(from, to, k))).then(() => {
+        if (state.cur !== d) return;
+        d.root.scale.setScalar(to);
+        state.frame = computeFrame(d.root);
+        updateSun(state.frame);
+        // Re-frame gently so a fully grown dinosaur never outgrows the screen.
+        if (state.compare) setCompare(true); else flyTo('default', 0.7);
+      });
+      return true;
+    }
+
+    // In walk mode the dinosaur really wanders around the clearing. It steers back toward the middle when it strays and
+    // around any scenery ahead (trees, rocks, water), and the camera and size-comparison props slide along with it.
+    const ROAM_R = 28;
+    let obstacles = [], obstaclesKey = null;
+    function collectObstacles() {
+      const list = [];
+      const add = (o) => {
+        if (!o.userData.rad) return;
+        const p = o.getWorldPosition(new THREE.Vector3());
+        list.push({ x: p.x, z: p.z, rad: o.userData.rad });
+      };
+      env.children.forEach(add);
+      if (baseTrees.visible) baseTrees.children.forEach(add);
+      if (habitatGroups[currentHabitat]) habitatGroups[currentHabitat].children.forEach(add);
+      return list;
+    }
+    function roam(d, dt, wa) {
+      if (wa < 0.02) return;
+      if (obstaclesKey !== currentHabitat) { obstacles = collectObstacles(); obstaclesKey = currentHabitat; }
+      const grow = d.grow || 1;
+      const halfLen = d.def.lengthM * 0.5 * grow;
+      const speed = clamp(d.def.lengthM * 0.26, 0.4, 3.2) * grow * wa;
+      d.roamT = (d.roamT ?? 0) - dt;
+      if (d.roamT <= 0) { d.roamT = rnd(2.5, 6); d.wander = rnd(-0.3, 0.3); }
+      const r = d.root.position;
+      let h = d.root.rotation.y;
+      const fx = Math.cos(h), fz = -Math.sin(h);
+      let turn = d.wander || 0;
+      const dist = Math.hypot(r.x, r.z);
+      if (dist > ROAM_R * 0.6) {
+        const want = Math.atan2(r.z, -r.x);
+        const diff = Math.atan2(Math.sin(want - h), Math.cos(want - h));
+        turn += clamp(diff, -1, 1) * 1.2 * clamp((dist - ROAM_R * 0.6) / (ROAM_R * 0.4), 0, 1);
+      }
+      const look = halfLen + speed * 3 + 2;
+      for (const o of obstacles) {
+        const dx = o.x - r.x, dz = o.z - r.z;
+        const along = dx * fx + dz * fz;
+        if (along < -o.rad || along > look + o.rad) continue;
+        const side = dx * fz - dz * fx;
+        const need = o.rad + halfLen * 0.35 + 1.5;
+        if (Math.abs(side) < need) turn -= (side >= 0 ? 1 : -1) * (1 - Math.abs(side) / need) * 2.2;
+      }
+      h += clamp(turn, -1.4, 1.4) * dt * clamp(6 / d.def.lengthM, 0.35, 1.2);
+      d.root.rotation.y = h;
+      const mx = Math.cos(h) * speed * dt, mz = -Math.sin(h) * speed * dt;
+      r.x += mx; r.z += mz;
+      const delta = new THREE.Vector3(mx, 0, mz);
+      camera.position.add(delta);
+      controls.target.add(delta);
+      if (state.frame) { state.frame.center.add(delta); state.frame.box.translate(delta); updateSun(state.frame); }
+      if (state.compareGroup) state.compareGroup.position.add(delta);
+    }
+
     function feed(kind) {
       const d = state.cur;
-      if (!d || parade || egg) return;
+      if (!d || parade || egg || battle) return;
       const diet = d.def.diet;
       const ok = (diet === 'herbivore' && kind === 'leaf') || (diet === 'carnivore' && kind === 'meat') || (diet === 'fish' && (kind === 'fish' || kind === 'meat'));
       if (ok) {
         state.chomp = 0;
         playSound('chomp');
-        toast(`😋 טעים! ${d.def.name} אוהב ${FOOD_NAME[kind]}`);
+        if (growDino(d)) toast(`😋 טעים! ${d.def.name} אוהב ${FOOD_NAME[kind]} וגדל! 🌱`);
+        else toast(`🏆 ${d.def.name} כבר גדל עד הסוף! הוא שבע ומאושר 😋`);
       } else {
         state.shake = 0;
         playSound('no');
@@ -2225,8 +2608,10 @@
     function doRoar() {
       if ((!state.cur && !parade) || state.roar >= 0) return;
       state.roar = 0;
-      if (parade) { playSound('roar'); setTimeout(() => playSound('trumpet'), 150); setTimeout(() => playSound('screech'), 300); }
-      else playSound(state.cur.def.sound);
+      if (parade) {
+        const picks = [...DINOS].sort(() => Math.random() - 0.5).slice(0, 4);
+        picks.forEach((d, i) => playVoice(d.voice, i * 0.18));
+      } else playVoice(state.cur.def.voice);
       btn.roar.classList.remove('pulse');
       void btn.roar.offsetWidth;
       btn.roar.classList.add('pulse');
@@ -2236,10 +2621,263 @@
     //  UI
     // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
     const $ = (id) => document.getElementById(id);
+
+    // ── Battle: the chosen dinosaur fights five computer-driven opponents, one per strength tier ─────────────────
+    // Species are ranked by weight and split into five tiers; stage N draws a random opponent from tier N.
+    const BATTLE_STAGES = 5;
+    const STRENGTH_ORDER = DINOS.map((d, i) => i).sort((a, b) => (DINOS[a].mass - DINOS[b].mass) || (DINOS[a].lengthM - DINOS[b].lengthM));
+    const TIERS = Array.from({ length: BATTLE_STAGES }, (_, t) => {
+      const n = STRENGTH_ORDER.length;
+      return STRENGTH_ORDER.slice(Math.floor(t * n / BATTLE_STAGES), Math.floor((t + 1) * n / BATTLE_STAGES));
+    });
+    const TIER_NAME = ['קטנטנים', 'קלילים', 'בינוניים', 'כבדים', 'ענקים'];
+    const BATTLE_KEY = 'dino3d.battleRecords';
+    function loadRecords() { try { return JSON.parse(localStorage.getItem(BATTLE_KEY)) || {}; } catch { return {}; } }
+    function saveRecord(id, stage) {
+      const rec = loadRecords();
+      rec[id] = Math.max(rec[id] || 0, stage);
+      try { localStorage.setItem(BATTLE_KEY, JSON.stringify(rec)); } catch { /* private mode: progress simply isn't kept */ }
+    }
+    function renderBattleRecord(d) {
+      const row = $('fBattleRow');
+      if (!d || !d.mass) { row.style.display = 'none'; return; }
+      row.style.display = '';
+      const r = loadRecords()[d.id] || 0;
+      $('fBattle').textContent = r >= BATTLE_STAGES ? `אלוף! 🏆 ${BATTLE_STAGES}/${BATTLE_STAGES}` : r ? `${r} מתוך ${BATTLE_STAGES} שלבים` : 'עוד לא נלחם';
+    }
+
+    let battle = null;
+    const held = new Set();
+    const dinoRadius = (d) => d.def.lengthM * 0.27 * (d.grow || 1);
+    function battleHud() {
+      if (!battle) return;
+      $('bStage').textContent = `שלב ${battle.stage + 1} מתוך ${BATTLE_STAGES}`;
+      $('bTier').textContent = `רמה: ${TIER_NAME[battle.stage]}`;
+      $('bPName').textContent = `${battle.player.def.emoji} ${battle.player.def.name}`;
+      $('bEName').textContent = `${battle.enemy.def.emoji} ${battle.enemy.def.name} 🖥️`;
+      $('bPFill').style.width = `${clamp(battle.php, 0, 100)}%`;
+      $('bEFill').style.width = `${clamp(battle.ehp, 0, 100)}%`;
+    }
+    function battleMsg(t) { $('bMsg').textContent = t; }
+    function spawnOpponent() {
+      const pool = TIERS[battle.stage].filter((i) => i !== state.index);
+      const idx = (pool.length ? pool : TIERS[battle.stage])[Math.floor(Math.random() * (pool.length || TIERS[battle.stage].length))];
+      const def = DINOS[idx];
+      const e = buildDino(def, def.skins[1 % def.skins.length]);
+      e.grow = 1;
+      // Both fighters start fresh and apart, so a new opponent never spawns on top of where the last fight ended.
+      battle.player.root.position.set(0, 0, 0);
+      battle.player.root.rotation.y = 0;
+      const gap = dinoRadius(battle.player) + dinoRadius(e) + 10;
+      e.root.position.set(gap, 0, 0);
+      e.root.rotation.y = Math.PI;
+      e.root.scale.setScalar(0.001);
+      scene.add(e.root);
+      applyXray(e.root, state.xray);
+      battle.enemy = e;
+      battle.ehp = 100;
+      battle.php = 100;
+      battle.phase = 'fight';
+      battle.cool = 0; battle.pStun = 0; battle.eStun = 0; battle.pCharge = 0; battle.eCharge = 0; battle.eRoar = -1; battle.eRoarIn = rnd(3, 6);
+      battle.pkb = new THREE.Vector3(); battle.ekb = new THREE.Vector3(); battle.pSpeed = 0; battle.eSpeed = 0;
+      $('bActions').classList.remove('show');
+      battleMsg('חיצים לתנועה • רווח לשאגה • התנגשו ביריב! 💥');
+      battleHud();
+      playSound('pop');
+      tween(0.6, easeBack, (k) => e.root.scale.setScalar(Math.max(0.001, k))).then(() => { if (battle && battle.enemy === e) e.root.scale.setScalar(1); });
+    }
+    function enterBattle() {
+      if (battle || state.busy) return;
+      if (!state.cur || parade || egg) return toast('קודם בוחרים דינוזאור לקרב 🦕');
+      audio();
+      state.walking = false; btn.walk.classList.remove('on');
+      controls.autoRotate = false; btn.spin.classList.remove('on');
+      if (state.compare) setCompare(false);
+      $('food').classList.remove('open'); btn.feed.classList.remove('on');
+      setTimeline(false);
+      const P = state.cur;
+      P.root.position.set(0, 0, 0);
+      P.root.rotation.y = 0;
+      state.frame = computeFrame(P.root);
+      battle = { player: P, stage: 0, enemy: null };
+      spawnOpponent();
+      btn.battle.classList.add('on');
+      $('battle').classList.add('open');
+      $('dpad').classList.add('open');
+      // Camera: behind and above the player, looking toward the opponent.
+      const r = dinoRadius(P) + dinoRadius(battle.enemy);
+      const pos = new THREE.Vector3(-r * 1.6 - 6, r * 1.1 + 5, r * 1.4 + 6), target = new THREE.Vector3(r * 0.8, r * 0.4, 0);
+      controls.minDistance = 4; controls.maxDistance = 400;
+      const p0 = camera.position.clone(), t0 = controls.target.clone();
+      tween(0.9, easeInOut, (k) => { camera.position.lerpVectors(p0, pos, k); controls.target.lerpVectors(t0, target, k); });
+      toast('⚔️ הקרב מתחיל! נצחו חמישה יריבים בזה אחר זה');
+    }
+    function removeEnemy() {
+      if (!battle || !battle.enemy) return;
+      const e = battle.enemy;
+      battle.enemy = null;
+      scene.remove(e.root);
+      disposeGroup(e.root);
+    }
+    function exitBattle() {
+      if (!battle) return;
+      removeEnemy();
+      const P = battle.player;
+      battle = null;
+      held.clear();
+      btn.battle.classList.remove('on');
+      $('battle').classList.remove('open');
+      $('dpad').classList.remove('open');
+      P.root.rotation.y = 0;
+      state.frame = computeFrame(P.root);
+      updateSun(state.frame);
+      flyTo('default', 0.9);
+      renderBattleRecord(P.def);
+    }
+    function battleRoar(who) {
+      if (!battle || battle.phase !== 'fight') return;
+      const a = who === 'p' ? battle.player : battle.enemy, b = who === 'p' ? battle.enemy : battle.player;
+      const range = 10 + a.def.lengthM * 0.8;
+      if (a.root.position.distanceTo(b.root.position) < range) {
+        if (who === 'p') { battle.eStun = 1.4; battle.pCharge = 3; battleMsg('היריב נבהל מהשאגה! עכשיו תתנגשו בו, המכה כפולה 💪'); }
+        else { battle.pStun = 1.0; battle.eCharge = 3; battleMsg('אוי! השאגה שלו הקפיאה אותנו לרגע 😱'); }
+      }
+    }
+    const hitPower = (a, b) => clamp(14 * Math.sqrt(a.def.mass / b.def.mass), 6, 30);
+    function battleStep(dt) {
+      const B = battle, P = B.player, E = B.enemy;
+      if (!E) return;
+      const pMax = clamp(P.def.lengthM * 0.45, 1.8, 6) * (P.grow || 1), eMax = clamp(E.def.lengthM * 0.4, 1.6, 5.2);
+      B.pStun = Math.max(0, B.pStun - dt); B.eStun = Math.max(0, B.eStun - dt);
+      B.pCharge = Math.max(0, B.pCharge - dt); B.eCharge = Math.max(0, B.eCharge - dt);
+      B.cool = Math.max(0, B.cool - dt);
+      // Player input.
+      let pv = 0;
+      if (B.phase === 'fight' && B.pStun <= 0) {
+        if (held.has('ArrowUp')) pv = pMax;
+        else if (held.has('ArrowDown')) pv = -pMax * 0.6;
+        if (held.has('ArrowLeft')) P.root.rotation.y += 2.2 * dt;
+        if (held.has('ArrowRight')) P.root.rotation.y -= 2.2 * dt;
+      }
+      B.pSpeed = lerp(B.pSpeed, pv, 1 - Math.pow(0.001, dt));
+      // Opponent AI: turn toward the player, charge when facing them, roar now and then.
+      let ev = 0;
+      const dx = P.root.position.x - E.root.position.x, dz = P.root.position.z - E.root.position.z;
+      const dist = Math.hypot(dx, dz) || 0.001;
+      if (B.phase === 'fight' && B.eStun <= 0) {
+        const want = Math.atan2(-dz, dx);
+        const diff = Math.atan2(Math.sin(want - E.root.rotation.y), Math.cos(want - E.root.rotation.y));
+        E.root.rotation.y += clamp(diff, -1, 1) * 1.7 * dt;
+        if (Math.abs(diff) < 0.6) ev = eMax * 0.85;
+        B.eRoarIn -= dt;
+        if (B.eRoarIn <= 0) { B.eRoarIn = rnd(4, 8); B.eRoar = 0; playVoice(E.def.voice); battleRoar('e'); }
+      }
+      B.eSpeed = lerp(B.eSpeed, ev, 1 - Math.pow(0.001, dt));
+      if (B.eRoar >= 0) { B.eRoar += dt; if (B.eRoar > 1.5) B.eRoar = -1; }
+      // Move both, apply knockback, and keep the fight inside the arena.
+      const move = (d, v, kb) => {
+        const h = d.root.rotation.y;
+        d.root.position.x += (Math.cos(h) * v + kb.x) * dt;
+        d.root.position.z += (-Math.sin(h) * v + kb.z) * dt;
+        kb.multiplyScalar(Math.pow(0.02, dt));
+        const r = Math.hypot(d.root.position.x, d.root.position.z);
+        if (r > 34) { d.root.position.x *= 34 / r; d.root.position.z *= 34 / r; }
+      };
+      move(P, B.pSpeed, B.pkb);
+      move(E, B.eSpeed, B.ekb);
+      // Collision: whoever is moving into the other deals damage; a roar-charged hit counts double.
+      const pr = dinoRadius(P), er = dinoRadius(E);
+      if (B.phase === 'fight' && dist < pr + er) {
+        const nx = dx / dist, nz = dz / dist; // from enemy toward player
+        const overlap = pr + er - dist;
+        P.root.position.x += nx * overlap * 0.5; P.root.position.z += nz * overlap * 0.5;
+        E.root.position.x -= nx * overlap * 0.5; E.root.position.z -= nz * overlap * 0.5;
+        if (B.cool <= 0) {
+          B.cool = 0.75;
+          const pf = Math.cos(P.root.rotation.y) * -nx + -Math.sin(P.root.rotation.y) * -nz; // player's forward toward enemy
+          const ef = Math.cos(E.root.rotation.y) * nx + -Math.sin(E.root.rotation.y) * nz;
+          const pRam = B.pSpeed * pf, eRam = B.eSpeed * ef;
+          let dmgE = 0, dmgP = 0;
+          if (pRam > 0.6) { dmgE = hitPower(P, E) * (B.pCharge > 0 ? 2 : 1); B.pCharge = 0; }
+          if (eRam > 0.6) { dmgP = hitPower(E, P) * (B.eCharge > 0 ? 2 : 1); B.eCharge = 0; }
+          if (dmgE || dmgP) {
+            B.ehp -= dmgE; B.php -= dmgP;
+            B.ekb.set(-nx, 0, -nz).multiplyScalar(4 + dmgE * 0.35);
+            B.pkb.set(nx, 0, nz).multiplyScalar(4 + dmgP * 0.35);
+            B.eStun = Math.max(B.eStun, dmgE ? 0.5 : 0); B.pStun = Math.max(B.pStun, dmgP ? 0.4 : 0);
+            playSound('crack');
+            state.shake = 0;
+            if (dmgE >= dmgP) battleMsg(dmgE >= 20 ? 'מכה אדירה! 💥💥' : 'פגיעה! 💥'); else battleMsg('אאוץ, הוא פגע בנו! 🛡️');
+            battleHud();
+            if (B.ehp <= 0) winStage(); else if (B.php <= 0) loseStage();
+          }
+        }
+      }
+      // Camera keeps both fighters in view: the target drifts to the midpoint and the distance grows with their separation.
+      const mid = new THREE.Vector3((P.root.position.x + E.root.position.x) / 2, Math.max(pr, er) * 0.5, (P.root.position.z + E.root.position.z) / 2);
+      const off = camera.position.clone().sub(controls.target);
+      // Portrait phones need more distance to fit both fighters into the narrow view.
+      const portraitK = clamp(window.innerHeight / window.innerWidth, 1, 2.2);
+      const wantDist = clamp((dist * 1.1 + (pr + er) * 1.2 + 6) * portraitK, 12, 160);
+      off.setLength(lerp(off.length(), wantDist, 1 - Math.pow(0.05, dt)));
+      controls.target.lerp(mid, 1 - Math.pow(0.02, dt));
+      camera.position.copy(controls.target).add(off);
+      state.frame = { center: P.root.position.clone(), radius: pr, box: state.frame ? state.frame.box : null, size: state.frame ? state.frame.size : null };
+      updateSun({ center: mid, radius: Math.max(dist / 2 + pr + er, 8) });
+    }
+    function winStage() {
+      const B = battle;
+      B.phase = 'won';
+      const cleared = B.stage + 1;
+      saveRecord(B.player.def.id, cleared);
+      renderBattleRecord(B.player.def);
+      playVoice(B.player.def.voice);
+      state.roar = 0;
+      const e = B.enemy;
+      tween(0.7, easeInOut, (k) => e.root.scale.setScalar(Math.max(0.001, 1 - k)));
+      if (cleared >= BATTLE_STAGES) {
+        battleMsg(`🏆 אלופים! ${B.player.def.name} ניצח את כל חמשת השלבים! 🎉🎉`);
+        toast('🏆 אלוף הדינוזאורים! 🎉');
+        $('bNext').hidden = true; $('bRetry').hidden = true;
+        $('bActions').classList.add('show');
+      } else {
+        battleMsg(`🎉 ניצחון! עברנו את שלב ${cleared}. מוכנים ליריב חזק יותר?`);
+        $('bNext').hidden = false; $('bRetry').hidden = true;
+        $('bActions').classList.add('show');
+      }
+    }
+    function loseStage() {
+      const B = battle;
+      B.phase = 'lost';
+      playSound('no');
+      battleMsg('הפעם היריב ניצח... אבל אלופים לא מוותרים! נסו שוב 💪');
+      $('bNext').hidden = true; $('bRetry').hidden = false;
+      $('bActions').classList.add('show');
+    }
+    function nextStage() {
+      if (!battle || battle.phase !== 'won') return;
+      removeEnemy();
+      battle.stage += 1;
+      spawnOpponent();
+    }
+    function retryStage() {
+      if (!battle || battle.phase !== 'lost') return;
+      removeEnemy();
+      spawnOpponent();
+    }
+    document.querySelectorAll('.dp').forEach((b) => {
+      const k = b.dataset.k;
+      const down = (e) => { e.preventDefault(); b.classList.add('held'); if (k === ' ') { doRoar(); battleRoar('p'); } else held.add(k); };
+      const up = () => { b.classList.remove('held'); held.delete(k); };
+      b.addEventListener('pointerdown', down);
+      b.addEventListener('pointerup', up);
+      b.addEventListener('pointercancel', up);
+      b.addEventListener('pointerleave', up);
+    });
     const btn = {
       roar: $('btnRoar'), walk: $('btnWalk'), spin: $('btnSpin'), compare: $('btnCompare'),
       xray: $('btnXray'), night: $('btnNight'), shot: $('btnShot'), full: $('btnFull'),
-      feed: $('btnFeed'), egg: $('btnEgg'), parade: $('btnParade'), time: $('btnTime'), weather: $('btnWeather'),
+      feed: $('btnFeed'), egg: $('btnEgg'), parade: $('btnParade'), time: $('btnTime'), weather: $('btnWeather'), battle: $('btnBattle'),
     };
     const dock = $('dock');
     function renderChips() {
@@ -2264,6 +2902,10 @@
       $('fDiet').textContent = d.diet ? DIET[d.diet] : '???';
       $('fHabitat').textContent = d.habitat ? HABITAT_NAME[d.habitat] : '???';
       $('fFun').textContent = d.fun;
+      $('btnStory').style.display = d.story ? '' : 'none';
+      renderBattleRecord(d);
+      $('growRow').style.display = d.diet ? '' : 'none';
+      renderGrow(null);
       renderSwatches(d);
     }
     function renderSwatches(d) {
@@ -2303,6 +2945,12 @@
     });
     btn.egg.addEventListener('click', () => { audio(); startEgg(); });
     btn.parade.addEventListener('click', () => { audio(); if (parade) exitParade(); else enterParade(); });
+    btn.battle.addEventListener('click', () => { if (battle) exitBattle(); else enterBattle(); });
+    $('bExit').addEventListener('click', exitBattle);
+    $('bNext').addEventListener('click', nextStage);
+    $('bRetry').addEventListener('click', retryStage);
+    window.addEventListener('keyup', (e) => held.delete(e.key));
+    window.addEventListener('blur', () => held.clear());
     btn.time.addEventListener('click', () => setTimeline(!timelineOpen));
     $('tlRange').addEventListener('input', (e) => setYear(Number(e.target.value)));
     btn.weather.addEventListener('click', () => {
@@ -2348,10 +2996,59 @@
     $('helpClose').addEventListener('click', closeHelp);
     $('helpX').addEventListener('click', closeHelp);
     help.addEventListener('click', (e) => { if (e.target === help) closeHelp(); });
+
+    // Story overlay: the full paragraph about the current species, with optional read-aloud via the browser's speech engine.
+    const story = $('story');
+    let reading = false;
+    function stopReading() {
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      reading = false;
+      $('storyRead').classList.remove('on');
+      $('storyRead').textContent = '🔊 הַקְרָאָה';
+    }
+    function openStory() {
+      const d = state.cur && state.cur.def;
+      if (!d || !d.story) return;
+      $('storyEmoji').textContent = d.emoji;
+      $('storyTitle').textContent = d.name;
+      $('storyLatin').textContent = d.latin;
+      $('storyText').textContent = d.story;
+      story.classList.add('open');
+      audio();
+    }
+    function closeStory() { story.classList.remove('open'); stopReading(); }
+    function readStory() {
+      if (!('speechSynthesis' in window)) return toast('הדפדפן הזה לא יודע להקריא 😕');
+      if (reading) return stopReading();
+      const d = state.cur && state.cur.def;
+      if (!d) return;
+      // Speech engines expect plain Hebrew, so the vowel marks are stripped before speaking.
+      const u = new SpeechSynthesisUtterance(d.story.replace(/[\u0591-\u05BD\u05BF-\u05C7]/g, '').replace(/־/g, '-'));
+      u.lang = 'he-IL';
+      u.rate = 0.9;
+      const v = speechSynthesis.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('he'));
+      if (v) u.voice = v;
+      u.onend = u.onerror = stopReading;
+      reading = true;
+      $('storyRead').classList.add('on');
+      $('storyRead').textContent = '⏹ עֲצִירָה';
+      speechSynthesis.speak(u);
+    }
+    $('btnStory').addEventListener('click', openStory);
+    $('storyClose').addEventListener('click', closeStory);
+    $('storyX').addEventListener('click', closeStory);
+    $('storyRead').addEventListener('click', readStory);
+    story.addEventListener('click', (e) => { if (e.target === story) closeStory(); });
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
-      if (e.key === 'Escape') return closeHelp();
-      if (help.classList.contains('open')) return;
+      if (e.key === 'Escape') { closeHelp(); closeStory(); return; }
+      if (help.classList.contains('open') || story.classList.contains('open')) return;
+      if (battle) {
+        if (e.key.startsWith('Arrow')) { e.preventDefault(); held.add(e.key); }
+        else if (e.key === ' ') { e.preventDefault(); doRoar(); battleRoar('p'); }
+        else if (e.key.toLowerCase() === 'b') exitBattle();
+        return;
+      }
       if (e.key === 'ArrowLeft') selectDino((state.index + 1) % DINOS.length);
       else if (e.key === 'ArrowRight') selectDino((state.index - 1 + DINOS.length) % DINOS.length);
       else if (e.key === ' ') { e.preventDefault(); doRoar(); }
@@ -2361,6 +3058,8 @@
       else if (e.key.toLowerCase() === 'e') btn.egg.click();
       else if (e.key.toLowerCase() === 't') btn.time.click();
       else if (e.key.toLowerCase() === 'r') btn.weather.click();
+      else if (e.key.toLowerCase() === 'i') openStory();
+      else if (e.key.toLowerCase() === 'b') enterBattle();
     });
     const hideHint = () => $('hint').classList.add('hide');
     setTimeout(hideHint, 7000);
@@ -2522,7 +3221,17 @@
         else shakeY = Math.sin(state.shake * 18) * 0.3 * (1 - state.shake / 0.9);
       }
 
-      if (state.cur) animateDino(state.cur, dt, t, { wa, lift, open: open + chompOpen, pulse, hop, shakeY, steps: true });
+      if (battle && battle.enemy) {
+        battleStep(dt);
+        const B = battle, pMax = clamp(B.player.def.lengthM * 0.45, 1.8, 6), eMax = clamp(B.enemy.def.lengthM * 0.4, 1.6, 5.2);
+        animateDino(B.player, dt, t, { wa: clamp(Math.abs(B.pSpeed) / pMax, 0, 1), lift, open, pulse, hop: 0, shakeY, steps: true });
+        let el = 0, eo = 0, ep = 0;
+        if (B.eRoar >= 0) { const env = Math.sin(Math.PI * clamp(B.eRoar / 1.5, 0, 1)); el = env * 0.45; eo = Math.pow(env, 0.7) * 0.55; ep = env; }
+        animateDino(B.enemy, dt, t, { wa: clamp(Math.abs(B.eSpeed) / eMax, 0, 1), lift: el, open: eo, pulse: ep, hop: 0, shakeY: 0, steps: true });
+      } else if (state.cur) {
+        animateDino(state.cur, dt, t, { wa, lift, open: open + chompOpen, pulse, hop, shakeY, steps: true });
+        if (!parade && !egg) roam(state.cur, dt, wa);
+      }
       if (parade) for (const pd of parade.dinos) animateDino(pd, dt, t, { wa, lift, open, pulse, hop: 0, shakeY: 0, steps: false });
       if (egg) egg.group.rotation.y += dt * 0.4;
 
@@ -2531,7 +3240,7 @@
     }
 
     window.__dinoState = state;
-    window.__dino = { tapEgg, startEgg, enterParade, exitParade, setTimeline, setYear, feed, selectDino, get parade() { return parade; }, get egg() { return egg; } };
+    window.__dino = { tapEgg, startEgg, enterParade, exitParade, setTimeline, setYear, feed, selectDino, enterBattle, exitBattle, nextStage, retryStage, held, get battle() { return battle; }, get parade() { return parade; }, get egg() { return egg; } };
     // ── Boot ──────────────────────────────────────────────────────────────────────────────────────────────────────
     renderChips();
     setHabitat('plains');
