@@ -2930,14 +2930,18 @@
     }
 
     btn.roar.addEventListener('click', doRoar);
-    btn.walk.addEventListener('click', () => { state.walking = !state.walking; btn.walk.classList.toggle('on', state.walking); audio(); });
-    btn.spin.addEventListener('click', () => { controls.autoRotate = !controls.autoRotate; btn.spin.classList.toggle('on', controls.autoRotate); });
+    // Tools that move the camera or the fighter are paused while a battle is running.
+    const inBattle = () => { if (!battle) return false; toast('⚔️ קודם מסיימים את הקרב (או לוחצים "יציאה")'); return true; };
+    btn.walk.addEventListener('click', () => { if (inBattle()) return; state.walking = !state.walking; btn.walk.classList.toggle('on', state.walking); audio(); });
+    btn.spin.addEventListener('click', () => { if (inBattle()) return; controls.autoRotate = !controls.autoRotate; btn.spin.classList.toggle('on', controls.autoRotate); });
     btn.compare.addEventListener('click', () => {
       if (parade || egg) return toast('קודם בוחרים דינוזאור 🦕');
+      if (inBattle()) return;
       setCompare(!state.compare);
     });
     btn.feed.addEventListener('click', () => {
       if (parade || egg) return toast('קודם בוחרים דינוזאור 🦕');
+      if (inBattle()) return;
       const open = !$('food').classList.contains('open');
       $('food').classList.toggle('open', open);
       btn.feed.classList.toggle('on', open);
@@ -2951,7 +2955,7 @@
     $('bRetry').addEventListener('click', retryStage);
     window.addEventListener('keyup', (e) => held.delete(e.key));
     window.addEventListener('blur', () => held.clear());
-    btn.time.addEventListener('click', () => setTimeline(!timelineOpen));
+    btn.time.addEventListener('click', () => { if (!inBattle()) setTimeline(!timelineOpen); });
     $('tlRange').addEventListener('input', (e) => setYear(Number(e.target.value)));
     btn.weather.addEventListener('click', () => {
       state.weather = (state.weather + 1) % WEATHER.length;
