@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>סטודיו לגו 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3efe6; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280; --line: #e6e1d6;
+    --accent: #e3000b; --accent2: #0055bf; --yellow: #f7d117; --green: #00852b;
+    --radius: 14px; --shadow: 0 10px 30px rgba(30, 30, 50, .10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Rubik', system-ui, sans-serif; background: var(--bg); color: var(--ink);
+    display: flex; flex-direction: column; user-select: none;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; }
+
+  /* ─── header ─── */
+  header {
+    height: 58px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--panel);
+    border-bottom: 1px solid var(--line); z-index: 10; flex-shrink: 0;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 19px; letter-spacing: -.3px; }
+  .logo .bricks { display: flex; gap: 2px; }
+  .logo .bricks i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; position: relative; }
+  .logo .bricks i::after { content: ''; position: absolute; inset: 3px 4px auto 4px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.45); }
+  .modes { display: flex; background: #f0ece3; padding: 3px; border-radius: 10px; margin-inline-start: 6px; }
+  .modes button { padding: 7px 14px; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--muted); white-space: nowrap; }
+  .modes button.on { background: var(--ink); color: #fff; }
+  .spacer { flex: 1; }
+  .hbtn {
+    height: 36px; min-width: 36px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--line); background: #fff;
+    font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: background .12s;
+  }
+  .hbtn:hover { background: #f7f4ec; }
+  .hbtn:disabled { opacity: .35; cursor: default; }
+  .hbtn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .menu { position: relative; }
+  .dropdown {
+    position: absolute; top: 42px; inset-inline-end: 0; background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); min-width: 210px; padding: 6px; display: none; z-index: 50;
+  }
+  .dropdown.open { display: block; }
+  .dropdown button { width: 100%; text-align: start; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; display: flex; gap: 8px; align-items: center; }
+  .dropdown button:hover { background: #f5f2ea; }
+  .dropdown hr { border: none; border-top: 1px solid var(--line); margin: 6px 0; }
+
+  /* ─── layout ─── */
+  main { flex: 1; display: flex; min-height: 0; position: relative; }
+  aside {
+    width: 340px; background: var(--panel); border-inline-start: 1px solid var(--line); display: flex; flex-direction: column;
+    flex-shrink: 0; z-index: 5;
+  }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tabs button { flex: 1; padding: 12px 4px; font-weight: 600; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  .tabpane { display: none; flex: 1; overflow-y: auto; padding: 14px; }
+  .tabpane.on { display: block; }
+  .tabpane h3 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 14px 0 8px; }
+  .tabpane h3:first-child { margin-top: 0; }
+
+  .parts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .part {
+    aspect-ratio: 1; border-radius: 10px; border: 2px solid var(--line); background: #faf8f3; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--muted); position: relative; overflow: hidden;
+  }
+  .part canvas { width: 100%; height: 100%; position: absolute; inset: 0; }
+  .part span { position: absolute; bottom: 3px; background: rgba(255,255,255,.85); padding: 1px 5px; border-radius: 6px; font-size: 10px; }
+  .part.on { border-color: var(--accent); background: #fff3f3; }
+  .colors { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .swatch { aspect-ratio: 1; border-radius: 10px; border: 3px solid transparent; position: relative; box-shadow: inset 0 -4px 0 rgba(0,0,0,.18); }
+  .swatch.on { border-color: var(--ink); }
+  .swatch.trans { background-image: linear-gradient(45deg, rgba(255,255,255,.5) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.5) 75%); background-size: 8px 8px; }
+  .swatch::after { content: ''; position: absolute; top: 4px; left: 25%; right: 25%; height: 22%; border-radius: 50%; background: rgba(255,255,255,.35); }
+
+  .models { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .model { border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: start; background: #faf8f3; transition: transform .12s; }
+  .model:hover { transform: translateY(-2px); background: #fff; }
+  .model .em { font-size: 30px; }
+  .model b { display: block; font-size: 14px; margin-top: 6px; }
+  .model small { color: var(--muted); font-size: 12px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .field label { font-size: 13px; font-weight: 600; }
+  textarea, input[type=text], input[type=password], select {
+    width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 14px; background: #faf8f3; resize: vertical;
+  }
+  textarea:focus, input:focus { outline: 2px solid var(--accent2); border-color: transparent; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { padding: 6px 10px; border-radius: 999px; background: #f0ece3; font-size: 12px; font-weight: 500; }
+  .chip:hover { background: #e6e0d2; }
+  .big { width: 100%; padding: 13px; border-radius: 12px; background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .big:disabled { opacity: .6; cursor: wait; }
+  .note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 8px 0; }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent2); }
+
+  /* ─── stats & sections ─── */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+  .stat { background: #faf8f3; border-radius: 10px; padding: 10px 8px; text-align: center; }
+  .stat b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+  .stat small { color: var(--muted); font-size: 11px; }
+  .sections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .sec { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; text-align: start; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .sec i { width: 14px; height: 14px; border-radius: 4px; border: 2px solid #999; flex-shrink: 0; }
+  .sec.on { border-color: var(--accent2); background: #eef4ff; }
+  .sec.on i { background: var(--accent2); border-color: var(--accent2); }
+  .sec small { color: var(--muted); display: block; font-size: 11px; }
+  .slider { display: flex; flex-direction: column; gap: 4px; margin: 12px 0; }
+  .slider .row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  input[type=range] { width: 100%; accent-color: var(--accent2); }
+  .bom { display: flex; flex-direction: column; gap: 4px; }
+  .bom button { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; font-size: 13px; text-align: start; }
+  .bom button:hover, .bom button.on { background: #f0ece3; }
+  .bom i { width: 16px; height: 12px; border-radius: 3px; display: inline-block; flex-shrink: 0; box-shadow: inset 0 -2px 0 rgba(0,0,0,.2); }
+  .bom b { margin-inline-start: auto; color: var(--muted); font-weight: 600; }
+  .review { border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.5; }
+  .review.ok { background: #e8f7ec; color: #0b5d26; }
+  .review.warn { background: #fff4d6; color: #7a4d00; }
+  .review ul { padding-inline-start: 16px; margin-top: 4px; }
+
+  /* ─── canvas ─── */
+  #stage { flex: 1; position: relative; min-width: 0; background: radial-gradient(ellipse at 50% 30%, #fbf9f4 0%, #ece7db 70%, #e2dccd 100%); }
+  #stage.showcase { background: radial-gradient(ellipse at 50% 35%, #2b2f3f 0%, #141621 75%); }
+  canvas.gl { display: block; width: 100%; height: 100%; touch-action: none; }
+  .float { position: absolute; z-index: 4; }
+  .toolbar {
+    bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+    padding: 6px; border-radius: 14px; box-shadow: var(--shadow); border: 1px solid var(--line); align-items: center;
+  }
+  .toolbar button { height: 42px; min-width: 42px; padding: 0 10px; border-radius: 10px; font-size: 18px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; }
+  .toolbar button small { font-size: 12px; }
+  .toolbar button.on { background: var(--ink); color: #fff; }
+  .toolbar button:hover:not(.on) { background: #f0ece3; }
+  .toolbar .sep { width: 1px; height: 28px; background: var(--line); margin: 0 2px; }
+  .views { top: 14px; left: 14px; display: flex; gap: 6px; }
+  .views button, .hint { background: rgba(255,255,255,.9); border: 1px solid var(--line); border-radius: 9px; padding: 7px 12px; font-size: 13px; font-weight: 600; }
+  .views button:hover { background: #fff; }
+  .hint { top: 14px; right: 14px; color: var(--muted); font-weight: 500; font-size: 12px; pointer-events: none; }
+  .title-card { top: 58px; left: 14px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; max-width: 320px; }
+  .title-card input { border: none; background: transparent; font-size: 18px; font-weight: 800; width: 100%; padding: 0; color: var(--ink); }
+  .title-card small { color: var(--muted); font-size: 12px; }
+  #stage.showcase .title-card, #stage.showcase .views button { background: rgba(30,32,44,.85); color: #eee; border-color: #3a3d4d; }
+  #stage.showcase .title-card input { color: #fff; }
+  #stage.showcase .title-card small { color: #aaa; }
+
+  .steps {
+    bottom: 78px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.95); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 16px; width: min(560px, calc(100% - 28px)); box-shadow: var(--shadow); display: none;
+  }
+  .steps.on { display: block; }
+  .steps .row { display: flex; align-items: center; gap: 10px; }
+  .steps .row b { font-size: 16px; }
+  .steps .row .hbtn { height: 34px; }
+  .steps .pieces { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; }
+  .steps .pieces span { display: inline-flex; align-items: center; gap: 5px; background: #f0ece3; padding: 3px 8px; border-radius: 999px; }
+  .steps .pieces i { width: 12px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-weight: 600; font-size: 14px; opacity: 0; transition: .25s; z-index: 100; pointer-events: none; max-width: 90vw; text-align: center; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #loadErr { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 200; align-items: center; justify-content: center; text-align: center; padding: 30px; font-size: 18px; line-height: 1.7; }
+  .spin { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .big.busy .spin { display: inline-block; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(20,22,30,.55); z-index: 90; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .overlay.on { display: flex; }
+  .dialog { background: #fff; border-radius: 18px; padding: 24px; width: min(520px, 100%); box-shadow: var(--shadow); max-height: 90vh; overflow: auto; }
+  .dialog h2 { font-size: 20px; margin-bottom: 8px; }
+  .dialog p { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 14px; }
+  .dialog .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+  kbd { background: #f0ece3; border-radius: 5px; padding: 1px 6px; font-family: inherit; font-size: 12px; border: 1px solid var(--line); }
+  .help-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; align-items: center; }
+
+  @media (max-width: 860px) {
+    main { flex-direction: column-reverse; }
+    aside { width: 100%; height: 42vh; border-inline-start: none; border-top: 1px solid var(--line); }
+    .parts { grid-template-columns: repeat(6, 1fr); }
+    .colors { grid-template-columns: repeat(8, 1fr); }
+    .toolbar { bottom: 10px; padding: 4px; gap: 2px; }
+    .toolbar button { height: 38px; min-width: 38px; font-size: 16px; }
+    .toolbar button small { display: none; }
+    .title-card { top: 54px; left: 10px; padding: 6px 10px; }
+    .title-card input { font-size: 15px; }
+    .steps { bottom: 60px; }
+    .hint { display: none; }
+    .modes button { padding: 6px 9px; font-size: 12px; }
+    .logo span { display: none; }
+    .hbtn .lbl { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="loadErr">😕 לא הצלחנו לטעון את מנוע התלת־ממד.<br>בדקו את חיבור האינטרנט ורעננו את הדף.</div>
+
+<header>
+  <div class="logo">
+    <div class="bricks"><i style="background:#e3000b"></i><i style="background:#f7d117"></i><i style="background:#0055bf"></i><i style="background:#00852b"></i></div>
+    <span>סטודיו לגו</span>
+  </div>
+  <div class="modes" id="modes">
+    <button data-mode="build" class="on">🧱 בנייה</button>
+    <button data-mode="showcase">✨ הדמיה</button>
+    <button data-mode="steps">📖 הוראות</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="hbtn" id="undoBtn" title="בטל (Ctrl+Z)" disabled>↶ <span class="lbl">בטל</span></button>
+  <button class="hbtn" id="redoBtn" title="בצע שוב (Ctrl+Y)" disabled>↷ <span class="lbl">שוב</span></button>
+  <div class="menu">
+    <button class="hbtn" id="fileBtn">💾 <span class="lbl">קובץ</span> ▾</button>
+    <div class="dropdown" id="fileMenu">
+      <button data-act="save">💾 שמור בדפדפן</button>
+      <button data-act="load">📂 טען שמירה</button>
+      <hr>
+      <button data-act="json">⬇️ ייצוא JSON</button>
+      <button data-act="csv">⬇️ ייצוא רשימת חלקים (CSV)</button>
+      <button data-act="ldraw">⬇️ ייצוא LDraw (.ldr)</button>
+      <button data-act="import">⬆️ ייבוא JSON</button>
+      <button data-act="shot">📸 צילום מסך</button>
+      <hr>
+      <button data-act="clear" style="color:var(--accent)">🗑️ נקה את הכל</button>
+    </div>
+  </div>
+  <button class="hbtn" id="helpBtn" title="עזרה">?</button>
+</header>
+
+<main>
+  <aside>
+    <div class="tabs" id="tabs">
+      <button data-tab="parts" class="on">🧱 חלקים</button>
+      <button data-tab="colors">🎨 צבעים</button>
+      <button data-tab="models">🚗 דגמים</button>
+      <button data-tab="ai">✨ AI</button>
+      <button data-tab="info">📊 מידע</button>
+    </div>
+
+    <div class="tabpane on" id="tab-parts">
+      <h3>לבנים</h3><div class="parts" id="partsBricks"></div>
+      <h3>פלטות ואריחים</h3><div class="parts" id="partsPlates"></div>
+      <h3>מיוחדים</h3><div class="parts" id="partsSpecial"></div>
+      <p class="note" style="margin-top:12px">לחיצה = הצבה · <kbd>R</kbd> סיבוב · <kbd>↑</kbd>/<kbd>↓</kbd> הרמה · לחיצה ימנית = מחיקה · גרירה = סיבוב מצלמה</p>
+    </div>
+
+    <div class="tabpane" id="tab-colors">
+      <h3>צבעים אטומים</h3><div class="colors" id="colorsSolid"></div>
+      <h3>שקופים</h3><div class="colors" id="colorsTrans"></div>
+      <p class="note" style="margin-top:12px">טיפ: בחרו את כלי 🖌️ צבע בסרגל התחתון כדי לצבוע לבנים קיימות.</p>
+    </div>
+
+    <div class="tabpane" id="tab-models">
+      <h3>דגמים מוכנים כנקודת פתיחה</h3>
+      <div class="models" id="modelsGrid"></div>
+      <p class="note" style="margin-top:12px">כל דגם מגיע עם חלוקה למקטעים, הוראות בנייה שלב־אחר־שלב, ואפשר לערוך אותו כרצונכם.</p>
+    </div>
+
+    <div class="tabpane" id="tab-ai">
+      <h3>תארו מה תרצו לבנות</h3>
+      <div class="field">
+        <textarea id="aiPrompt" rows="4" placeholder="לדוגמה: מכונית מירוץ אדומה עם ספוילר גדול וגלגלים רחבים"></textarea>
+      </div>
+      <div class="chips" id="aiChips">
+        <button class="chip">🏰 טירה עם שני מגדלים</button>
+        <button class="chip">🚀 חללית כסופה עם כנפיים</button>
+        <button class="chip">🐉 דרקון ירוק</button>
+        <button class="chip">🏠 בית קטן עם גג אדום</button>
+        <button class="chip">🚜 טרקטור צהוב</button>
+        <button class="chip">🦆 ברווז</button>
+      </div>
+      <label class="check"><input type="checkbox" id="aiContinue"> המשך מהדגם הנוכחי (שיפור/שינוי)</label>
+      <button class="big" id="aiGo"><span class="spin"></span> ✨ צור נקודת פתיחה</button>
+      <p class="note" id="aiStatus" style="margin-top:10px"></p>
+      <h3>הגדרות מודל</h3>
+      <div class="field">
+        <label>מפתח API של Anthropic (נמחק אחרי 10 דקות ללא שימוש או בסגירת הדף)</label>
+        <input type="password" id="aiKey" placeholder="sk-ant-...">
+      </div>
+      <div class="field">
+        <label>מודל</label>
+        <select id="aiModel">
+          <option value="claude-sonnet-5">Claude Sonnet 5 (מהיר)</option>
+          <option value="claude-opus-5">Claude Opus 5 (מפורט יותר)</option>
+          <option value="claude-fable-5-1">Claude Fable 5.1</option>
+        </select>
+      </div>
+      <p class="note">בלי מפתח, הסטודיו ישתמש במחולל מובנה שמזהה מילות מפתח (מכונית, בית, עץ, רובוט...) וצבעים בעברית.</p>
+    </div>
+
+    <div class="tabpane" id="tab-info">
+      <div class="stats">
+        <div class="stat"><b id="stParts">0</b><small>חלקים</small></div>
+        <div class="stat"><b id="stTypes">0</b><small>סוגים</small></div>
+        <div class="stat"><b id="stHeight">0</b><small>מ״מ גובה</small></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="stSize">–</b><small>רוחב×אורך (בליטות)</small></div>
+        <div class="stat"><b id="stColors">0</b><small>צבעים</small></div>
+        <div class="stat"><b id="stWeight">0</b><small>גרם (בקירוב)</small></div>
+      </div>
+
+      <h3>מקטעים <button class="chip" id="secReset" style="float:inline-end">איפוס</button></h3>
+      <p class="note" style="margin-bottom:8px">בחרו כל שילוב. ללא בחירה מוצג הכל.</p>
+      <div class="sections" id="sections"></div>
+
+      <div class="slider">
+        <div class="row"><span>הפרדת מקטעים</span><span id="explodeVal">0%</span></div>
+        <input type="range" id="explode" min="0" max="100" value="0">
+        <div class="row"><span>מורכב</span><span>מפורד</span></div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="hbtn primary" id="buildAll" style="flex:1;justify-content:center">▶ בנה הכל</button>
+        <button class="hbtn" id="buildStop" style="flex:1;justify-content:center">■ עצור</button>
+      </div>
+
+      <h3>בדיקת בנייה</h3>
+      <div class="review ok" id="review">אין עדיין חלקים.</div>
+
+      <h3>רשימת חלקים <span class="note" id="bomNote"></span></h3>
+      <div class="bom" id="bom"></div>
+    </div>
+  </aside>
+
+  <div id="stage">
+    <canvas class="gl" id="gl"></canvas>
+    <div class="float views">
+      <button data-view="iso">איזומטרי</button>
+      <button data-view="front">חזית</button>
+      <button data-view="side">צד</button>
+      <button data-view="top">מלמעלה</button>
+      <button data-view="under">מלמטה</button>
+    </div>
+    <div class="float hint">גלילה = זום · גרירה = סיבוב · Shift+גרירה = הזזה</div>
+    <div class="float title-card">
+      <input id="modelName" value="דגם חדש" maxlength="40">
+      <small id="modelSub">התחילו לבנות או בחרו דגם</small>
+    </div>
+    <div class="float toolbar" id="toolbar">
+      <button data-tool="place" class="on" title="הצבה">🧱<small>הצב</small></button>
+      <button data-tool="paint" title="צביעה">🖌️<small>צבע</small></button>
+      <button data-tool="erase" title="מחיקה">🧹<small>מחק</small></button>
+      <div class="sep"></div>
+      <button id="rotBtn" title="סיבוב חלק (R)">🔄</button>
+      <button id="liftUp" title="הרמה (↑)">⬆️</button>
+      <button id="liftDown" title="הורדה (↓)">⬇️</button>
+      <div class="sep"></div>
+      <button id="mirrorBtn" title="שכפול במראה">🪞</button>
+      <button id="curColor" title="צבע נוכחי"><i style="width:22px;height:22px;border-radius:6px;display:inline-block;background:#e3000b"></i></button>
+    </div>
+    <div class="float steps" id="steps">
+      <div class="row">
+        <button class="hbtn" id="stepPrev">→ הקודם</button>
+        <b id="stepLabel">שלב 1 מתוך 1</b>
+        <button class="hbtn" id="stepNext">הבא ←</button>
+        <span class="spacer"></span>
+        <button class="hbtn" id="stepPlay">▶ נגן</button>
+      </div>
+      <input type="range" id="stepRange" min="1" max="1" value="1" style="margin-top:8px">
+      <div class="pieces" id="stepPieces"></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div class="overlay" id="helpDlg">
+  <div class="dialog">
+    <h2>איך בונים? 🧱</h2>
+    <div class="help-grid">
+      <kbd>לחיצה</kbd><span>הצבת החלק שנבחר על הפלטה או על לבנה אחרת</span>
+      <kbd>לחיצה ימנית</kbd><span>מחיקת לבנה</span>
+      <kbd>גרירה</kbd><span>סיבוב המצלמה · <kbd>Shift</kbd> + גרירה להזזה · גלילה לזום</span>
+      <kbd>R</kbd><span>סיבוב החלק ב־90°</span>
+      <kbd>↑ / ↓</kbd><span>הרמת/הורדת החלק בפלטה אחת (לבנייה עם חללים)</span>
+      <kbd>1–9</kbd><span>בחירת חלק מהיר</span>
+      <kbd>Ctrl+Z / Y</kbd><span>בטל / בצע שוב</span>
+      <kbd>Delete</kbd><span>מחיקת הלבנה שמתחת לסמן</span>
+    </div>
+    <p style="margin-top:14px">במצב <b>הדמיה</b> הדגם מוצג על במה מסתובבת. במצב <b>הוראות</b> תראו איך לבנות שלב אחר שלב. בלשונית <b>AI</b> תוכלו לתאר במילים מה תרצו לבנות ולקבל נקודת פתיחה.</p>
+    <div class="row"><button class="hbtn primary" id="helpClose">הבנתי!</button></div>
+  </div>
+</div>
+
+<input type="file" id="importFile" accept=".json" style="display:none">
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script>
+  window.addEventListener('error', (e) => {
+    if (String(e.message || '').includes('import') || String(e.filename || '').includes('jsdelivr')) document.getElementById('loadErr').style.display = 'flex';
+  });
+  setTimeout(() => { if (!window.__legoReady) document.getElementById('loadErr').style.display = 'flex'; }, 15000);
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Units: 1 stud pitch = 1 world unit (8mm). Heights are measured in "plates" (1 plate = 0.4 units = 3.2mm, brick = 3 plates).
+//  A brick is {t: typeId, x, z, y (plate units, bottom), r: 0..3, c: colorId, s: sectionName?}. Origin corner = min x/z.
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const PLATE = 0.4, STUD_R = 0.3, STUD_H = 0.17, GAP = 0.04, BASE = 32, HALF = BASE / 2;
+
+const COLORS = [
+  { id: 'red', he: 'אדום', hex: 0xc91a09 }, { id: 'blue', he: 'כחול', hex: 0x0055bf }, { id: 'yellow', he: 'צהוב', hex: 0xf2cd37 },
+  { id: 'green', he: 'ירוק', hex: 0x237841 }, { id: 'white', he: 'לבן', hex: 0xf4f4f4 }, { id: 'black', he: 'שחור', hex: 0x1b2a34 },
+  { id: 'dkgray', he: 'אפור כהה', hex: 0x6c6e68 }, { id: 'ltgray', he: 'אפור בהיר', hex: 0xa0a5a9 }, { id: 'orange', he: 'כתום', hex: 0xfe8a18 },
+  { id: 'lime', he: 'ליים', hex: 0xbbe90b }, { id: 'dkblue', he: 'כחול כהה', hex: 0x0a3463 }, { id: 'dkred', he: 'אדום כהה', hex: 0x720e0f },
+  { id: 'tan', he: 'חול', hex: 0xe4cd9e }, { id: 'dktan', he: 'חול כהה', hex: 0x958a73 }, { id: 'brown', he: 'חום', hex: 0x582a12 },
+  { id: 'pink', he: 'ורוד', hex: 0xfc97ac }, { id: 'purple', he: 'סגול', hex: 0x81007b }, { id: 'azure', he: 'תכלת', hex: 0x36aebf },
+  { id: 'dkgreen', he: 'ירוק כהה', hex: 0x184632 }, { id: 'sand', he: 'ירוק חול', hex: 0xa0bcac }, { id: 'magenta', he: 'מג׳נטה', hex: 0x923978 },
+  { id: 'gold', he: 'זהב', hex: 0xd4a017, metal: true }, { id: 'silver', he: 'כסף', hex: 0xb8bcc0, metal: true }, { id: 'chrome', he: 'כרום', hex: 0x6e7278, metal: true },
+  { id: 'tclear', he: 'שקוף', hex: 0xfcfcfc, trans: true }, { id: 'tred', he: 'שקוף אדום', hex: 0xc91a09, trans: true },
+  { id: 'tblue', he: 'שקוף כחול', hex: 0x0020a0, trans: true }, { id: 'tyellow', he: 'שקוף צהוב', hex: 0xf5cd2f, trans: true },
+  { id: 'tgreen', he: 'שקוף ירוק', hex: 0x84b68d, trans: true }, { id: 'torange', he: 'שקוף כתום', hex: 0xf08f1c, trans: true },
+];
+const COLOR = Object.fromEntries(COLORS.map(c => [c.id, c]));
+
+// Part types. w = size along x, d = size along z (unrotated), h = height in plates. kind drives the geometry builder.
+const TYPES = [
+  ...[[1,1],[1,2],[1,3],[1,4],[1,6],[1,8],[2,2],[2,3],[2,4],[2,6],[2,8]].map(([w,d]) => ({ id: `${w}x${d}`, he: `לבנה ${w}×${d}`, w, d, h: 3, kind: 'brick', group: 'bricks' })),
+  ...[[1,1],[1,2],[1,4],[1,6],[2,2],[2,4],[2,6],[4,4],[6,6]].map(([w,d]) => ({ id: `${w}x${d}p`, he: `פלטה ${w}×${d}`, w, d, h: 1, kind: 'brick', group: 'plates' })),
+  ...[[1,2],[2,2],[2,4]].map(([w,d]) => ({ id: `${w}x${d}t`, he: `אריח ${w}×${d}`, w, d, h: 1, kind: 'tile', group: 'plates' })),
+  { id: 'slope1x2', he: 'משופע 1×2', w: 1, d: 2, h: 3, kind: 'slope', group: 'special' },
+  { id: 'slope2x2', he: 'משופע 2×2', w: 2, d: 2, h: 3, kind: 'slope', group: 'special' },
+  { id: 'slope2x3', he: 'משופע 2×3', w: 2, d: 3, h: 3, kind: 'slope', group: 'special' },
+  { id: 'slope1x2i', he: 'משופע הפוך 1×2', w: 1, d: 2, h: 3, kind: 'islope', group: 'special' },
+  { id: 'round1x1', he: 'עגול 1×1', w: 1, d: 1, h: 3, kind: 'round', group: 'special' },
+  { id: 'round2x2', he: 'עגול 2×2', w: 2, d: 2, h: 3, kind: 'round', group: 'special' },
+  { id: 'cone', he: 'חרוט 1×1', w: 1, d: 1, h: 3, kind: 'cone', group: 'special' },
+  { id: 'dome2x2', he: 'כיפה 2×2', w: 2, d: 2, h: 3, kind: 'dome', group: 'special' },
+  { id: 'wheel', he: 'גלגל', w: 1, d: 2, h: 5, kind: 'wheel', group: 'special' },
+  { id: 'window', he: 'חלון 1×2×2', w: 1, d: 2, h: 6, kind: 'window', group: 'special' },
+  { id: 'door', he: 'דלת 1×2×3', w: 1, d: 2, h: 9, kind: 'door', group: 'special' },
+  { id: 'arch1x4', he: 'קשת 1×4', w: 1, d: 4, h: 3, kind: 'arch', group: 'special' },
+  { id: 'antenna', he: 'אנטנה', w: 1, d: 1, h: 6, kind: 'antenna', group: 'special' },
+  { id: 'flower', he: 'פרח', w: 1, d: 1, h: 2, kind: 'flower', group: 'special' },
+  { id: 'fence1x4', he: 'גדר 1×4', w: 1, d: 4, h: 3, kind: 'fence', group: 'special' },
+  { id: 'prop', he: 'מדחף', w: 3, d: 1, h: 1, kind: 'prop', group: 'special' },
+  { id: 'head', he: 'ראש דמות', w: 1, d: 1, h: 3, kind: 'head', group: 'special' },
+];
+const TYPE = Object.fromEntries(TYPES.map(t => [t.id, t]));
+const footprint = (t, r) => (r % 2 ? { w: t.d, d: t.w } : { w: t.w, d: t.d });
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Geometry builders — each returns a merged BufferGeometry whose min corner is at (0,0,0). Group 1 = glass (when present).
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const geomCache = new Map();
+function box(w, h, d, x, y, z) { const g = new THREE.BoxGeometry(w, h, d); g.translate(x + w / 2, y + h / 2, z + d / 2); return g; }
+function stud(cx, y, cz) { const g = new THREE.CylinderGeometry(STUD_R, STUD_R, STUD_H, 20); g.translate(cx, y + STUD_H / 2, cz); return g; }
+function studsOn(w, d, y, list, mask) {
+  for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) if (!mask || mask(i, j)) list.push(stud(i + 0.5, y, j + 0.5));
+}
+function buildGeometry(t, r) {
+  const key = t.id + ':' + r;
+  if (geomCache.has(key)) return geomCache.get(key);
+  const H = t.h * PLATE, w = t.w, d = t.d;
+  const body = [], glass = [];
+  switch (t.kind) {
+    case 'brick': body.push(box(w - GAP, H, d - GAP, GAP / 2, 0, GAP / 2)); studsOn(w, d, H, body); break;
+    case 'tile': body.push(box(w - GAP, H, d - GAP, GAP / 2, 0, GAP / 2)); break;
+    case 'slope': {
+      // slope faces -z: full height at z=d-1..d (back), sloping down toward z=0 with a 1-plate lip at the front
+      const lip = PLATE, backD = 1;
+      body.push(box(w - GAP, lip, d - GAP, GAP / 2, 0, GAP / 2));
+      body.push(box(w - GAP, H, backD - GAP, GAP / 2, 0, d - backD + GAP / 2));
+      const shape = new THREE.Shape(); shape.moveTo(0, lip); shape.lineTo(d - backD, lip); shape.lineTo(d - backD, H); shape.lineTo(0.05, lip + 0.02); shape.closePath();
+      const wedge = new THREE.ExtrudeGeometry(shape, { depth: w - GAP, bevelEnabled: false });
+      wedge.rotateY(-Math.PI / 2); wedge.translate(GAP / 2, 0, GAP / 2); // extrude along -x → rotate so depth lies along +x
+      body.push(wedge);
+      studsOn(w, backD, H, body); for (const g of body.slice(-w * backD)) g.translate(0, 0, d - backD);
+      break;
+    }
+    case 'islope': {
+      body.push(box(w - GAP, H, d - GAP, GAP / 2, 0, GAP / 2)); // simplified: solid block with a slanted cut represented by a wedge
+      const shape = new THREE.Shape(); shape.moveTo(0, 0); shape.lineTo(d - 1, 0); shape.lineTo(0, H - PLATE); shape.closePath();
+      const cut = new THREE.ExtrudeGeometry(shape, { depth: w + 0.02, bevelEnabled: false }); cut.rotateY(-Math.PI / 2); cut.translate(-0.01, 0, 0);
+      body.length = 0; body.push(box(w - GAP, PLATE, d - GAP, GAP / 2, H - PLATE, GAP / 2), box(w - GAP, H, 1 - GAP, GAP / 2, 0, d - 1 + GAP / 2));
+      const s2 = new THREE.Shape(); s2.moveTo(0, H - PLATE); s2.lineTo(d - 1, 0); s2.lineTo(d - 1, H - PLATE); s2.closePath();
+      const wedge = new THREE.ExtrudeGeometry(s2, { depth: w - GAP, bevelEnabled: false }); wedge.rotateY(-Math.PI / 2); wedge.translate(GAP / 2, 0, GAP / 2);
+      body.push(wedge); studsOn(w, d, H, body); break;
+    }
+    case 'round': { const R = w / 2 - GAP / 2; const c = new THREE.CylinderGeometry(R, R, H, 32); c.translate(w / 2, H / 2, d / 2); body.push(c); studsOn(w, d, H, body); break; }
+    case 'cone': { const c = new THREE.CylinderGeometry(0.2, 0.5 - GAP / 2, H, 28); c.translate(0.5, H / 2, 0.5); body.push(c, stud(0.5, H, 0.5)); break; }
+    case 'dome': { const s = new THREE.SphereGeometry(w / 2 - GAP / 2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2); s.scale(1, H / (w / 2), 1); s.translate(w / 2, 0, d / 2); body.push(s); break; }
+    case 'wheel': {
+      const tire = new THREE.CylinderGeometry(1, 1, 0.7, 36); tire.rotateZ(Math.PI / 2); tire.translate(0.5, 1, 1);
+      const hub = new THREE.CylinderGeometry(0.55, 0.55, 0.74, 24); hub.rotateZ(Math.PI / 2); hub.translate(0.5, 1, 1);
+      body.push(tire); glass.push(hub); break;
+    }
+    case 'window': {
+      const f = 0.14;
+      body.push(box(w - GAP, PLATE, d - GAP, GAP / 2, 0, GAP / 2), box(w - GAP, PLATE, d - GAP, GAP / 2, H - PLATE, GAP / 2),
+        box(w - GAP, H, f, GAP / 2, 0, GAP / 2), box(w - GAP, H, f, GAP / 2, 0, d - f - GAP / 2));
+      glass.push(box(0.1, H - 2 * PLATE, d - 2 * f - GAP, 0.45, PLATE, f + GAP / 2)); studsOn(w, d, H, body); break;
+    }
+    case 'door': {
+      const f = 0.14;
+      body.push(box(w - GAP, PLATE, d - GAP, GAP / 2, H - PLATE, GAP / 2), box(w - GAP, H, f, GAP / 2, 0, GAP / 2), box(w - GAP, H, f, GAP / 2, 0, d - f - GAP / 2));
+      glass.push(box(0.12, H - PLATE - 0.05, d - 2 * f - GAP, 0.44, 0.02, f + GAP / 2), stud(0.62, 0, 0.45).translate(0, 1.2, 0));
+      studsOn(w, d, H, body); break;
+    }
+    case 'arch': {
+      body.push(box(w - GAP, PLATE, d - GAP, GAP / 2, H - PLATE, GAP / 2), box(w - GAP, H, 1 - GAP, GAP / 2, 0, GAP / 2), box(w - GAP, H, 1 - GAP, GAP / 2, 0, d - 1 + GAP / 2));
+      const shape = new THREE.Shape(); shape.moveTo(1 - GAP / 2, 0); shape.absarc(d / 2, 0, d / 2 - 1 + GAP / 2, Math.PI, 0, true); shape.lineTo(d - 1 + GAP / 2, H - PLATE); shape.lineTo(1 - GAP / 2, H - PLATE); shape.closePath();
+      const a = new THREE.ExtrudeGeometry(shape, { depth: w - GAP, bevelEnabled: false }); a.rotateY(-Math.PI / 2); a.translate(GAP / 2, 0, 0);
+      body.push(a); studsOn(w, d, H, body); break;
+    }
+    case 'antenna': { const b = new THREE.CylinderGeometry(0.42, 0.42, PLATE, 20); b.translate(0.5, PLATE / 2, 0.5); const m = new THREE.CylinderGeometry(0.09, 0.09, H - PLATE, 12); m.translate(0.5, PLATE + (H - PLATE) / 2, 0.5); const tip = new THREE.SphereGeometry(0.16, 12, 8); tip.translate(0.5, H, 0.5); body.push(b, m, tip); break; }
+    case 'flower': { const st = new THREE.CylinderGeometry(0.12, 0.12, PLATE, 10); st.translate(0.5, PLATE / 2, 0.5); body.push(st); for (let k = 0; k < 5; k++) { const p = new THREE.SphereGeometry(0.22, 10, 8); p.scale(1, 0.55, 1); p.translate(0.5 + Math.cos(k / 5 * Math.PI * 2) * 0.28, PLATE + 0.1, 0.5 + Math.sin(k / 5 * Math.PI * 2) * 0.28); body.push(p); } glass.push(stud(0.5, PLATE + 0.05, 0.5)); break; }
+    case 'fence': { body.push(box(w - GAP, PLATE, d - GAP, GAP / 2, 0, GAP / 2), box(w - GAP, PLATE, d - GAP, GAP / 2, H - PLATE, GAP / 2)); for (let j = 0; j <= d; j += 1) body.push(box(0.16, H, 0.16, 0.42, 0, Math.min(j, d - 0.16 - GAP / 2) + (j === 0 ? GAP / 2 : 0))); body.push(box(0.12, 0.12, d - GAP, 0.44, H / 2 - 0.06, GAP / 2)); studsOn(w, d, H, body); break; }
+    case 'prop': { const hub = new THREE.CylinderGeometry(0.3, 0.3, PLATE, 16); hub.translate(1.5, PLATE / 2, 0.5); body.push(hub, stud(1.5, PLATE, 0.5)); for (const s of [-1, 1]) { const bl = box(1.2, 0.08, 0.5, s > 0 ? 1.75 : 0.05, PLATE / 2 - 0.04, 0.25); bl.rotateX(s * 0.4); bl.translate(0, 0.15, 0.15 * s); body.push(bl); } break; }
+    case 'head': { const c = new THREE.CylinderGeometry(0.46, 0.46, H - PLATE, 24); c.translate(0.5, (H - PLATE) / 2, 0.5); body.push(c, stud(0.5, H - PLATE, 0.5)); glass.push(...[[-0.16], [0.16]].map(([ex]) => { const e = new THREE.SphereGeometry(0.06, 8, 8); e.translate(0.5 + ex, H * 0.62, 0.05); return e; }), (() => { const m = new THREE.TorusGeometry(0.17, 0.03, 6, 12, Math.PI); m.rotateZ(Math.PI); m.rotateX(-0.1); m.translate(0.5, H * 0.42, 0.06); return m; })()); break; }
+  }
+  const merged = BufferGeometryUtils.mergeGeometries([...body, ...glass].map(g => g.index ? g.toNonIndexed() : g), true);
+  merged.clearGroups();
+  const bodyCount = body.reduce((n, g) => n + (g.index ? g.index.count : g.attributes.position.count), 0);
+  merged.addGroup(0, bodyCount, 0); merged.addGroup(bodyCount, Infinity, 1);
+  // rotate around the footprint center, then re-anchor to the min corner of the rotated footprint
+  merged.translate(-w / 2, 0, -d / 2); merged.rotateY(-r * Math.PI / 2);
+  const fp = footprint(t, r); merged.translate(fp.w / 2, 0, fp.d / 2);
+  merged.computeVertexNormals(); merged.computeBoundingBox();
+  geomCache.set(key, merged);
+  return merged;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Materials
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const matCache = new Map();
+function material(cid) {
+  if (matCache.has(cid)) return matCache.get(cid);
+  const c = COLOR[cid] || COLOR.red;
+  const m = new THREE.MeshPhysicalMaterial({
+    color: c.hex, roughness: c.metal ? 0.25 : 0.32, metalness: c.metal ? 0.85 : 0, clearcoat: c.metal ? 0 : 0.12, clearcoatRoughness: 0.4,
+    transparent: !!c.trans, opacity: c.trans ? 0.55 : 1, transmission: 0, envMapIntensity: 0.55, side: c.trans ? THREE.DoubleSide : THREE.FrontSide,
+  });
+  matCache.set(cid, m); return m;
+}
+const hiCache = new Map();
+function hiMaterial(cid) { if (!hiCache.has(cid)) { const m = material(cid).clone(); m.emissive = new THREE.Color(0x000000); hiCache.set(cid, m); } return hiCache.get(cid); }
+const GLASS = new THREE.MeshPhysicalMaterial({ color: 0xd9f1ff, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.45, envMapIntensity: 1.2 });
+const HUB = new THREE.MeshStandardMaterial({ color: 0xc9cbd0, roughness: 0.4, metalness: 0.3 });
+const FACE = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+const FLOWER_C = new THREE.MeshStandardMaterial({ color: 0xf7d117, roughness: 0.5 });
+function secondMaterial(t) { return t.kind === 'wheel' ? HUB : t.kind === 'head' ? FACE : t.kind === 'flower' ? FLOWER_C : GLASS; }
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Scene
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const stage = document.getElementById('stage'), canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer); scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 500); camera.position.set(22, 18, 26);
+const controls = new OrbitControls(camera, canvas); controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.95; controls.minDistance = 4; controls.maxDistance = 120;
+controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
+controls.target.set(0, 2, 0);
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0xb8a98a, 0.55); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff4e0, 2.2); sun.position.set(18, 30, 12); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = sun.shadow.camera.bottom = -26; sun.shadow.camera.right = sun.shadow.camera.top = 26; sun.shadow.camera.far = 90; sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xdde8ff, 0.5); fill.position.set(-20, 12, -14); scene.add(fill);
+
+// Baseplate with 32×32 instanced studs
+const baseGroup = new THREE.Group(); scene.add(baseGroup);
+const baseMat = new THREE.MeshStandardMaterial({ color: 0x3c8a3f, roughness: 0.6 });
+const basePlate = new THREE.Mesh(new THREE.BoxGeometry(BASE, PLATE, BASE), baseMat); basePlate.position.y = -PLATE / 2; basePlate.receiveShadow = true; basePlate.userData.base = true; baseGroup.add(basePlate);
+const studInst = new THREE.InstancedMesh(new THREE.CylinderGeometry(STUD_R, STUD_R, STUD_H, 14), baseMat, BASE * BASE);
+{ const m = new THREE.Matrix4(); let k = 0; for (let i = 0; i < BASE; i++) for (let j = 0; j < BASE; j++) studInst.setMatrixAt(k++, m.makeTranslation(i - HALF + 0.5, STUD_H / 2, j - HALF + 0.5)); studInst.castShadow = studInst.receiveShadow = true; baseGroup.add(studInst); }
+const floor = new THREE.Mesh(new THREE.CircleGeometry(80, 64), new THREE.ShadowMaterial({ opacity: 0.22 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -PLATE - 0.001; floor.receiveShadow = true; scene.add(floor);
+const grid = new THREE.GridHelper(BASE, BASE, 0x2f6b31, 0x2f6b31); grid.position.y = 0.002; grid.material.opacity = 0.35; grid.material.transparent = true; baseGroup.add(grid);
+
+const brickGroup = new THREE.Group(); scene.add(brickGroup);
+const ghost = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, depthWrite: false })); ghost.visible = false; scene.add(ghost);
+const hilite = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25, depthWrite: false })); hilite.visible = false; scene.add(hilite);
+
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Model state
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+let bricks = [];            // array of brick records
+let nextId = 1;
+const meshes = new Map();   // id → mesh
+const occ = new Map();      // "x,z,layer" → id
+let undoStack = [], redoStack = [];
+const state = { mode: 'build', tool: 'place', type: '2x4', color: 'red', rot: 0, lift: 0, sections: new Set(), explode: 0, isolate: null, step: 0, playing: false, building: false };
+
+function cellsOf(b) { const t = TYPE[b.t], fp = footprint(t, b.r); const out = []; for (let i = 0; i < fp.w; i++) for (let j = 0; j < fp.d; j++) for (let k = 0; k < t.h; k++) out.push(`${b.x + i},${b.z + j},${b.y + k}`); return out; }
+function inBounds(b) { const fp = footprint(TYPE[b.t], b.r); return b.x >= -HALF && b.z >= -HALF && b.x + fp.w <= HALF && b.z + fp.d <= HALF && b.y >= 0 && b.y + TYPE[b.t].h <= 120; }
+function collides(b, ignoreId) { return cellsOf(b).some(c => occ.has(c) && occ.get(c) !== ignoreId); }
+function topUnder(b) { const fp = footprint(TYPE[b.t], b.r); let top = 0; for (let i = 0; i < fp.w; i++) for (let j = 0; j < fp.d; j++) for (let k = 119; k >= 0; k--) { if (occ.has(`${b.x + i},${b.z + j},${k}`)) { top = Math.max(top, k + 1); break; } } return top; }
+
+function addBrick(b, silent) {
+  const t = TYPE[b.t]; if (!t || !COLOR[b.c]) return null;
+  if (!inBounds(b) || collides(b)) return null;
+  b.id = nextId++; bricks.push(b);
+  for (const c of cellsOf(b)) occ.set(c, b.id);
+  const mesh = new THREE.Mesh(buildGeometry(t, b.r), [material(b.c), secondMaterial(t)]);
+  mesh.castShadow = mesh.receiveShadow = true; mesh.userData.id = b.id; mesh.position.set(b.x, b.y * PLATE, b.z);
+  brickGroup.add(mesh); meshes.set(b.id, mesh);
+  if (!silent) afterChange();
+  return b;
+}
+function removeBrick(id, silent) {
+  const i = bricks.findIndex(b => b.id === id); if (i < 0) return;
+  for (const c of cellsOf(bricks[i])) occ.delete(c);
+  const m = meshes.get(id); brickGroup.remove(m); meshes.delete(id); bricks.splice(i, 1);
+  if (!silent) afterChange();
+}
+function recolor(id, c) { const b = bricks.find(b => b.id === id); if (!b || b.c === c) return; b.c = c; meshes.get(id).material = [material(c), secondMaterial(TYPE[b.t])]; afterChange(); }
+function clearAll(silent) { for (const b of [...bricks]) removeBrick(b.id, true); if (!silent) afterChange(); }
+function serialize() { return { name: nameInput.value, bricks: bricks.map(({ t, x, z, y, r, c, s }) => ({ t, x, z, y, r, c, ...(s ? { s } : {}) })) }; }
+function loadModel(data, { name, keepHistory } = {}) {
+  clearAll(true); let dropped = 0;
+  window.__dropped = []; for (const raw of (data.bricks || [])) { const b = sanitize(raw); if (!b || !addBrick(b, true)) { dropped++; window.__dropped.push(`${raw.t}@${raw.x},${raw.z},${raw.y}`); } }
+  if (name || data.name) nameInput.value = name || data.name;
+  if (!keepHistory) { undoStack = []; redoStack = []; }
+  state.sections.clear(); state.isolate = null; state.step = 0;
+  afterChange(true);
+  return dropped;
+}
+function sanitize(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  let t = String(raw.t || '').toLowerCase().replace(/\s/g, '');
+  if (!TYPE[t]) { const m = t.match(/^(\d)x(\d)(p|t)?$/); if (m) t = `${Math.min(m[1], m[2])}x${Math.max(m[1], m[2])}${m[3] || ''}`; }
+  if (!TYPE[t]) return null;
+  const c = COLOR[raw.c] ? raw.c : (COLORS.find(k => k.he === raw.c) || {}).id || 'red';
+  const x = Math.round(+raw.x || 0), z = Math.round(+raw.z || 0), y = Math.max(0, Math.round(+raw.y || 0)), r = ((Math.round(+raw.r || 0) % 4) + 4) % 4;
+  return { t, x, z, y, r, c, s: raw.s ? String(raw.s).slice(0, 24) : undefined };
+}
+
+function snapshot() { undoStack.push(JSON.stringify(serialize().bricks)); if (undoStack.length > 120) undoStack.shift(); redoStack = []; }
+function restore(json) { const cur = JSON.stringify(serialize().bricks); clearAll(true); for (const b of JSON.parse(json)) addBrick(b, true); afterChange(true); return cur; }
+function undo() { if (!undoStack.length) return; redoStack.push(restore(undoStack.pop())); toast('בוטל ↶'); }
+function redo() { if (!redoStack.length) return; undoStack.push(restore(redoStack.pop())); toast('בוצע שוב ↷'); }
+
+function afterChange(skipSave) {
+  document.getElementById('undoBtn').disabled = !undoStack.length; document.getElementById('redoBtn').disabled = !redoStack.length;
+  updateStats(); updateSections(); updateBOM(); updateReview(); applyVisibility(); updateSteps();
+  if (!skipSave) autosave();
+}
+const autosave = debounce(() => { try { localStorage.setItem('lego-studio:auto', JSON.stringify(serialize())); } catch {} }, 600);
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Visibility, sections, explode, isolate, steps
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+function modelBounds() {
+  if (!bricks.length) return null;
+  const bb = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity, y1: 0 };
+  for (const b of bricks) { const fp = footprint(TYPE[b.t], b.r); bb.x0 = Math.min(bb.x0, b.x); bb.x1 = Math.max(bb.x1, b.x + fp.w); bb.z0 = Math.min(bb.z0, b.z); bb.z1 = Math.max(bb.z1, b.z + fp.d); bb.y1 = Math.max(bb.y1, b.y + TYPE[b.t].h); }
+  bb.cx = (bb.x0 + bb.x1) / 2; bb.cz = (bb.z0 + bb.z1) / 2; return bb;
+}
+function sectionOf(b) { return b.s || `שכבה ${Math.floor(b.y / 3) + 1}`; }
+function stepOrder() { return [...bricks].sort((a, b) => a.y - b.y || a.z - b.z || a.x - b.x); }
+function stepGroups() { const steps = []; let cur = null; for (const b of stepOrder()) { const key = b.y; if (!cur || cur.key !== key) { cur = { key, bricks: [] }; steps.push(cur); } cur.bricks.push(b); } return steps; }
+function applyVisibility() {
+  const bb = modelBounds(); const ex = state.explode / 100;
+  const secOn = state.sections.size > 0;
+  const groups = state.mode === 'steps' ? stepGroups() : null;
+  const stepSet = new Set(); const curSet = new Set();
+  if (groups) { groups.slice(0, state.step + 1).forEach((g, i) => g.bricks.forEach(b => { stepSet.add(b.id); if (i === state.step) curSet.add(b.id); })); }
+  const secIndex = new Map(); if (bb) { const names = [...new Set(bricks.map(sectionOf))]; names.forEach((n, i) => secIndex.set(n, i)); }
+  for (const b of bricks) {
+    const m = meshes.get(b.id); let vis = true;
+    if (secOn && !state.sections.has(sectionOf(b))) vis = false;
+    if (state.isolate && !(b.t === state.isolate.t && b.c === state.isolate.c)) vis = false;
+    if (groups && !stepSet.has(b.id)) vis = false;
+    if (state.building && !b._shown) vis = false;
+    m.visible = vis;
+    // explode: lift by section index and push outward from the model center
+    let px = b.x, py = b.y * PLATE, pz = b.z;
+    if (ex > 0 && bb) { const si = secIndex.get(sectionOf(b)) || 0; py += ex * (si * 2.2 + b.y * PLATE * 0.6); px += ex * (b.x + footprint(TYPE[b.t], b.r).w / 2 - bb.cx) * 0.35; pz += ex * (b.z + footprint(TYPE[b.t], b.r).d / 2 - bb.cz) * 0.35; }
+    if (b._anim != null) py += b._anim;
+    m.position.set(px, py, pz);
+    m.material[0] = curSet.has(b.id) ? hiMaterial(b.c) : material(b.c);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  UI: stats, sections, BOM, review
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const nameInput = $('modelName');
+function updateStats() {
+  const bb = modelBounds();
+  $('stParts').textContent = bricks.length;
+  $('stTypes').textContent = new Set(bricks.map(b => b.t)).size;
+  $('stColors').textContent = new Set(bricks.map(b => b.c)).size;
+  $('stHeight').textContent = bb ? Math.round(bb.y1 * 3.2) : 0;
+  $('stSize').textContent = bb ? `${bb.x1 - bb.x0}×${bb.z1 - bb.z0}` : '–';
+  $('stWeight').textContent = Math.round(bricks.reduce((s, b) => s + TYPE[b.t].w * TYPE[b.t].d * TYPE[b.t].h * 0.33, 0));
+  $('modelSub').textContent = bricks.length ? `${bricks.length} חלקים · ${new Set(bricks.map(b => b.t)).size} סוגים · ${bb ? Math.round(bb.y1 * 3.2) : 0} מ״מ גובה` : 'התחילו לבנות או בחרו דגם';
+}
+function updateSections() {
+  const counts = new Map(); for (const b of bricks) { const s = sectionOf(b); counts.set(s, (counts.get(s) || 0) + 1); }
+  const el = $('sections'); el.innerHTML = '';
+  for (const [name, n] of counts) {
+    const btn = document.createElement('button'); btn.className = 'sec' + (state.sections.has(name) ? ' on' : '');
+    btn.innerHTML = `<i></i><span>${esc(name)}<small>${n} חלקים</small></span>`;
+    btn.onclick = () => { state.sections.has(name) ? state.sections.delete(name) : state.sections.add(name); updateSections(); applyVisibility(); };
+    el.appendChild(btn);
+  }
+  if (!counts.size) el.innerHTML = '<p class="note">אין מקטעים עדיין.</p>';
+}
+function updateBOM() {
+  const map = new Map(); for (const b of bricks) { const k = b.t + '|' + b.c; map.set(k, (map.get(k) || 0) + 1); }
+  const rows = [...map.entries()].sort((a, b) => b[1] - a[1]);
+  const el = $('bom'); el.innerHTML = '';
+  for (const [k, n] of rows) {
+    const [t, c] = k.split('|'); const btn = document.createElement('button');
+    const on = state.isolate && state.isolate.t === t && state.isolate.c === c; if (on) btn.classList.add('on');
+    btn.innerHTML = `<i style="background:#${COLOR[c].hex.toString(16).padStart(6, '0')}"></i>${esc(TYPE[t].he)} · ${esc(COLOR[c].he)}<b>×${n}</b>`;
+    btn.onclick = () => { state.isolate = on ? null : { t, c }; updateBOM(); applyVisibility(); toast(on ? 'מציג הכל' : `מבודד: ${TYPE[t].he} ${COLOR[c].he}`); };
+    el.appendChild(btn);
+  }
+  $('bomNote').textContent = rows.length ? '(לחיצה = בידוד)' : '';
+}
+function updateReview() {
+  const el = $('review'); if (!bricks.length) { el.className = 'review ok'; el.textContent = 'אין עדיין חלקים.'; return; }
+  // A brick is supported when it touches the baseplate or another brick directly below/above via any shared cell column.
+  const floating = [], unsupportedCount = { n: 0 };
+  const byId = new Map(bricks.map(b => [b.id, b]));
+  const connected = new Set(); const queue = [];
+  for (const b of bricks) if (b.y === 0) { connected.add(b.id); queue.push(b); }
+  const sideCells = (b) => { const t = TYPE[b.t], fp = footprint(t, b.r); const out = []; for (let k = 0; k < t.h; k++) { for (let j = 0; j < fp.d; j++) out.push(`${b.x - 1},${b.z + j},${b.y + k}`, `${b.x + fp.w},${b.z + j},${b.y + k}`); for (let i = 0; i < fp.w; i++) out.push(`${b.x + i},${b.z - 1},${b.y + k}`, `${b.x + i},${b.z + fp.d},${b.y + k}`); } return out; };
+  // Wheels clip onto the side of the body (axle), so they count as attached to any part touching them sideways.
+  const neighbors = (b) => { const t = TYPE[b.t], fp = footprint(t, b.r); const out = new Set(); for (let i = 0; i < fp.w; i++) for (let j = 0; j < fp.d; j++) { const below = occ.get(`${b.x + i},${b.z + j},${b.y - 1}`), above = occ.get(`${b.x + i},${b.z + j},${b.y + t.h}`); if (below) out.add(below); if (above) out.add(above); } for (const c of sideCells(b)) { const id = occ.get(c); if (id && (t.kind === 'wheel' || TYPE[byId.get(id).t].kind === 'wheel')) out.add(id); } return out; };
+  while (queue.length) { const b = queue.pop(); for (const nid of neighbors(b)) if (!connected.has(nid)) { connected.add(nid); queue.push(byId.get(nid)); } }
+  for (const b of bricks) if (!connected.has(b.id)) floating.push(b);
+  window.__floating = floating.map(b => `${b.t}@${b.x},${b.z},${b.y}`);
+  const overhang = bricks.filter(b => b.y > 0 && ![...neighbors(b)].some(nid => byId.get(nid).y < b.y)).length;
+  if (!floating.length) { el.className = 'review ok'; el.innerHTML = `✅ <b>ניתן לבנייה.</b> כל ${bricks.length} החלקים מחוברים לפלטה דרך שרשרת של לבנים.` + (overhang ? `<br>ℹ️ ${overhang} חלקים תלויים רק מלמעלה — יתמכו כשבונים מלמעלה למטה.` : ''); }
+  else { el.className = 'review warn'; el.innerHTML = `⚠️ <b>נדרשת בדיקה.</b> ${floating.length} חלקים מרחפים באוויר ולא מחוברים לשאר הדגם.<ul>${floating.slice(0, 5).map(b => `<li>${esc(TYPE[b.t].he)} ${esc(COLOR[b.c].he)} ב־(${b.x}, ${b.z}) גובה ${b.y}</li>`).join('')}${floating.length > 5 ? '<li>…</li>' : ''}</ul><button class="chip" id="fixFloat" style="margin-top:6px">🧹 הסר חלקים מרחפים</button>`; $('fixFloat').onclick = () => { snapshot(); floating.forEach(b => removeBrick(b.id, true)); afterChange(); toast(`הוסרו ${floating.length} חלקים`); }; }
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Palette rendering (tiny live previews via a shared offscreen renderer)
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const prevRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); prevRenderer.setSize(96, 96); prevRenderer.setPixelRatio(1); prevRenderer.toneMapping = THREE.ACESFilmicToneMapping; prevRenderer.outputColorSpace = THREE.SRGBColorSpace;
+const prevScene = new THREE.Scene(); prevScene.environment = scene.environment; prevScene.add(new THREE.HemisphereLight(0xffffff, 0x888888, 1.2)); const pl = new THREE.DirectionalLight(0xffffff, 2); pl.position.set(3, 6, 4); prevScene.add(pl);
+const prevCam = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+function renderPreview(t, cid, target) {
+  const mesh = new THREE.Mesh(buildGeometry(t, 0), [material(cid), secondMaterial(t)]); prevScene.add(mesh);
+  const bb = mesh.geometry.boundingBox; const size = new THREE.Vector3(); bb.getSize(size); const center = new THREE.Vector3(); bb.getCenter(center);
+  const R = Math.max(size.x, size.y, size.z) * 1.35 + 0.6; prevCam.position.set(center.x + R * 0.8, center.y + R * 0.85, center.z + R * 1.0); prevCam.lookAt(center);
+  prevRenderer.render(prevScene, prevCam); prevScene.remove(mesh);
+  const ctx = target.getContext('2d'); target.width = target.height = 96; ctx.drawImage(prevRenderer.domElement, 0, 0);
+}
+function buildPalette() {
+  for (const [group, elId] of [['bricks', 'partsBricks'], ['plates', 'partsPlates'], ['special', 'partsSpecial']]) {
+    const el = $(elId); el.innerHTML = '';
+    for (const t of TYPES.filter(t => t.group === group)) {
+      const b = document.createElement('button'); b.className = 'part' + (t.id === state.type ? ' on' : ''); b.title = t.he; b.dataset.type = t.id;
+      const c = document.createElement('canvas'); b.appendChild(c); renderPreview(t, state.color, c);
+      const s = document.createElement('span'); s.textContent = t.he.replace(/^(לבנה|פלטה|אריח) /, ''); b.appendChild(s);
+      b.onclick = () => { state.type = t.id; state.tool = 'place'; syncTools(); document.querySelectorAll('.part').forEach(p => p.classList.toggle('on', p.dataset.type === t.id)); };
+      el.appendChild(b);
+    }
+  }
+  for (const [trans, elId] of [[false, 'colorsSolid'], [true, 'colorsTrans']]) {
+    const el = $(elId); el.innerHTML = '';
+    for (const c of COLORS.filter(c => !!c.trans === trans)) {
+      const b = document.createElement('button'); b.className = 'swatch' + (c.trans ? ' trans' : '') + (c.id === state.color ? ' on' : ''); b.title = c.he; b.dataset.color = c.id;
+      b.style.backgroundColor = '#' + c.hex.toString(16).padStart(6, '0');
+      b.onclick = () => { state.color = c.id; document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('on', s.dataset.color === c.id)); $('curColor').firstElementChild.style.background = b.style.backgroundColor; refreshPreviews(); };
+      el.appendChild(b);
+    }
+  }
+}
+const refreshPreviews = debounce(() => document.querySelectorAll('.part').forEach(p => renderPreview(TYPE[p.dataset.type], state.color, p.querySelector('canvas'))), 150);
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Pointer interaction
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const ray = new THREE.Raycaster(); const ptr = new THREE.Vector2(); let hover = null; let down = null;
+function pick(ev) {
+  const r = canvas.getBoundingClientRect(); ptr.x = ((ev.clientX - r.left) / r.width) * 2 - 1; ptr.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
+  ray.setFromCamera(ptr, camera);
+  const hits = ray.intersectObjects([basePlate, studInst, ...[...meshes.values()].filter(m => m.visible)], false);
+  return hits[0] || null;
+}
+function ghostFor(hit) {
+  const t = TYPE[state.type], fp = footprint(t, state.rot); const p = hit.point;
+  const b = { t: state.type, r: state.rot, c: state.color, x: Math.round(p.x - fp.w / 2), z: Math.round(p.z - fp.d / 2), y: 0 };
+  if (hit.object.userData.id && hit.face && hit.face.normal.y < 0.5 && hit.object.userData.id) { /* side hit: still snap on top of whatever is under the footprint */ }
+  b.y = topUnder(b) + state.lift;
+  b.y = Math.max(0, b.y);
+  return b;
+}
+function updateHover(ev) {
+  if (state.mode !== 'build' || state.building) { ghost.visible = hilite.visible = false; return; }
+  const hit = pick(ev); hover = hit;
+  ghost.visible = hilite.visible = false; canvas.style.cursor = 'default';
+  if (!hit) return;
+  if (state.tool === 'place') {
+    const b = ghostFor(hit); const ok = inBounds(b) && !collides(b);
+    ghost.geometry = buildGeometry(TYPE[b.t], b.r); ghost.material.color.setHex(ok ? COLOR[state.color].hex : 0xff2020); ghost.material.opacity = ok ? 0.55 : 0.4;
+    ghost.position.set(b.x, b.y * PLATE, b.z); ghost.visible = true; ghost.userData.brick = b; ghost.userData.ok = ok;
+  } else if (hit.object.userData.id) {
+    const m = hit.object; hilite.geometry = m.geometry; hilite.position.copy(m.position); hilite.material.color.setHex(state.tool === 'erase' ? 0xff3030 : COLOR[state.color].hex); hilite.visible = true; canvas.style.cursor = 'pointer';
+  }
+}
+canvas.addEventListener('pointermove', updateHover);
+canvas.addEventListener('pointerleave', () => { ghost.visible = hilite.visible = false; });
+canvas.addEventListener('pointerdown', (ev) => { down = { x: ev.clientX, y: ev.clientY, t: performance.now(), button: ev.button }; });
+canvas.addEventListener('pointerup', (ev) => {
+  if (!down) return; const moved = Math.hypot(ev.clientX - down.x, ev.clientY - down.y); const dt = performance.now() - down.t; const btn = down.button; down = null;
+  if (moved > 6 || dt > 600 || state.mode !== 'build' || state.building) return;
+  updateHover(ev); const hit = hover; if (!hit) return;
+  if (btn === 2) { if (hit.object.userData.id) { snapshot(); removeBrick(hit.object.userData.id); click(220); } return; }
+  if (state.tool === 'place') { const b = ghost.userData.brick; if (b && ghost.userData.ok) { snapshot(); addBrick({ ...b }); click(660); } else if (b) toast('אין מקום כאן 🚫'); }
+  else if (state.tool === 'erase' && hit.object.userData.id) { snapshot(); removeBrick(hit.object.userData.id); click(220); }
+  else if (state.tool === 'paint' && hit.object.userData.id) { snapshot(); recolor(hit.object.userData.id, state.color); click(520); }
+  updateHover(ev);
+});
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.matches('input, textarea, select')) return;
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+  else if ((e.ctrlKey || e.metaKey) && k === 'y') { e.preventDefault(); redo(); }
+  else if (k === 'r') rotate();
+  else if (e.key === 'ArrowUp') { e.preventDefault(); lift(1); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); lift(-1); }
+  else if (e.key === 'Delete' || e.key === 'Backspace') { if (hover && hover.object.userData.id) { snapshot(); removeBrick(hover.object.userData.id); } }
+  else if (/^[1-9]$/.test(k)) { const t = TYPES.filter(t => t.group === 'bricks')[+k - 1]; if (t) document.querySelector(`.part[data-type="${t.id}"]`).click(); }
+  else if (k === 'b') setTool('place'); else if (k === 'p') setTool('paint'); else if (k === 'e') setTool('erase');
+});
+function rotate() { state.rot = (state.rot + 1) % 4; toast(`סיבוב: ${state.rot * 90}°`); }
+function lift(d) { state.lift = Math.max(0, Math.min(30, state.lift + d)); toast(state.lift ? `הרמה: ${state.lift} פלטות` : 'הרמה: 0'); }
+function setTool(t) { state.tool = t; syncTools(); }
+function syncTools() { document.querySelectorAll('#toolbar [data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === state.tool)); }
+document.querySelectorAll('#toolbar [data-tool]').forEach(b => b.onclick = () => setTool(b.dataset.tool));
+$('rotBtn').onclick = rotate; $('liftUp').onclick = () => lift(1); $('liftDown').onclick = () => lift(-1);
+$('mirrorBtn').onclick = () => {
+  const bb = modelBounds(); if (!bb) return toast('אין מה לשכפל');
+  snapshot(); let n = 0;
+  for (const b of [...bricks]) { const fp = footprint(TYPE[b.t], b.r); const nx = Math.round(2 * bb.cx - b.x - fp.w); const nb = { t: b.t, x: nx, z: b.z, y: b.y, r: b.r, c: b.c, s: b.s }; if (addBrick(nb, true)) n++; }
+  afterChange(); toast(n ? `שוכפלו ${n} חלקים במראה 🪞` : 'הדגם כבר סימטרי');
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Modes, views, steps, build animation
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+function setMode(m) {
+  state.mode = m; document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === m));
+  stage.classList.toggle('showcase', m === 'showcase'); controls.autoRotate = m === 'showcase'; controls.autoRotateSpeed = 1.2;
+  grid.visible = m === 'build'; $('toolbar').style.display = m === 'build' ? '' : 'none'; $('steps').classList.toggle('on', m === 'steps');
+  hemi.intensity = m === 'showcase' ? 0.35 : 0.55; sun.intensity = m === 'showcase' ? 2.6 : 2.2; floor.material.opacity = m === 'showcase' ? 0.5 : 0.22;
+  baseMat.color.setHex(m === 'showcase' ? 0x2a2d3a : 0x3c8a3f);
+  if (m === 'steps') { state.step = stepGroups().length - 1; }
+  ghost.visible = hilite.visible = false; stopPlay(); applyVisibility(); updateSteps();
+  if (m !== 'build') frameModel();
+}
+document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+
+function frameModel(view) {
+  const bb = modelBounds(); const cx = bb ? bb.cx : 0, cz = bb ? bb.cz : 0, cy = bb ? bb.y1 * PLATE / 2 : 2;
+  const size = bb ? Math.max(bb.x1 - bb.x0, bb.z1 - bb.z0, bb.y1 * PLATE) : 20; const dist = Math.max(12, size * 2.4 / Math.min(1, camera.aspect));
+  const dirs = { iso: [0.65, 0.55, 0.8], front: [0, 0.18, 1], side: [1, 0.18, 0], top: [0.001, 1, 0.001], under: [0.3, -0.7, 0.4] };
+  const d = new THREE.Vector3(...(dirs[view] || dirs.iso)).normalize().multiplyScalar(dist);
+  animateCamera(new THREE.Vector3(cx, cy, cz).add(d), new THREE.Vector3(cx, cy, cz));
+}
+let camAnim = null;
+function animateCamera(pos, target) { camAnim = { p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target, start: performance.now(), dur: 650 }; }
+document.querySelectorAll('.views button').forEach(b => b.onclick = () => frameModel(b.dataset.view));
+
+function updateSteps() {
+  if (state.mode !== 'steps') return; const groups = stepGroups(); const n = Math.max(1, groups.length); state.step = Math.min(state.step, n - 1);
+  $('stepRange').max = n; $('stepRange').value = state.step + 1; $('stepLabel').textContent = `שלב ${state.step + 1} מתוך ${n}`;
+  const g = groups[state.step]; const counts = new Map(); if (g) for (const b of g.bricks) { const k = b.t + '|' + b.c; counts.set(k, (counts.get(k) || 0) + 1); }
+  $('stepPieces').innerHTML = [...counts].map(([k, c]) => { const [t, col] = k.split('|'); return `<span><i style="background:#${COLOR[col].hex.toString(16).padStart(6, '0')}"></i>${esc(TYPE[t].he)} ×${c}</span>`; }).join('') || '<span>אין חלקים</span>';
+}
+function setStep(i) { const n = stepGroups().length; state.step = Math.max(0, Math.min(n - 1, i)); applyVisibility(); updateSteps(); click(440 + state.step * 8, 0.05); }
+$('stepPrev').onclick = () => setStep(state.step - 1); $('stepNext').onclick = () => setStep(state.step + 1);
+$('stepRange').oninput = e => setStep(+e.target.value - 1);
+let playTimer = null;
+function stopPlay() { state.playing = false; clearInterval(playTimer); $('stepPlay').textContent = '▶ נגן'; }
+$('stepPlay').onclick = () => { if (state.playing) return stopPlay(); state.playing = true; $('stepPlay').textContent = '⏸ עצור'; if (state.step >= stepGroups().length - 1) setStep(0); playTimer = setInterval(() => { if (state.step >= stepGroups().length - 1) return stopPlay(); setStep(state.step + 1); }, 900); };
+
+// "Build all": drop bricks in one by one with a bounce
+let buildTimer = null;
+$('buildAll').onclick = startBuild; $('buildStop').onclick = stopBuild;
+function startBuild() {
+  if (!bricks.length) return toast('אין מה לבנות עדיין');
+  stopBuild(); state.building = true; for (const b of bricks) { b._shown = false; b._anim = null; }
+  const order = stepOrder(); let i = 0; const per = Math.max(18, Math.min(140, 6000 / order.length));
+  applyVisibility();
+  buildTimer = setInterval(() => {
+    if (i >= order.length) { finishBuild(); return; }
+    const b = order[i++]; b._shown = true; b._anim = 6; b._animStart = performance.now(); click(500 + Math.random() * 300, 0.03); applyVisibility();
+  }, per);
+}
+function stopBuild() { clearInterval(buildTimer); buildTimer = null; if (state.building) finishBuild(); }
+function finishBuild() { clearInterval(buildTimer); state.building = false; for (const b of bricks) { b._shown = true; b._anim = null; } applyVisibility(); }
+
+$('explode').oninput = e => { state.explode = +e.target.value; $('explodeVal').textContent = state.explode + '%'; applyVisibility(); };
+$('secReset').onclick = () => { state.sections.clear(); state.isolate = null; updateSections(); updateBOM(); applyVisibility(); };
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Render loop
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const clock = new THREE.Clock();
+function tick() {
+  requestAnimationFrame(tick); const now = performance.now(); const t = clock.getElapsedTime();
+  if (camAnim) { const k = Math.min(1, (now - camAnim.start) / camAnim.dur); const e = 1 - Math.pow(1 - k, 3); camera.position.lerpVectors(camAnim.p0, camAnim.p1, e); controls.target.lerpVectors(camAnim.t0, camAnim.t1, e); if (k >= 1) camAnim = null; }
+  let animating = false;
+  for (const b of bricks) if (b._anim != null) { const k = Math.min(1, (now - b._animStart) / 320); b._anim = (1 - k) * (1 - k) * 6; if (k >= 1) b._anim = null; animating = true; }
+  if (animating) applyVisibility();
+  if (state.mode === 'steps') { const pulse = 0.5 + 0.5 * Math.sin(t * 6); for (const hm of hiCache.values()) hm.emissive.setRGB(pulse * 0.45, pulse * 0.38, pulse * 0.05); }
+  ghost.visible && (ghost.material.opacity = 0.45 + 0.1 * Math.sin(t * 5));
+  controls.update(); renderer.render(scene, camera);
+}
+tick();
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Preset models (procedural brick lists). Helper P(type, x, z, y, color, rot, section)
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const P = (t, x, z, y, c, r = 0, s) => ({ t, x, z, y, r, c, s });
+// Greedy packer: turns an ASCII layer map into the fewest large bricks/plates/tiles. rows[z][x], '.' = empty, letters index `pal`.
+const SIZES = { brick: { 2: [8, 6, 4, 3, 2], 1: [8, 6, 4, 3, 2, 1] }, plate: { 2: [6, 4, 2], 1: [6, 4, 2, 1] }, tile: { 2: [4, 2], 1: [2] } };
+function layer(y, kind, rows, pal, s, x0, z0) {
+  const H = rows.length, W = Math.max(...rows.map(r => r.length));
+  if (x0 == null) x0 = -Math.floor(W / 2); if (z0 == null) z0 = -Math.floor(H / 2);
+  const used = rows.map(() => Array(W).fill(false)); const at = (i, j) => (rows[j] || '')[i] || '.';
+  const sfx = kind === 'brick' ? '' : kind === 'plate' ? 'p' : 't'; const out = [];
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    if (used[j][i] || at(i, j) === '.') continue; const ch = at(i, j);
+    const free = (a, b) => a < W && b < H && !used[b][a] && at(a, b) === ch;
+    let rx1 = 0; while (free(i + rx1, j)) rx1++; let rx2 = 0; while (free(i + rx2, j) && free(i + rx2, j + 1)) rx2++;
+    let rz1 = 0; while (free(i, j + rz1)) rz1++; let rz2 = 0; while (free(i, j + rz2) && free(i + 1, j + rz2)) rz2++;
+    const pick = (list, run) => list.find(n => n <= run) || 0;
+    const cands = [{ w: pick(SIZES[kind][2], rx2), d: 2 }, { w: 2, d: pick(SIZES[kind][2], rz2) }, { w: pick(SIZES[kind][1], rx1), d: 1 }, { w: 1, d: pick(SIZES[kind][1], rz1) }].filter(c => c.w > 0 && c.d > 0);
+    cands.sort((a, b) => b.w * b.d - a.w * a.d); const c = cands[0];
+    const long = Math.max(c.w, c.d), short = Math.min(c.w, c.d); const r = (c.w === long && long !== short) ? 1 : 0;
+    let tid = `${short}x${long}${sfx}`; if (!TYPE[tid]) tid = TYPE[`${short}x${long}p`] ? `${short}x${long}p` : '1x1p';
+    for (let a = 0; a < c.w; a++) for (let b = 0; b < c.d; b++) used[j + b][i + a] = true;
+    out.push(P(tid, x0 + i, z0 + j, y, pal[ch] || 'red', r, s));
+  }
+  return out;
+}
+const rep = (str, n) => Array(n).fill(str);
+// Slope facing: r=0 low side toward -z, r=1 toward +x, r=2 toward +z, r=3 toward -x.
+
+const MODELS = [
+  { id: 'car', em: '🏎️', name: 'מכונית ספורט', cat: 'כלי רכב', build: (c = 'red') => {
+    const pal = { r: c, g: 'dkgray', k: 'black', y: 'tyellow', p: 'tred' }; const S1 = 'שלדה', S2 = 'גוף', S3 = 'תא נהג', S4 = 'פרטים'; const b = [];
+    for (const z of [-4, 2]) b.push(P('wheel', -3, z, 0, 'black', 0, S1), P('wheel', 2, z, 0, 'black', 0, S1));
+    b.push(...layer(2, 'plate', rep('gggg', 12), pal, S1, -2, -6));
+    b.push(...layer(3, 'plate', ['ykky'], pal, S4, -2, -6), ...layer(3, 'plate', ['pkkp'], pal, S4, -2, 5));
+    b.push(...layer(3, 'brick', [...rep('rrrr', 4), ...rep('r..r', 4), 'rrrr', 'rrrr'], pal, S2, -2, -5));
+    b.push(...layer(3, 'plate', ['....', '.kk.', '....', '.kk.'], pal, S3, -2, -1));
+    b.push(...layer(6, 'plate', ['yrry', 'rrrr', 'rrrr', 'rrrr'], pal, S2, -2, -5));
+    b.push(P('slope2x2', -2, -1, 6, 'tblue', 0, S3), P('slope2x2', 0, -1, 6, 'tblue', 0, S3));
+    b.push(...layer(6, 'brick', ['rrrr', 'rrrr'], pal, S3, -2, 1));
+    b.push(P('slope2x2', -2, 3, 6, 'tblue', 2, S3), P('slope2x2', 0, 3, 6, 'tblue', 2, S3));
+    b.push(...layer(9, 'tile', ['rrrr', 'rrrr'], pal, S3, -2, 1));
+    b.push(P('1x4p', -2, 4, 9, 'black', 1, S4));
+    return b;
+  } },
+  { id: 'truck', em: '🚚', name: 'משאית', cat: 'כלי רכב', build: (c = 'blue') => {
+    const pal = { c, g: 'dkgray', w: 'white', k: 'black', y: 'tyellow', b: 'tblue', l: 'ltgray', p: 'tred' }; const S1 = 'שלדה', S2 = 'קבינה', S3 = 'ארגז'; const b = [];
+    for (const z of [-6, 1, 4]) b.push(P('wheel', -3, z, 0, 'black', 0, S1), P('wheel', 2, z, 0, 'black', 0, S1));
+    b.push(...layer(2, 'plate', rep('gggg', 16), pal, S1, -2, -8));
+    b.push(...layer(3, 'plate', ['ykky'], pal, S2, -2, -8), ...layer(16, 'plate', ['pkkp'], pal, S3, -2, 7));
+    b.push(...layer(3, 'brick', rep('cccc', 4), pal, S2, -2, -7));
+    for (const y of [6, 9]) b.push(...layer(y, 'brick', ['cbbc', '....', '....', 'cccc'], pal, S2, -2, -7));
+    b.push(P('window', -2, -6, 6, c, 0, S2), P('window', 1, -6, 6, c, 0, S2));
+    b.push(...layer(12, 'plate', rep('cccc', 4), pal, S2, -2, -7));
+    b.push(P('1x2p', -1, -7, 13, 'orange', 1, S2));
+    for (const y of [3, 6, 9, 12]) b.push(...layer(y, 'brick', ['wwww', ...rep('w..w', 8), 'wwww'], pal, S3, -2, -2));
+    b.push(...layer(15, 'plate', rep('llll', 10), pal, S3, -2, -2));
+    return b;
+  } },
+  { id: 'house', em: '🏠', name: 'בית עם גג רעפים', cat: 'בניינים', build: (c = 'white') => {
+    const pal = { w: c, t: 'tan', d: 'dkred', g: 'dkgray', l: 'ltgray' }; const S1 = 'יסודות', S2 = 'קירות', S3 = 'גג', S4 = 'גינה'; const b = [];
+    b.push(...layer(0, 'plate', rep('tttttttttt', 10), pal, S1, -5, -5));
+    b.push(...layer(0, 'plate', rep('ll', 3), pal, S4, -1, -8));
+    const W = 'w......w', O = '........', F = 'wwwwwwww';
+    b.push(...layer(1, 'brick', ['www..www', W, W, W, W, W, W, F], pal, S2, -4, -4));
+    for (const y of [4, 7]) b.push(...layer(y, 'brick', ['w......w', W, W, O, O, W, W, F], pal, S2, -4, -4));
+    b.push(...layer(10, 'brick', [F, W, W, W, W, W, W, F], pal, S2, -4, -4));
+    b.push(P('door', -1, -4, 1, 'brown', 1, S2), P('window', -3, -4, 4, 'blue', 1, S2), P('window', 1, -4, 4, 'blue', 1, S2), P('window', -4, -1, 4, 'blue', 0, S2), P('window', 3, -1, 4, 'blue', 0, S2));
+    b.push(...layer(13, 'plate', rep('dddddddddd', 10), pal, S3, -5, -5));
+    for (let k = 0; k < 2; k++) { const y = 14 + k * 3, z0 = -5 + 2 * k, z1 = 4 - 2 * k; for (let x = -5; x < 5; x += 2) b.push(P('slope2x2', x, z0, y, 'dkred', 0, S3), P('slope2x2', x, z1 - 1, y, 'dkred', 2, S3)); const mid = z1 - 1 - (z0 + 2); if (mid > 0) b.push(...layer(y, 'brick', rep('dddddddddd', mid), pal, S3, -5, z0 + 2)); }
+    b.push(...layer(20, 'brick', rep('dddddddddd', 2), pal, S3, -5, -1), ...layer(23, 'tile', rep('dddddddddd', 2), pal, S3, -5, -1));
+    b.push(P('1x1', 3, -1, 24, 'dkgray', 0, S3), P('1x1', 3, -1, 27, 'dkgray', 0, S3));
+    b.push(P('flower', -7, -7, 0, 'pink', 0, S4), P('flower', -7, 6, 0, 'red', 0, S4), P('flower', 6, -7, 0, 'yellow', 0, S4), P('flower', -3, -7, 0, 'magenta', 0, S4), P('flower', 2, -7, 0, 'orange', 0, S4));
+    b.push(P('round1x1', 7, 4, 0, 'brown', 0, S4), P('round1x1', 7, 4, 3, 'brown', 0, S4), P('round1x1', 7, 4, 6, 'brown', 0, S4), P('dome2x2', 6, 3, 9, 'green', 0, S4));
+    b.push(P('fence1x4', -6, -3, 0, 'brown', 0, S4), P('fence1x4', -6, 1, 0, 'brown', 0, S4));
+    return b;
+  } },
+  { id: 'tree', em: '🌳', name: 'עץ', cat: 'טבע', build: (c = 'green') => {
+    const pal = { g: c, l: 'lime', b: 'brown', r: 'red' }; const S1 = 'גזע', S2 = 'עלווה'; const b = [];
+    b.push(...layer(0, 'plate', rep('bbbb', 4), pal, S1, -2, -2)); for (let y = 1; y < 13; y += 3) b.push(P('round2x2', -1, -1, y, 'brown', 0, S1));
+    b.push(...layer(13, 'brick', rep('gggggg', 6), pal, S2, -3, -3));
+    b.push(...layer(16, 'brick', ['..gggg..', '.gggggg.', ...rep('gggggggg', 4), '.gggggg.', '..gggg..'], pal, S2, -4, -4));
+    b.push(...layer(19, 'brick', ['..llll..', ...rep('llllllll', 6), '..llll..'], pal, S2, -4, -4));
+    b.push(...layer(22, 'brick', ['.gggg.', 'gggggg', 'gggggg', 'gggggg', 'gggggg', '.gggg.'], pal, S2, -3, -3));
+    b.push(...layer(25, 'brick', ['.ll.', 'llll', 'llll', '.ll.'], pal, S2, -2, -2));
+    b.push(P('dome2x2', -1, -1, 28, c, 0, S2));
+    b.push(P('1x1p', -4, -1, 22, 'red', 0, S2), P('1x1p', 3, 1, 22, 'red', 0, S2), P('1x1p', 0, -4, 22, 'red', 0, S2), P('1x1p', -1, 3, 22, 'red', 0, S2), P('1x1p', -3, 0, 25, 'red', 0, S2), P('1x1p', 2, -2, 25, 'red', 0, S2), P('1x1p', 1, 0, 28, 'red', 0, S2));
+    return b;
+  } },
+  { id: 'robot', em: '🤖', name: 'רובוט', cat: 'דמויות', build: (c = 'ltgray') => {
+    const pal = { l: c, k: 'dkgray', b: 'dkblue', r: 'tred', g: 'tgreen', y: 'yellow' }; const S1 = 'רגליים', S2 = 'גוף', S3 = 'זרועות', S4 = 'ראש'; const b = [];
+    b.push(...layer(0, 'plate', ['kk..kk', 'kk..kk', 'kk..kk'], pal, S1, -3, -2));
+    for (const y of [1, 4, 7]) b.push(...layer(y, 'brick', ['bb..bb', 'bb..bb'], pal, S1, -3, -1));
+    for (const y of [10, 13, 16]) b.push(...layer(y, 'brick', rep('llllll', 4), pal, S2, -3, -2));
+    b.push(...layer(19, 'plate', ['.llrgll.', '.llllll.', 'kkkkkkkk', '.llllll.'], pal, S2, -4, -2));
+    for (const x of [-4, 3]) { for (const y of [16, 13, 10]) b.push(P('1x1', x, 0, y, y === 16 ? 'dkgray' : c, 0, S3)); b.push(P('round1x1', x, 0, 7, 'yellow', 0, S3)); }
+    b.push(...layer(20, 'brick', ['ll', 'll'], pal, S4, -1, -1), P('1x1p', -1, -2, 20, 'tblue', 0, S4), P('1x1p', 0, -2, 20, 'tblue', 0, S4));
+    b.push(...layer(23, 'plate', ['kk', 'kk'], pal, S4, -1, -1), P('antenna', 0, 0, 24, 'red', 0, S4), P('1x1p', -1, -1, 24, 'tyellow', 0, S4));
+    return b;
+  } },
+  { id: 'plane', em: '✈️', name: 'מטוס', cat: 'כלי טיס', build: (c = 'white') => {
+    const pal = { w: c, r: 'red', b: 'blue', g: 'dkgray' }; const S1 = 'גוף', S2 = 'כנפיים', S3 = 'זנב', S4 = 'תא טייס'; const b = [];
+    b.push(...layer(0, 'brick', rep('ww', 14), pal, S1, -1, -7));
+    b.push(P('cone', -1, -8, 0, 'red', 0, S1), P('cone', 0, -8, 0, 'red', 0, S1));
+    b.push(P('wheel', -2, -6, 0, 'black', 0, S1), P('wheel', 1, -6, 0, 'black', 0, S1));
+    b.push(...layer(3, 'plate', [...rep('.......ww.......', 4), 'brrrrrrrrrrrrrrb', 'brrrrrrrrrrrrrrb', 'brrrrrrrrrrrrrrb', '..rrrrrrrrrrrr..', ...rep('.......ww.......', 6)], pal, S2, -8, -7));
+    b.push(...layer(4, 'plate', [...rep('.......ww.......', 5), 'rrrrrrrrrrrrrrrr', 'rrrrrrrrrrrrrrrr', '..rrrrrrrrrrrr..', ...rep('.......ww.......', 6)], pal, S1, -8, -7));
+    b.push(...layer(5, 'brick', rep('ww', 14), pal, S1, -1, -7));
+    b.push(P('round1x1', -5, -2, 5, 'dkgray', 0, S2), P('round1x1', 4, -2, 5, 'dkgray', 0, S2), P('cone', -5, -2, 8, 'ltgray', 0, S2), P('cone', 4, -2, 8, 'ltgray', 0, S2));
+    b.push(P('slope2x2', -1, -5, 8, 'tblue', 0, S4), ...layer(8, 'tile', ['ww', 'ww', 'ww', 'ww'], pal, S4, -1, -3), ...layer(8, 'plate', ['ww', 'ww', 'ww', 'ww'], pal, S1, -1, 1));
+    b.push(...layer(8, 'plate', ['rrrrrr'], pal, S3, -3, 6), ...layer(8, 'brick', ['rr'], pal, S3, -1, 5), P('slope1x2', -1, 5, 11, 'red', 2, S3), P('slope1x2', 0, 5, 11, 'red', 2, S3));
+    b.push(P('1x1p', -8, -3, 4, 'tred', 0, S2), P('1x1p', 7, -3, 4, 'tgreen', 0, S2), P('1x1p', -1, 4, 9, 'red', 0, S3), P('1x1p', 0, 4, 9, 'red', 0, S3));
+    return b;
+  } },
+  { id: 'boat', em: '⛵', name: 'סירת מפרש', cat: 'כלי שיט', build: (c = 'blue') => {
+    const pal = { b: c, t: 'tan', w: 'white', n: 'brown', r: 'red' }; const S1 = 'גוף הסירה', S2 = 'סיפון', S3 = 'תורן ומפרש'; const b = [];
+    b.push(...layer(0, 'brick', ['.bb.', ...rep('bbbb', 12)], pal, S1, -2, -8));
+    b.push(...layer(3, 'brick', rep('bbbb', 12), pal, S1, -2, -6));
+    b.push(P('slope1x2', -1, -8, 3, c, 0, S1), P('slope1x2', 0, -8, 3, c, 0, S1), P('slope1x2', -2, -8, 3, c, 0, S1), P('slope1x2', 1, -8, 3, c, 0, S1));
+    b.push(...layer(6, 'brick', ['bbbb', ...rep('b..b', 10), 'bbbb'], pal, S1, -2, -6));
+    b.push(P('1x1', -1, -7, 6, c, 0, S1), P('1x1', 0, -7, 6, c, 0, S1));
+    b.push(...layer(6, 'plate', rep('tt', 10), pal, S2, -1, -5));
+    b.push(P('1x2', -1, 3, 7, 'brown', 0, S2), P('1x1p', -1, 3, 10, 'red', 0, S2), P('1x1p', -1, -5, 7, 'tyellow', 0, S2));
+    for (let y = 7; y < 28; y += 3) b.push(P('round1x1', 0, -1, y, 'brown', 0, S3));
+    [4, 4, 4, 3, 3, 2, 1].forEach((n, k) => b.push(P(`1x${n}`, 0, 0, 7 + k * 3, 'white', 0, S3)));
+    b.push(P('1x1p', 0, -1, 28, 'red', 0, S3));
+    return b;
+  } },
+  { id: 'rocket', em: '🚀', name: 'חללית', cat: 'חלל', build: (c = 'white') => {
+    const pal = { g: 'dkgray', r: 'red' }; const S1 = 'מנועים', S2 = 'גוף', S3 = 'חרטום', S4 = 'סנפירים'; const b = [];
+    b.push(...layer(0, 'plate', rep('gggggg', 6), pal, S1, -3, -3));
+    for (const [x, z] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) b.push(P('cone', x, z, 1, 'orange', 0, S1));
+    for (let k = 0; k < 6; k++) b.push(P('round2x2', -1, -1, 4 + k * 3, k % 2 ? 'red' : c, 0, S2));
+    b.push(...layer(1, 'brick', ['..rr..', '..rr..', 'rr..rr', 'rr..rr', '..rr..', '..rr..'], pal, S4, -3, -3));
+    for (const z of [-1, 0]) b.push(P('slope1x2', -3, z, 4, 'red', 3, S4), P('slope1x2', 1, z, 4, 'red', 1, S4));
+    for (const x of [-1, 0]) b.push(P('slope1x2', x, -3, 4, 'red', 0, S4), P('slope1x2', x, 1, 4, 'red', 2, S4));
+    b.push(P('dome2x2', -1, -1, 22, 'red', 0, S3), P('antenna', -1, -1, 25, 'ltgray', 0, S3));
+    return b;
+  } },
+  { id: 'castle', em: '🏰', name: 'טירה', cat: 'בניינים', build: (c = 'ltgray') => {
+    const pal = { g: c, d: 'dkgray', t: 'dktan' }; const S1 = 'בסיס', S2 = 'חומות', S3 = 'מגדלים', S4 = 'שער'; const b = [];
+    b.push(...layer(0, 'plate', rep('tttttttttttttttt', 12), pal, S1, -8, -6));
+    const wallRow = (front) => ['dd' + front + 'dd', 'dd' + 'g'.repeat(12) + 'dd', ...rep('g' + '.'.repeat(14) + 'g', 8), 'dd' + 'g'.repeat(12) + 'dd', 'dd' + 'g'.repeat(12) + 'dd'];
+    for (const y of [1, 4, 7]) { const rows = wallRow('ggggg..ggggg'); b.push(...layer(y, 'brick', rows, pal, S2, -8, -6).filter(x => x.c !== 'dkgray')); }
+    for (const y of [1, 4, 7, 10, 13]) b.push(...layer(y, 'brick', ['dd............dd', 'dd............dd', ...rep('................', 8), 'dd............dd', 'dd............dd'], pal, S3, -8, -6));
+    b.push(P('door', -1, -6, 1, 'brown', 1, S4), P('arch1x4', -2, -6, 10, c, 1, S4));
+    for (let x = -6; x < 6; x += 2) if (x < -2 || x > 1) b.push(P('1x1', x, -6, 10, c, 0, S2), P('1x1', x, 5, 10, c, 0, S2));
+    for (let z = -4; z < 4; z += 2) b.push(P('1x1', -8, z, 10, c, 0, S2), P('1x1', 7, z, 10, c, 0, S2));
+    for (const [x, z] of [[-8, -6], [6, -6], [-8, 4], [6, 4]]) { b.push(...layer(16, 'plate', ['dd', 'dd'], pal, S3, x, z)); for (const [dx, dz] of [[0, 0], [1, 0], [0, 1], [1, 1]]) b.push(P('cone', x + dx, z + dz, 17, 'red', 0, S3)); }
+    b.push(P('antenna', -8, -6, 20, 'yellow', 0, S3), P('antenna', 7, 5, 20, 'yellow', 0, S3));
+    b.push(P('1x1', 0, 0, 1, 'blue', 0, S4), P('head', 0, 0, 4, 'yellow', 0, S4), P('1x1', 3, 1, 1, 'red', 0, S4), P('head', 3, 1, 4, 'yellow', 0, S4));
+    b.push(...layer(1, 'brick', ['g.g', 'ggg', 'g.g'], pal, S4, -6, -1));
+    return b;
+  } },
+  { id: 'duck', em: '🦆', name: 'ברווז קלאסי', cat: 'חיות', build: (c = 'yellow') => {
+    const S1 = 'גוף', S2 = 'ראש';
+    return [P('2x4', -1, -2, 0, c, 0, S1), P('2x2', -1, -2, 3, c, 0, S1), P('slope2x2', -1, 0, 3, c, 2, S1), P('2x2', -1, -2, 6, c, 0, S2), P('slope2x2', -1, -3, 9, 'orange', 0, S2), P('1x1p', -1, -2, 12, 'black', 0, S2), P('1x1p', 0, -2, 12, 'black', 0, S2)];
+  } },
+  { id: 'dino', em: '🦖', name: 'דינוזאור', cat: 'חיות', build: (c = 'green') => {
+    const pal = { g: c, l: 'lime', w: 'white', r: 'red' }; const S1 = 'רגליים', S2 = 'גוף', S3 = 'צוואר וראש', S4 = 'זנב'; const b = [];
+    b.push(...layer(0, 'plate', rep('gg..gg', 4), pal, S1, -3, -2));
+    for (const y of [1, 4]) b.push(...layer(y, 'brick', ['gg..gg', 'gg..gg'], pal, S1, -3, -1));
+    b.push(...layer(7, 'brick', ['gggggg', 'gggggg', 'gg..gg', 'gg..gg'], pal, S2, -3, -2));
+    b.push(P('2x8', -1, 0, 7, c, 0, S4));
+    b.push(...layer(10, 'brick', ['ll..ll', 'll..ll', 'lggggl', 'lggggl'], pal, S2, -3, -2));
+    b.push(P('2x4', -1, -4, 10, c, 0, S3));
+    b.push(P('2x2', -1, 2, 10, c, 0, S4), P('slope2x2', -1, 4, 10, c, 2, S4));
+    b.push(P('2x2', -1, -5, 13, c, 0, S3), P('2x3', -1, -7, 16, c, 0, S3), P('1x2p', -1, -7, 15, 'white', 1, S3));
+    b.push(P('1x1p', -1, -6, 19, 'white', 0, S3), P('1x1p', 0, -6, 19, 'white', 0, S3), P('1x2p', -1, -7, 19, 'red', 1, S3));
+    for (let z = -3; z < 4; z++) b.push(P('1x1p', 0, z, 13, 'red', 0, S2));
+    return b;
+  } },
+  { id: 'tractor', em: '🚜', name: 'טרקטור', cat: 'כלי רכב', build: (c = 'yellow') => {
+    const pal = { y: c, g: 'dkgray', k: 'black', t: 'tyellow' }; const S1 = 'גלגלים', S2 = 'גוף', S3 = 'קבינה'; const b = [];
+    b.push(P('wheel', -3, -5, 0, 'black', 0, S1), P('wheel', 2, -5, 0, 'black', 0, S1));
+    for (const x of [-4, -3, 2, 3]) b.push(P('wheel', x, 2, 0, 'black', 0, S1));
+    b.push(...layer(2, 'plate', rep('gg', 10), pal, S2, -2, -6), ...layer(2, 'plate', rep('gg', 10), pal, S2, 0, -6));
+    b.push(...layer(3, 'brick', rep('yyyy', 6), pal, S2, -2, -6));
+    b.push(...layer(6, 'plate', ['tyyt', ...rep('yyyy', 5)], pal, S2, -2, -6));
+    b.push(P('round1x1', -2, -5, 7, 'black', 0, S2), P('round1x1', -2, -5, 10, 'black', 0, S2), P('round1x1', 0, -1, 7, 'black', 0, S3));
+    b.push(...layer(3, 'plate', ['....', '.kk.', '....', '....'], pal, S3, -2, 0));
+    for (const y of [3, 6, 9]) b.push(...layer(y, 'brick', ['k..k', '....', '....', 'k..k'], pal, S3, -2, 0));
+    b.push(...layer(12, 'plate', rep('yy', 4), pal, S3, -2, 0), ...layer(12, 'plate', rep('yy', 4), pal, S3, 0, 0));
+    return b;
+  } },
+];
+function buildModelsGrid() {
+  const el = $('modelsGrid'); el.innerHTML = '';
+  for (const m of MODELS) { const btn = document.createElement('button'); btn.className = 'model'; btn.innerHTML = `<div class="em">${m.em}</div><b>${esc(m.name)}</b><small>${esc(m.cat)}</small>`; btn.onclick = () => { snapshot(); const dropped = loadModel({ bricks: m.build() }, { name: m.name, keepHistory: true }); afterChange(); setMode('build'); frameModel('iso'); toast(`${m.em} ${m.name} נטען · ${bricks.length} חלקים`); }; el.appendChild(btn); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  AI generation — Anthropic API when a key is present, offline keyword generator otherwise
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const SYSTEM = `You design LEGO-style brick models as JSON for a 3D builder. Output ONLY a JSON object, no prose, no markdown fences.
+Schema: {"name": "<short Hebrew name>", "bricks": [{"t": "<typeId>", "x": <int>, "z": <int>, "y": <int>, "r": <0|1|2|3>, "c": "<colorId>", "s": "<Hebrew section name>"}]}
+Coordinate system: x and z are stud positions on a 32x32 baseplate, valid range -16..15 (keep the model roughly centered at 0,0). y is the bottom height in PLATE units (a brick is 3 plates tall, a plate is 1). A part occupies cells x..x+w-1, z..z+d-1 (w,d swap when r is odd) and heights y..y+h-1. Parts must NOT overlap and must stack/touch (every part rests on the baseplate (y=0) or directly on a part below). Build bottom-up.
+Part types (id: width x depth x height-in-plates): ${TYPES.map(t => `${t.id}:${t.w}x${t.d}x${t.h}`).join(', ')}. "NxMp" are plates, "NxMt" are smooth tiles, slopes: the low edge faces -z when r=0, +x when r=1, +z when r=2, -x when r=3, "wheel" is a rubber wheel 1 wide (x) 2 deep (z), 5 plates tall, place wheels beside the body. "window"/"door" are 1 wide.
+Color ids: ${COLORS.map(c => c.id).join(', ')}.
+Aim for 60-200 parts, recognisable silhouette, good color contrast, 3-6 named sections (e.g. שלדה, גוף, גג, פרטים). Prefer larger bricks; use 1x1 only for details.`;
+
+// Hebrew final letters (ם ן ץ ף ך) differ from their medial forms, so "כתום" would not match "כתומה" without normalising both sides.
+const heNorm = (str) => String(str).toLowerCase().replace(/ם/g, 'מ').replace(/ן/g, 'נ').replace(/ץ/g, 'צ').replace(/ף/g, 'פ').replace(/ך/g, 'כ');
+function keyword(prompt) {
+  const p = heNorm(prompt);
+  const map = [[/מכונית|רכב|ספורט|מירוץ|car/, 'car'], [/משאית|truck/, 'truck'], [/בית|house|home/, 'house'], [/עץ|tree|יער/, 'tree'], [/רובוט|robot/, 'robot'], [/מטוס|plane|jet/, 'plane'], [/סירה|ספינה|boat|ship/, 'boat'], [/חללית|רקטה|טיל|rocket|space/, 'rocket'], [/טירה|מבצר|ארמון|castle|מגדל/, 'castle'], [/ברווז|duck|ציפור/, 'duck'], [/דינוזאור|דרקון|dino|dragon/, 'dino'], [/טרקטור|tractor/, 'tractor']];
+  const m = map.find(([re]) => re.test(p)); const model = MODELS.find(x => x.id === (m ? m[1] : 'car'));
+  const col = COLORS.find(c => !c.trans && !c.metal && p.includes(heNorm(c.he))) || (/(כסופ|כסף|silver)/.test(p) ? COLOR.silver : /(זהב|gold)/.test(p) ? COLOR.gold : null);
+  return { name: model.name + (col ? ' ' + col.he : ''), bricks: model.build(col ? col.id : undefined), matched: !!m };
+}
+async function callClaude(prompt, key, modelId, current) {
+  const user = current ? `Current model JSON (modify/extend it as requested, keep good parts):\n${JSON.stringify(current)}\n\nRequest: ${prompt}` : `Request: ${prompt}`;
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: modelId, max_tokens: 16000, system: SYSTEM, messages: [{ role: 'user', content: user }] }),
+  });
+  if (!res.ok) { const t = await res.text(); throw new Error(`${res.status}: ${t.slice(0, 200)}`); }
+  const data = await res.json(); const text = (data.content || []).map(c => c.text || '').join('');
+  const s = text.indexOf('{'), e = text.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('התשובה לא הכילה JSON');
+  return JSON.parse(text.slice(s, e + 1));
+}
+// The LLM may produce floating or colliding bricks; drop collisions (addBrick already does) and then settle floating parts downward.
+function settle() { let moved = 0; for (const b of stepOrder()) { if (b.y === 0) continue; const probe = { ...b }; for (const c of cellsOf(b)) occ.delete(c); const top = topUnder(probe); if (top < b.y) { b.y = top; moved++; } for (const c of cellsOf(b)) occ.set(c, b.id); meshes.get(b.id).position.y = b.y * PLATE; } return moved; }
+
+$('aiGo').onclick = async () => {
+  const prompt = $('aiPrompt').value.trim(); if (!prompt) return toast('כתבו קודם מה תרצו לבנות ✍️');
+  const key = $('aiKey').value.trim(); const btn = $('aiGo'); const status = $('aiStatus'); btn.disabled = true; btn.classList.add('busy');
+  saveKey(key); try { localStorage.setItem('lego-studio:model', $('aiModel').value); } catch {}
+  const current = $('aiContinue').checked && bricks.length ? serialize() : null;
+  try {
+    let data, source;
+    if (key) { status.textContent = '🤔 Claude מתכנן את הדגם… (10–40 שניות)'; data = await callClaude(prompt, key, $('aiModel').value, current); source = 'claude'; }
+    else { status.textContent = '⚙️ משתמש במחולל המובנה (ללא מפתח API)…'; await new Promise(r => setTimeout(r, 500)); const k = keyword(prompt); data = k; source = k.matched ? 'offline' : 'fallback'; }
+    snapshot();
+    const dropped = loadModel(data, { name: data.name || prompt.slice(0, 30), keepHistory: true });
+    const settled = source === 'claude' ? settle() : 0; afterChange();
+    setMode('build'); frameModel('iso');
+    status.textContent = source === 'claude' ? `✅ נוצרו ${bricks.length} חלקים ע״י Claude.` + (dropped ? ` ${dropped} חלקים חופפים הוסרו.` : '') + (settled ? ` ${settled} חלקים הונחתו למקומם.` : '') + ' עכשיו תורכם לשפר!'
+      : source === 'offline' ? `✅ נקודת פתיחה מהמחולל המובנה (${bricks.length} חלקים). הוסיפו מפתח API לתוצאות מותאמות אישית.` : `ℹ️ לא זיהיתי את הבקשה — טענתי מכונית כנקודת פתיחה. נסו מילים כמו: בית, עץ, רובוט, טירה, חללית, סירה, ברווז, דינוזאור.`;
+    toast('✨ נקודת הפתיחה מוכנה!');
+  } catch (err) { console.error(err); status.textContent = '❌ שגיאה: ' + err.message + ' — בודקים מפתח? אפשר גם להשאיר ריק ולהשתמש במחולל המובנה.'; }
+  finally { btn.disabled = false; btn.classList.remove('busy'); }
+};
+document.querySelectorAll('#aiChips .chip').forEach(c => c.onclick = () => { $('aiPrompt').value = c.textContent.replace(/^\S+\s/, ''); });
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  File menu, exports
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+$('fileBtn').onclick = (e) => { e.stopPropagation(); $('fileMenu').classList.toggle('open'); };
+document.addEventListener('click', () => $('fileMenu').classList.remove('open'));
+function download(name, content, type = 'application/json') { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+const safeName = () => (nameInput.value || 'lego').replace(/[^\w֐-׿ -]/g, '').trim() || 'lego';
+$('fileMenu').onclick = (e) => {
+  const act = e.target.closest('button')?.dataset.act; if (!act) return;
+  if (act === 'save') { try { localStorage.setItem('lego-studio:saved', JSON.stringify(serialize())); toast('נשמר בדפדפן 💾'); } catch { toast('השמירה נכשלה'); } }
+  if (act === 'load') { const s = localStorage.getItem('lego-studio:saved'); if (!s) return toast('אין שמירה'); snapshot(); loadModel(JSON.parse(s), { keepHistory: true }); afterChange(); frameModel('iso'); toast('נטען 📂'); }
+  if (act === 'json') download(safeName() + '.json', JSON.stringify(serialize(), null, 1));
+  if (act === 'csv') { const map = new Map(); for (const b of bricks) { const k = b.t + '|' + b.c; map.set(k, (map.get(k) || 0) + 1); } download(safeName() + '.csv', '﻿part,part_he,color,color_he,quantity\n' + [...map].map(([k, n]) => { const [t, c] = k.split('|'); return `${t},${TYPE[t].he},${c},${COLOR[c].he},${n}`; }).join('\n'), 'text/csv'); }
+  if (act === 'ldraw') download(safeName() + '.ldr', toLDraw(), 'text/plain');
+  if (act === 'import') $('importFile').click();
+  if (act === 'shot') { renderer.render(scene, camera); const a = document.createElement('a'); a.href = renderer.domElement.toDataURL('image/png'); a.download = safeName() + '.png'; a.click(); toast('📸 צילום נשמר'); }
+  if (act === 'clear') { if (!bricks.length) return; if (!confirm('לנקות את כל הדגם?')) return; snapshot(); clearAll(); nameInput.value = 'דגם חדש'; toast('הדגם נוקה 🗑️'); }
+};
+$('importFile').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { const data = JSON.parse(await f.text()); snapshot(); const dropped = loadModel(data, { keepHistory: true }); afterChange(); frameModel('iso'); toast(`יובאו ${bricks.length} חלקים` + (dropped ? ` (${dropped} נפסלו)` : '')); } catch { toast('קובץ לא תקין'); } e.target.value = ''; };
+// LDraw export: LDU units (1 stud = 20 LDU, 1 plate = 8 LDU), -y is up. Approximate part numbers; unknown specials fall back to a 1x1 brick.
+const LDRAW_PARTS = { '1x1': '3005', '1x2': '3004', '1x3': '3622', '1x4': '3010', '1x6': '3009', '1x8': '3008', '2x2': '3003', '2x3': '3002', '2x4': '3001', '2x6': '2456', '2x8': '3007', '1x1p': '3024', '1x2p': '3023', '1x4p': '3710', '1x6p': '3666', '2x2p': '3022', '2x4p': '3020', '2x6p': '3795', '4x4p': '3031', '6x6p': '3958', '1x2t': '3069b', '2x2t': '3068b', '2x4t': '87079', 'slope1x2': '3040b', 'slope2x2': '3039', 'slope2x3': '3298', 'slope1x2i': '3665', 'round1x1': '3062b', 'round2x2': '3941', 'cone': '4589', 'dome2x2': '553c', 'window': '60592', 'door': '60596', 'arch1x4': '3659', 'antenna': '3957', 'flower': '3741', 'fence1x4': '3633', 'prop': '4617', 'head': '3626b', 'wheel': '4624' };
+const LDRAW_COLORS = { red: 4, blue: 1, yellow: 14, green: 2, white: 15, black: 0, dkgray: 72, ltgray: 71, orange: 25, lime: 27, dkblue: 272, dkred: 320, tan: 19, dktan: 28, brown: 70, pink: 13, purple: 5, azure: 322, dkgreen: 288, sand: 378, magenta: 26, gold: 297, silver: 383, chrome: 383, tclear: 47, tred: 36, tblue: 33, tyellow: 46, tgreen: 34, torange: 57 };
+function toLDraw() {
+  const lines = [`0 ${nameInput.value}`, `0 Name: ${safeName()}.ldr`, '0 Author: Lego Studio 3D', '0 !LDRAW_ORG Unofficial_Model'];
+  for (const b of bricks) { const t = TYPE[b.t], fp = footprint(t, b.r); const cx = (b.x + fp.w / 2) * 20, cz = (b.z + fp.d / 2) * 20, by = -(b.y) * 8; const rot = [[1, 0, 0, 0, 1, 0, 0, 0, 1], [0, 0, -1, 0, 1, 0, 1, 0, 0], [-1, 0, 0, 0, 1, 0, 0, 0, -1], [0, 0, 1, 0, 1, 0, -1, 0, 0]][b.r]; lines.push(`1 ${LDRAW_COLORS[b.c] ?? 4} ${cx} ${by} ${cz} ${rot.join(' ')} ${LDRAW_PARTS[b.t] || '3005'}.dat`); }
+  return lines.join('\n') + '\n';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Misc UI wiring
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => { document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b)); document.querySelectorAll('.tabpane').forEach(p => p.classList.toggle('on', p.id === 'tab-' + b.dataset.tab)); });
+$('undoBtn').onclick = undo; $('redoBtn').onclick = redo;
+$('helpBtn').onclick = () => $('helpDlg').classList.add('on'); $('helpClose').onclick = () => $('helpDlg').classList.remove('on'); $('helpDlg').onclick = e => { if (e.target === $('helpDlg')) $('helpDlg').classList.remove('on'); };
+nameInput.oninput = autosave;
+let toastT; function toast(msg) { const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 1800); }
+
+// Web Audio clicks
+let actx; function click(freq = 600, vol = 0.06) { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); const o = actx.createOscillator(), g = actx.createGain(); o.type = 'triangle'; o.frequency.value = freq; g.gain.setValueAtTime(vol, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.12); o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.13); } catch {} }
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Boot
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+buildPalette(); buildModelsGrid();
+// The API key is kept in localStorage with a 10-minute TTL that is refreshed on every use; an expired key is wiped on load and by a periodic
+// check, and the key is also removed whenever the page is hidden/unloaded (see wipeKey below). The TTL covers the case where the browser is killed.
+const KEY_TTL_MS = 10 * 60 * 1000;
+function saveKey(key) { try { if (!key) { localStorage.removeItem('lego-studio:key'); return; } localStorage.setItem('lego-studio:key', JSON.stringify({ key, exp: Date.now() + KEY_TTL_MS })); } catch {} }
+function loadKey() { try { const raw = localStorage.getItem('lego-studio:key'); if (!raw) return ''; if (!raw.startsWith('{')) { localStorage.removeItem('lego-studio:key'); return ''; } const { key, exp } = JSON.parse(raw); if (Date.now() > exp) { localStorage.removeItem('lego-studio:key'); return ''; } return key; } catch { return ''; } }
+function purgeExpiredKey() { if (!loadKey() && $('aiKey').value && $('aiKey').dataset.fromStore === '1') { $('aiKey').value = ''; delete $('aiKey').dataset.fromStore; toast('מפתח ה־API נמחק (עברו 10 דקות) 🔒'); } }
+setInterval(purgeExpiredKey, 15000);
+try { const k = loadKey(); if (k) { $('aiKey').value = k; $('aiKey').dataset.fromStore = '1'; } const mdl = localStorage.getItem('lego-studio:model'); if (mdl) $('aiModel').value = mdl; } catch {}
+$('aiKey').addEventListener('input', () => { delete $('aiKey').dataset.fromStore; });
+// Wipe the key when the page is closed, reloaded or navigated away from. `pagehide` is the most reliable of the unload family
+// (it also fires on mobile and when the page enters the back/forward cache); `beforeunload` is a fallback for older browsers.
+const wipeKey = () => { try { localStorage.removeItem('lego-studio:key'); } catch {} };
+window.addEventListener('pagehide', wipeKey);
+window.addEventListener('beforeunload', wipeKey);
+let booted = false;
+try { const auto = localStorage.getItem('lego-studio:auto'); if (auto) { const d = JSON.parse(auto); if (d.bricks && d.bricks.length) { loadModel(d); booted = true; } } } catch {}
+if (!booted) { loadModel({ bricks: MODELS[0].build() }, { name: MODELS[0].name }); }
+frameModel('iso'); setMode('build');
+if (!localStorage.getItem('lego-studio:seen')) { $('helpDlg').classList.add('on'); try { localStorage.setItem('lego-studio:seen', '1'); } catch {} }
+window.__legoReady = true;
+window.__lego = { MODELS, keyword, check: (id) => { const m = MODELS.find(x => x.id === id); const raw = m.build(); const dropped = loadModel({ bricks: raw }, { name: m.name }); return { id, dropped: window.__dropped, floating: window.__floating }; } };
+</script>
+</body>
+</html>
