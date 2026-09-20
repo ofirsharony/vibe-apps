@@ -2721,6 +2721,7 @@
     }
     function exitBattle() {
       if (!battle) return;
+      clearTimeout(battle.nextTimer);
       removeEnemy();
       const P = battle.player;
       battle = null;
@@ -2743,11 +2744,12 @@
         else { battle.pStun = 1.0; battle.eCharge = 3; battleMsg('אוי! השאגה שלו הקפיאה אותנו לרגע 😱'); }
       }
     }
-    const hitPower = (a, b) => clamp(14 * Math.sqrt(a.def.mass / b.def.mass), 6, 30);
+    const hitPower = (a, b) => clamp(14 * Math.sqrt(a.def.mass / b.def.mass), 8, 22);
     function battleStep(dt) {
       const B = battle, P = B.player, E = B.enemy;
       if (!E) return;
-      const pMax = clamp(P.def.lengthM * 0.45, 1.8, 6) * (P.grow || 1), eMax = clamp(E.def.lengthM * 0.4, 1.6, 5.2);
+      // The opponent is never faster than the player, otherwise a small fighter could chase a circling opponent forever.
+      const pMax = clamp(P.def.lengthM * 0.45, 1.8, 6) * (P.grow || 1), eMax = Math.min(clamp(E.def.lengthM * 0.4, 1.6, 5.2), pMax * 0.95);
       B.pStun = Math.max(0, B.pStun - dt); B.eStun = Math.max(0, B.eStun - dt);
       B.pCharge = Math.max(0, B.pCharge - dt); B.eCharge = Math.max(0, B.eCharge - dt);
       B.cool = Math.max(0, B.cool - dt);
@@ -2760,17 +2762,41 @@
         if (held.has('ArrowRight')) P.root.rotation.y -= 2.2 * dt;
       }
       B.pSpeed = lerp(B.pSpeed, pv, 1 - Math.pow(0.001, dt));
-      // Opponent AI: turn toward the player, charge when facing them, roar now and then.
+      // Opponent AI: a small state machine. It chases and rams, circles around looking for an opening, backs off after a
+      // hit to build up a new charge, wanders a little, and roars when close enough for the roar to stun the player.
       let ev = 0;
       const dx = P.root.position.x - E.root.position.x, dz = P.root.position.z - E.root.position.z;
       const dist = Math.hypot(dx, dz) || 0.001;
       if (B.phase === 'fight' && B.eStun <= 0) {
-        const want = Math.atan2(-dz, dx);
+        B.aiT = (B.aiT ?? 0) - dt;
+        if (B.aiT <= 0) {
+          const r = Math.random();
+          B.ai = r < 0.55 ? 'chase' : r < 0.8 ? 'circle' : 'wander';
+          B.aiSide = Math.random() < 0.5 ? 1 : -1;
+          B.aiT = B.ai === 'chase' ? rnd(2.5, 5) : rnd(1.2, 2.5);
+        }
+        if (B.pStun > 0) B.ai = 'chase'; // a stunned player is an opening, always take it
+        // Sidestep a head-on charge some of the time instead of taking it on the nose.
+        const pFace = Math.cos(P.root.rotation.y) * -dx / dist + -Math.sin(P.root.rotation.y) * -dz / dist;
+        B.dodgeCool = Math.max(0, (B.dodgeCool || 0) - dt);
+        if (B.ai === 'chase' && B.dodgeCool <= 0 && pFace > 0.9 && B.pSpeed > pMax * 0.5 && dist < dinoRadius(P) + dinoRadius(E) + 9 && Math.random() < dt * 0.6) {
+          B.ai = 'circle'; B.aiSide = Math.random() < 0.5 ? 1 : -1; B.aiT = rnd(0.7, 1.1); B.dodgeCool = 4;
+        }
+        const toPlayer = Math.atan2(-dz, dx);
+        let want = toPlayer, speed = eMax;
+        if (B.ai === 'circle') { want = toPlayer + B.aiSide * 1.25; speed = eMax * 0.8; }
+        else if (B.ai === 'wander') { want = toPlayer + B.aiSide * 2.4; speed = eMax * 0.55; }
+        else if (B.ai === 'retreat') { want = toPlayer + Math.PI; speed = eMax * 0.7; }
+        if (B.ai !== 'chase' && dist > 26) { B.ai = 'chase'; want = toPlayer; speed = eMax; }
         const diff = Math.atan2(Math.sin(want - E.root.rotation.y), Math.cos(want - E.root.rotation.y));
-        E.root.rotation.y += clamp(diff, -1, 1) * 1.7 * dt;
-        if (Math.abs(diff) < 0.6) ev = eMax * 0.85;
+        E.root.rotation.y += clamp(diff, -1, 1) * 2.4 * dt;
+        if (Math.abs(diff) < 0.7) ev = speed;
+        // Roar when it will actually land (the player is inside the roar range), then use the charged hit right away.
         B.eRoarIn -= dt;
-        if (B.eRoarIn <= 0) { B.eRoarIn = rnd(4, 8); B.eRoar = 0; playVoice(E.def.voice); battleRoar('e'); }
+        const roarRange = 10 + E.def.lengthM * 0.8;
+        if (B.eRoarIn <= 0 && B.eRoar < 0 && dist < roarRange && B.eCharge <= 0) {
+          B.eRoarIn = rnd(2.5, 5); B.eRoar = 0; playVoice(E.def.voice); battleRoar('e'); B.ai = 'chase'; B.aiT = 2.5;
+        }
       }
       B.eSpeed = lerp(B.eSpeed, ev, 1 - Math.pow(0.001, dt));
       if (B.eRoar >= 0) { B.eRoar += dt; if (B.eRoar > 1.5) B.eRoar = -1; }
@@ -2798,13 +2824,15 @@
           const ef = Math.cos(E.root.rotation.y) * nx + -Math.sin(E.root.rotation.y) * nz;
           const pRam = B.pSpeed * pf, eRam = B.eSpeed * ef;
           let dmgE = 0, dmgP = 0;
-          if (pRam > 0.6) { dmgE = hitPower(P, E) * (B.pCharge > 0 ? 2 : 1); B.pCharge = 0; }
-          if (eRam > 0.6) { dmgP = hitPower(E, P) * (B.eCharge > 0 ? 2 : 1); B.eCharge = 0; }
+          if (pRam > 0.6) { dmgE = hitPower(P, E) * (B.pCharge > 0 ? 1.7 : 1); B.pCharge = 0; }
+          // Later stages hit harder, so the final tiers feel like real bosses.
+          if (eRam > 0.6) { dmgP = hitPower(E, P) * (B.eCharge > 0 ? 1.7 : 1) * (1 + B.stage * 0.1); B.eCharge = 0; }
           if (dmgE || dmgP) {
             B.ehp -= dmgE; B.php -= dmgP;
             B.ekb.set(-nx, 0, -nz).multiplyScalar(4 + dmgE * 0.35);
             B.pkb.set(nx, 0, nz).multiplyScalar(4 + dmgP * 0.35);
             B.eStun = Math.max(B.eStun, dmgE ? 0.5 : 0); B.pStun = Math.max(B.pStun, dmgP ? 0.4 : 0);
+            if (dmgP && Math.random() < 0.6) { B.ai = 'retreat'; B.aiT = rnd(0.8, 1.5); }
             playSound('crack');
             state.shake = 0;
             if (dmgE >= dmgP) battleMsg(dmgE >= 20 ? 'מכה אדירה! 💥💥' : 'פגיעה! 💥'); else battleMsg('אאוץ, הוא פגע בנו! 🛡️');
@@ -2841,9 +2869,18 @@
         $('bNext').hidden = true; $('bRetry').hidden = true;
         $('bActions').classList.add('show');
       } else {
-        battleMsg(`🎉 ניצחון! עברנו את שלב ${cleared}. מוכנים ליריב חזק יותר?`);
         $('bNext').hidden = false; $('bRetry').hidden = true;
         $('bActions').classList.add('show');
+        // The next opponent arrives on its own after a short countdown, so a child never gets stuck on the victory screen.
+        let left = 4;
+        const tick = () => {
+          if (!battle || battle !== B || B.phase !== 'won') return;
+          if (left <= 0) return nextStage();
+          battleMsg(`🎉 ניצחון! עברנו את שלב ${cleared}. היריב הבא מגיע בעוד ${left}...`);
+          left -= 1;
+          B.nextTimer = setTimeout(tick, 1000);
+        };
+        tick();
       }
     }
     function loseStage() {
@@ -2856,6 +2893,7 @@
     }
     function nextStage() {
       if (!battle || battle.phase !== 'won') return;
+      clearTimeout(battle.nextTimer);
       removeEnemy();
       battle.stage += 1;
       spawnOpponent();
