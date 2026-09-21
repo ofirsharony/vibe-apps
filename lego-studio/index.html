@@ -1554,12 +1554,33 @@ function buildModelsGrid() {
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 //  AI generation — Anthropic API when a key is present, offline keyword generator otherwise
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-const SYSTEM = `You design LEGO-style brick models as JSON for a 3D builder. Output ONLY a JSON object, no prose, no markdown fences.
-Schema: {"name": "<short Hebrew name>", "bricks": [{"t": "<typeId>", "x": <int>, "z": <int>, "y": <int>, "r": <0|1|2|3>, "c": "<colorId>", "s": "<Hebrew section name>"}]}
-Coordinate system: x and z are stud positions on a 32x32 baseplate, valid range -16..15 (keep the model roughly centered at 0,0). y is the bottom height in PLATE units (a brick is 3 plates tall, a plate is 1). A part occupies cells x..x+w-1, z..z+d-1 (w,d swap when r is odd) and heights y..y+h-1. Parts must NOT overlap and must stack/touch (every part rests on the baseplate (y=0) or directly on a part below). Build bottom-up.
-Part types (id: width x depth x height-in-plates): ${TYPES.map(t => `${t.id}:${t.w}x${t.d}x${t.h}`).join(', ')}. "NxMp" are plates, "NxMt" are smooth tiles, slopes: the low edge faces -z when r=0, +x when r=1, +z when r=2, -x when r=3, "wheel" is a rubber wheel 1 wide (x) 2 deep (z), 5 plates tall, place wheels beside the body. "window"/"door" are 1 wide.
-Color ids: ${COLORS.map(c => c.id).join(', ')}.
+// The part ids, their dimensions and the color ids are carried by MODEL_SCHEMA (enums + field descriptions), so the prompt only
+// has to explain geometry rules and style. Both providers receive the schema as a hard constraint, not as prose.
+const SYSTEM = `You design LEGO-style brick models for a 3D builder.
+Coordinate system: x and z are stud positions on a 32x32 baseplate, valid range -16..15 (keep the model roughly centered at 0,0). y is the height of the part's BOTTOM in plate units (a plate is 1, a brick is 3). A part occupies cells x..x+w-1, z..z+d-1 (w and d swap when r is odd) and heights y..y+h-1. Parts must NOT overlap and every part must rest on the baseplate (y=0) or directly on a part below it. Build bottom-up.
+Slopes: the low edge faces -z when r=0, +x when r=1, +z when r=2, -x when r=3. Wheels stand on the ground beside the body. Windows and doors are 1 stud wide.
 Aim for 60-200 parts, recognisable silhouette, good color contrast, 3-6 named sections (e.g. שלדה, גוף, גג, פרטים). Prefer larger bricks; use 1x1 only for details.`;
+const MODEL_SCHEMA = {
+  type: 'object', additionalProperties: false, required: ['name', 'bricks'],
+  properties: {
+    name: { type: 'string', description: 'Short Hebrew model name' },
+    bricks: {
+      type: 'array', description: 'All parts, ordered bottom-up',
+      items: {
+        type: 'object', additionalProperties: false, required: ['t', 'x', 'z', 'y', 'r', 'c', 's'],
+        properties: {
+          t: { type: 'string', enum: TYPES.map(t => t.id), description: 'Part id. Dimensions as width x depth x height-in-plates: ' + TYPES.map(t => `${t.id}=${t.w}x${t.d}x${t.h}`).join(', ') + '. Ids ending in p are plates, ending in t are smooth tiles.' },
+          x: { type: 'integer', description: 'Stud column of the part\'s min corner, -16..15' },
+          z: { type: 'integer', description: 'Stud row of the part\'s min corner, -16..15' },
+          y: { type: 'integer', description: 'Height of the part\'s bottom in plates, 0 = baseplate' },
+          r: { type: 'integer', enum: [0, 1, 2, 3], description: 'Rotation in 90° steps; odd values swap width and depth' },
+          c: { type: 'string', enum: COLORS.map(c => c.id), description: 'Color id. Prefix t = transparent; gold/silver/chrome are metallic' },
+          s: { type: 'string', description: 'Hebrew section name, e.g. שלדה, גוף, גג' },
+        },
+      },
+    },
+  },
+};
 
 // Hebrew final letters (ם ן ץ ף ך) differ from their medial forms, so "כתום" would not match "כתומה" without normalising both sides.
 const heNorm = (str) => String(str).toLowerCase().replace(/ם/g, 'מ').replace(/ן/g, 'נ').replace(/ץ/g, 'צ').replace(/ף/g, 'פ').replace(/ך/g, 'כ');
@@ -1572,25 +1593,33 @@ function keyword(prompt) {
 }
 async function callClaude(prompt, key, modelId, current) {
   const user = current ? `Current model JSON (modify/extend it as requested, keep good parts):\n${JSON.stringify(current)}\n\nRequest: ${prompt}` : `Request: ${prompt}`;
+  // The schema is enforced by forcing a single tool call whose input_schema is MODEL_SCHEMA; the model cannot answer in prose.
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: modelId, max_tokens: 16000, system: SYSTEM, messages: [{ role: 'user', content: user }] }),
+    body: JSON.stringify({
+      model: modelId, max_tokens: 16000, system: SYSTEM, messages: [{ role: 'user', content: user }],
+      tools: [{ name: 'lego_model', description: 'Return the finished brick model.', input_schema: MODEL_SCHEMA }], tool_choice: { type: 'tool', name: 'lego_model' },
+    }),
   });
   if (!res.ok) { const t = await res.text(); throw new Error(`${res.status}: ${t.slice(0, 200)}`); }
-  const data = await res.json(); const text = (data.content || []).map(c => c.text || '').join('');
-  const s = text.indexOf('{'), e = text.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('התשובה לא הכילה JSON');
-  return JSON.parse(text.slice(s, e + 1));
+  const data = await res.json(); const call = (data.content || []).find(c => c.type === 'tool_use');
+  if (!call || !call.input || !Array.isArray(call.input.bricks)) throw new Error('התשובה לא הכילה דגם');
+  return call.input;
 }
 async function callOpenAI(prompt, key, modelId, current) {
   const user = current ? `Current model JSON (modify/extend it as requested, keep good parts):\n${JSON.stringify(current)}\n\nRequest: ${prompt}` : `Request: ${prompt}`;
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST', headers: { 'content-type': 'application/json', 'authorization': `Bearer ${key}` },
-    body: JSON.stringify({ model: modelId, max_completion_tokens: 16000, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: user }] }),
+    body: JSON.stringify({
+      model: modelId, max_completion_tokens: 16000, messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: user }],
+      response_format: { type: 'json_schema', json_schema: { name: 'lego_model', strict: true, schema: MODEL_SCHEMA } },
+    }),
   });
   if (!res.ok) { const t = await res.text(); throw new Error(`${res.status}: ${t.slice(0, 200)}`); }
-  const data = await res.json(); const text = ((data.choices || [])[0]?.message?.content) || '';
-  const s = text.indexOf('{'), e = text.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('התשובה לא הכילה JSON');
-  return JSON.parse(text.slice(s, e + 1));
+  const data = await res.json(); const msg = (data.choices || [])[0]?.message || {};
+  if (msg.refusal) throw new Error(msg.refusal.slice(0, 200));
+  const parsed = JSON.parse(msg.content || '{}'); if (!Array.isArray(parsed.bricks)) throw new Error('התשובה לא הכילה דגם');
+  return parsed;
 }
 const PROVIDERS = {
   anthropic: { name: 'Claude', label: 'מפתח API של Anthropic (נמחק אחרי 10 דקות ללא שימוש או בסגירת הדף)', placeholder: 'sk-ant-...', call: callClaude },
