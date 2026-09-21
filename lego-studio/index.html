@@ -1538,6 +1538,129 @@ const MODELS = [
     for (const [x, z] of [[-2, -2], [1, -2], [-2, 1], [1, 1]]) b.push(P('round1x1', x, z, 5, 'tblue', 0, S4));
     return b;
   } },
+
+  // ── סבב שני: דגמים ייחודיים ──
+  { id: 'snowman', lvl: 1, em: '⛄', name: 'איש שלג', cat: 'חורף', build: (c = 'white') => {
+    const S1 = 'גוף', S2 = 'ידיים', S3 = 'ראש'; const b = [];
+    b.push(...layer(0, 'brick', rep('wwww', 4), { w: c }, S1, -2, -2), P('2x2', -1, -1, 3, c, 0, S1));
+    b.push(P('1x4p', -4, 0, 6, 'brown', 1, S2), P('1x4p', 0, 0, 6, 'brown', 1, S2), P('1x2p', -1, -1, 6, c, 1, S1));
+    b.push(P('2x2', -1, -1, 7, c, 0, S1), P('2x2p', -1, -1, 10, 'red', 0, S3), P('round2x2', -1, -1, 11, c, 0, S3));
+    b.push(P('1x1p', -1, -1, 14, 'black', 0, S3), P('1x1p', 0, -1, 14, 'black', 0, S3), P('2x2p', -1, -1, 15, 'black', 0, S3), P('2x2', -1, -1, 16, 'black', 0, S3));
+    return b;
+  } },
+  { id: 'mushroom', lvl: 1, em: '🍄', name: 'פטרייה', cat: 'טבע', build: (c = 'red') => {
+    const S1 = 'גבעול', S2 = 'כובע'; const b = [];
+    b.push(P('round2x2', -1, -1, 0, 'white', 0, S1), P('round2x2', -1, -1, 3, 'white', 0, S1));
+    b.push(P('6x6p', -3, -3, 6, c, 0, S2), ...layer(7, 'brick', rep('rrrr', 4), { r: c }, S2, -2, -2));
+    for (const [x, z] of [[-3, -3], [2, -3], [-3, 2], [2, 2], [0, -3], [-3, 0], [2, -1], [-1, 2]]) b.push(P('1x1p', x, z, 7, 'white', 0, S2));
+    b.push(P('dome2x2', -1, -1, 10, c, 0, S2));
+    return b;
+  } },
+  { id: 'dice', lvl: 1, em: '🎲', name: 'קובייה', cat: 'משחקים', build: (c = 'white') => {
+    const S1 = 'קובייה', S2 = 'נקודות'; const b = [];
+    for (const y of [0, 3, 6]) b.push(...layer(y, 'brick', rep('wwww', 4), { w: c }, S1, -2, -2));
+    b.push(...layer(9, 'plate', ['kwwk', 'wwww', 'wwww', 'kwwk'], { w: c, k: 'black' }, S2, -2, -2), P('round1x1', -1, -1, 10, 'black', 0, S2));
+    return b;
+  } },
+  { id: 'cactus', lvl: 1, em: '🌵', name: 'קקטוס במדבר', cat: 'טבע', build: (c = 'green') => {
+    const S1 = 'חול', S2 = 'גזע', S3 = 'זרועות'; const b = [];
+    b.push(P('6x6p', -3, -3, 0, 'tan', 0, S1), P('round2x2', -1, -1, 1, c, 0, S2), P('round2x2', -1, -1, 4, c, 0, S2));
+    b.push(P('1x4p', -4, -1, 7, c, 1, S3), P('1x4p', 0, 0, 7, c, 1, S3), P('1x1p', 0, -1, 7, c, 0, S2), P('1x1p', -1, 0, 7, c, 0, S2));
+    b.push(P('round1x1', -4, -1, 8, c, 0, S3), P('round1x1', 3, 0, 8, c, 0, S3), P('cone', -4, -1, 11, 'lime', 0, S3), P('cone', 3, 0, 11, 'lime', 0, S3));
+    b.push(P('round2x2', -1, -1, 8, c, 0, S2), P('round2x2', -1, -1, 11, c, 0, S2), P('flower', -1, -1, 14, 'pink', 0, S2), P('flower', 0, 0, 14, 'pink', 0, S2));
+    return b;
+  } },
+  { id: 'windmill', lvl: 2, em: '🌬️', name: 'טחנת רוח', cat: 'בניינים', build: (c = 'tan') => {
+    const S1 = 'מגדל', S2 = 'גג', S3 = 'כנפיים'; const b = [];
+    for (const y of [0, 3, 6]) b.push(...layer(y, 'brick', ['t..t', 't..t', 't..t', 'tttt'], { t: c }, S1, -2, -2));
+    b.push(P('door', -1, -2, 0, 'brown', 1, S1));
+    b.push(...layer(9, 'plate', rep('rrrr', 4), { r: 'red' }, S2, -2, -2), P('2x2p', -1, -1, 10, 'dkgray', 0, S3));
+    b.push(P('1x4p', -5, -1, 10, 'white', 1, S3), P('1x4p', 1, 0, 10, 'white', 1, S3), P('1x4p', -1, -5, 10, 'white', 0, S3), P('1x4p', 0, 1, 10, 'white', 0, S3));
+    b.push(P('round1x1', -1, -1, 11, 'dkgray', 0, S3), P('flower', 3, 3, 0, 'yellow', 0, S1), P('flower', -4, 2, 0, 'red', 0, S1));
+    return b;
+  } },
+  { id: 'octopus', lvl: 2, em: '🐙', name: 'תמנון', cat: 'חיות', build: (c = 'purple') => {
+    const pal = { p: c }; const S1 = 'זרועות', S2 = 'גוף', S3 = 'עיניים'; const b = [];
+    b.push(...layer(0, 'plate', rep('pppp', 4), pal, S1, -2, -2));
+    const arms = [[-6, -2, 1], [-6, 1, 1], [2, -2, 1], [2, 1, 1], [-2, -6, 0], [1, -6, 0], [-2, 2, 0], [1, 2, 0]];
+    for (const [x, z, r] of arms) b.push(P('1x4p', x, z, 0, c, r, S1));
+    for (const [x, z] of [[-6, -2], [-6, 1], [5, -2], [5, 1], [-2, -6], [1, -6], [-2, 5], [1, 5]]) b.push(P('round1x1', x, z, 1, 'magenta', 0, S1));
+    for (const y of [1, 4]) b.push(...layer(y, 'brick', rep('pppp', 4), pal, S2, -2, -2));
+    b.push(...layer(7, 'plate', ['.pp.', 'pppp', 'pppp', '.pp.'], pal, S2, -2, -2));
+    b.push(P('round1x1', -1, -2, 8, 'white', 0, S3), P('round1x1', 0, -2, 8, 'white', 0, S3), P('1x1p', -1, -2, 11, 'black', 0, S3), P('1x1p', 0, -2, 11, 'black', 0, S3), P('dome2x2', -1, -1, 8, c, 0, S2));
+    return b;
+  } },
+  { id: 'camera', lvl: 2, em: '📷', name: 'מצלמה', cat: 'חפצים', build: (c = 'black') => {
+    const pal = { k: c, l: 'ltgray' }; const S1 = 'גוף', S2 = 'עדשה', S3 = 'כפתורים'; const b = [];
+    for (const y of [0, 3]) b.push(...layer(y, 'brick', rep('kkkkkk', 4), pal, S1, -3, -2));
+    b.push(...layer(6, 'plate', rep('llllll', 4), pal, S1, -3, -2));
+    b.push(P('round2x2', -1, -1, 7, c, 0, S2), P('round2x2', -1, -1, 10, 'dkgray', 0, S2), P('2x2p', -1, -1, 13, 'tblue', 0, S2));
+    b.push(P('round1x1', 2, -2, 7, 'red', 0, S3), P('1x2p', -3, -2, 7, 'tclear', 1, S3), P('1x2t', 1, 1, 7, 'dkgray', 1, S3), P('1x1p', -3, 1, 7, 'dkgray', 0, S3));
+    b.push(P('1x6p', -3, 3, 0, 'brown', 1, S1), P('1x6p', -3, -4, 0, 'brown', 1, S1));
+    return b;
+  } },
+  { id: 'guitar', lvl: 2, em: '🎸', name: 'גיטרה', cat: 'מוזיקה', build: (c = 'red') => {
+    const pal = { r: c, k: 'black' }; const S1 = 'גוף', S2 = 'צוואר', S3 = 'מיתרים'; const b = [];
+    b.push(...layer(0, 'plate', ['.rrrr.', 'rrrrrr', 'rrrrrr', '.rrrr.', 'rrrrrr', 'rrrrrr', 'rrrrrr', '.rrrr.'], pal, S1, -3, -5));
+    b.push(...layer(1, 'plate', ['.rrrr.', 'rr..rr', 'rr..rr', '.rrrr.', 'rrrrrr', 'rkkkkr', 'rrrrrr', '.rrrr.'], pal, S1, -3, -5));
+    b.push(P('1x8', -1, -13, 0, 'brown', 0, S2), P('1x8', 0, -13, 0, 'brown', 0, S2));
+    b.push(P('1x2p', -1, -13, 3, 'black', 1, S2), P('1x2t', -1, -8, 3, 'black', 1, S3));
+    for (const z of [-13, -12, -11]) b.push(P('round1x1', -2, z, 0, 'gold', 0, S2), P('round1x1', 1, z, 0, 'gold', 0, S2));
+    b.push(P('1x2t', -1, -1, 2, 'black', 1, S3), P('1x4p', -1, -12, 3, 'ltgray', 0, S3), P('1x4p', 0, -12, 3, 'ltgray', 0, S3));
+    return b;
+  } },
+  { id: 'robodog', lvl: 2, em: '🐕', name: 'כלב רובוט', cat: 'דמויות', build: (c = 'ltgray') => {
+    const pal = { l: c, d: 'dkgray' }; const S1 = 'רגליים', S2 = 'גוף', S3 = 'ראש', S4 = 'זנב'; const b = [];
+    for (const [x, z] of [[-1, -3], [0, -3], [-1, 2], [0, 2]]) b.push(P('1x1', x, z, 0, c, 0, S1), P('1x1', x, z, 3, 'dkgray', 0, S1));
+    b.push(P('2x6', -1, -3, 6, 'dkgray', 0, S2));
+    b.push(P('2x6p', -1, -5, 9, c, 0, S2), P('1x4p', -1, 1, 9, c, 0, S4), P('1x2p', 0, 1, 9, c, 0, S4));
+    b.push(P('2x2', -1, -5, 10, 'dkgray', 0, S3), P('round1x1', -1, -5, 13, 'tblue', 0, S3), P('round1x1', 0, -5, 13, 'tblue', 0, S3), P('antenna', 0, -4, 13, 'black', 0, S3), P('1x1p', -1, -4, 13, c, 0, S3));
+    b.push(P('cone', -1, 4, 10, 'red', 0, S4), P('1x1p', 0, 0, 10, 'red', 0, S2), P('round1x1', -1, -2, 10, 'dkgray', 0, S2));
+    return b;
+  } },
+  { id: 'balloon', lvl: 2, em: '🎈', name: 'כדור פורח', cat: 'כלי טיס', build: (c = 'red') => {
+    const pal = { r: c, w: 'white' }; const S1 = 'סל', S2 = 'חבלים', S3 = 'בלון'; const b = [];
+    b.push(...layer(0, 'brick', rep('bb', 2), { b: 'brown' }, S1, -1, -1), P('2x2', -1, -1, 3, 'tclear', 0, S2));
+    b.push(P('4x4p', -2, -2, 6, c, 0, S3), ...layer(7, 'brick', ['rrrr', 'wwww', 'rrrr', 'wwww'], pal, S3, -2, -2));
+    b.push(P('6x6p', -3, -3, 10, c, 0, S3), ...layer(11, 'brick', rep('rwrwrw', 6), pal, S3, -3, -3));
+    b.push(P('6x6p', -3, -3, 14, 'white', 0, S3), ...layer(15, 'brick', ['wwww', 'rrrr', 'wwww', 'rrrr'], pal, S3, -2, -2));
+    b.push(P('2x2p', -1, -1, 18, c, 0, S3), P('dome2x2', -1, -1, 19, c, 0, S3));
+    return b;
+  } },
+  { id: 'volcano', lvl: 3, em: '🌋', name: 'הר געש', cat: 'טבע', build: (c = 'dkgray') => {
+    const pal = { g: c, b: 'brown', o: 'torange', r: 'tred' }; const S1 = 'בסיס', S2 = 'הר', S3 = 'לבה', S4 = 'סביבה'; const b = [];
+    b.push(...layer(0, 'brick', ['..gggggg..', '.gggggggg.', 'gggggggggg', 'gggggggggg', 'gggggggggg', 'gggggggggg', 'gggggggggg', 'gggggggggg', '.gggggggg.', '..gggggg..'], pal, S1, -5, -5));
+    b.push(...layer(3, 'brick', ['.bbbbbb.', 'bbbbbbbb', 'bbbbbbbb', 'bbbbbbbb', 'bbbbbbbb', 'bbbbbbbb', 'bbbbbbbb', '.bbbbbb.'], pal, S2, -4, -4));
+    b.push(...layer(6, 'brick', rep('gggggg', 6), pal, S2, -3, -3));
+    b.push(...layer(9, 'brick', ['gggg', 'g..g', 'g..g', 'gggg'], pal, S2, -2, -2));
+    b.push(P('round2x2', -1, -1, 9, 'torange', 0, S3), P('cone', -1, -1, 12, 'tred', 0, S3), P('cone', 0, 0, 12, 'tred', 0, S3), P('round1x1', 0, -1, 12, 'torange', 0, S3));
+    b.push(P('1x2p', -3, -3, 9, 'torange', 1, S3), P('1x2p', 1, 2, 9, 'torange', 1, S3), P('1x2p', -4, 0, 6, 'torange', 0, S3), P('1x2p', 3, -4, 6, 'torange', 0, S3), P('1x2p', 4, 2, 3, 'tred', 0, S3), P('1x2p', -5, -2, 3, 'tred', 0, S3));
+    for (const [x, z] of [[-7, -7], [6, -6], [-7, 6], [7, 7]]) b.push(P('round1x1', x, z, 0, 'brown', 0, S4), P('flower', x, z, 3, 'green', 0, S4));
+    return b;
+  } },
+  { id: 'excavator', lvl: 3, em: '🏗️', name: 'מחפרון', cat: 'כלי רכב', build: (c = 'yellow') => {
+    const pal = { y: c, k: 'black', g: 'dkgray', b: 'tblue' }; const S1 = 'זחלים', S2 = 'גוף', S3 = 'קבינה', S4 = 'זרוע'; const b = [];
+    for (const x of [-4, 2]) b.push(P('2x8', x, -4, 0, 'black', 0, S1), P('1x6p', x, -3, 3, 'dkgray', 0, S1), P('1x6p', x + 1, -3, 3, 'dkgray', 0, S1));
+    b.push(...layer(4, 'plate', rep('gggggggg', 6), pal, S2, -4, -3));
+    b.push(P('round2x2', -1, -1, 5, 'dkgray', 0, S2), ...layer(8, 'plate', rep('yyyy', 6), pal, S2, -2, -3));
+    b.push(...layer(9, 'brick', ['yyyy', 'y..y', 'y..y', 'yyyy', 'yyyy', 'yyyy'], pal, S3, -2, -3));
+    b.push(...layer(12, 'brick', ['bbbb', 'b..b', 'b..b', 'yyyy', 'yyyy', 'yyyy'], pal, S3, -2, -3));
+    b.push(...layer(15, 'plate', rep('yyyy', 6), pal, S3, -2, -3), P('antenna', 1, 2, 16, 'black', 0, S3), P('round1x1', -2, 2, 16, 'torange', 0, S3));
+    b.push(P('2x6p', -1, -8, 16, c, 0, S4), P('2x4', -1, -8, 17, c, 0, S4), P('2x2p', -1, -8, 20, 'dkgray', 0, S4));
+    b.push(P('2x2', -1, -8, 13, 'dkgray', 0, S4), P('slope2x2', -1, -8, 10, 'dkgray', 2, S4));
+    return b;
+  } },
+  { id: 'carousel', lvl: 3, em: '🎠', name: 'קרוסלה', cat: 'חגיגה', build: (c = 'red') => {
+    const pal = { r: c, y: 'yellow', w: 'white' }; const S1 = 'במה', S2 = 'עמוד', S3 = 'סוסים', S4 = 'גג'; const b = [];
+    b.push(...layer(0, 'plate', ['..rrrr..', '.rrrrrr.', 'rrrrrrrr', 'rrrrrrrr', 'rrrrrrrr', 'rrrrrrrr', '.rrrrrr.', '..rrrr..'], pal, S1, -4, -4));
+    for (const y of [1, 4, 7, 10]) b.push(P('round2x2', -1, -1, y, 'white', 0, S2));
+    const seats = [[-3, -3, 'blue'], [2, -3, 'green'], [-3, 2, 'orange'], [2, 2, 'purple']];
+    for (const [x, z, col] of seats) b.push(P('2x2', x, z, 1, col, 0, S3), P('head', x, z, 4, 'yellow', 0, S3), P('1x1p', x + 1, z + 1, 4, col, 0, S3), P('round1x1', x, z, 7, 'white', 0, S3), P('round1x1', x, z, 10, 'white', 0, S3));
+    b.push(P('6x6p', -3, -3, 13, c, 0, S4));
+    b.push(...layer(14, 'plate', ['yryryr', 'r....r', 'y....y', 'r....r', 'y....y', 'ryryry'], pal, S4, -3, -3), ...layer(14, 'plate', rep('wwww', 4), pal, S4, -2, -2));
+    b.push(P('2x2p', -1, -1, 15, 'gold', 0, S4), P('cone', -1, -1, 16, 'gold', 0, S4), P('cone', 0, 0, 16, 'gold', 0, S4), P('cone', -1, 0, 16, 'gold', 0, S4), P('cone', 0, -1, 16, 'gold', 0, S4));
+    return b;
+  } },
 ];
 const LEVELS = { 1: { he: 'קל', stars: '⭐' }, 2: { he: 'בינוני', stars: '⭐⭐' }, 3: { he: 'מאתגר', stars: '⭐⭐⭐' } };
 function modelCard(m, stars, onDelete) {
