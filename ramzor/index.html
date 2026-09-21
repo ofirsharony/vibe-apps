@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הרמזור המשפחתי שלנו</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Rubik', 'Segoe UI', Arial, sans-serif; direction: rtl; background: linear-gradient(180deg, #fbfaf6 0%, #f2efe5 100%); min-height: 100vh; padding: 32px 16px; }
+  .app { max-width: 940px; margin: 0 auto; position: relative; }
+
+  .tl-header { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 1.2rem; }
+  .tl-body { background: linear-gradient(160deg, #34342f, #232321); border-radius: 16px; padding: 11px 9px; display: flex; flex-direction: column; gap: 7px; border: 3px solid #4a4a45; box-shadow: 0 6px 16px rgba(44,44,42,0.25); }
+  .tl-light { width: 26px; height: 26px; border-radius: 50%; animation: glow 3s ease-in-out infinite; }
+  .tl-light.dot-red    { box-shadow: 0 0 10px 2px rgba(226,75,74,0.55); animation-delay: 0s; }
+  .tl-light.dot-yellow { box-shadow: 0 0 10px 2px rgba(239,159,39,0.55); animation-delay: 1s; }
+  .tl-light.dot-green  { box-shadow: 0 0 10px 2px rgba(99,153,34,0.55); animation-delay: 2s; }
+  @keyframes glow { 0%, 100% { filter: brightness(0.85); } 50% { filter: brightness(1.25); } }
+  @media (prefers-reduced-motion: reduce) { .tl-light { animation: none; } }
+  .tl-title h1 { font-size: 28px; font-weight: 700; color: #2C2C2A; letter-spacing: -0.3px; }
+  .tl-title p { font-size: 14px; color: #8a8678; margin-top: 3px; }
+
+  .toolbar { display: flex; justify-content: center; margin-bottom: 1.4rem; }
+  .print-btn { border: 1px solid #ddd8cc; background: #fff; color: #2C2C2A; padding: 8px 20px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; font-family: inherit; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(44,44,42,0.08); transition: all 0.15s; }
+  .print-btn:hover { background: #f6f3ea; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(44,44,42,0.12); }
+
+  .columns { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+  @media (max-width: 700px) { .columns { grid-template-columns: 1fr; } }
+
+  .col { border-radius: 18px; padding: 16px 14px; min-height: 220px; box-shadow: 0 2px 10px rgba(44,44,42,0.06), inset 0 1px 0 rgba(255,255,255,0.6); }
+  .col-red    { background: #FCEBEB; border: 1px solid #f5d4d4; }
+  .col-yellow { background: #FAEEDA; border: 1px solid #f0ddbc; }
+  .col-green  { background: #EAF3DE; border: 1px solid #d6e6c0; }
+
+  .col-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .dot { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; box-shadow: 0 2px 5px rgba(44,44,42,0.18); }
+  .dot-red    { background: #E24B4A; }
+  .dot-yellow { background: #EF9F27; }
+  .dot-green  { background: #639922; }
+  .col-title { font-size: 17px; font-weight: 600; }
+  .col-red .col-title    { color: #791F1F; }
+  .col-yellow .col-title { color: #633806; }
+  .col-green .col-title  { color: #27500A; }
+
+  .rule-card { background: #fff; border-radius: 12px; padding: 11px 13px; margin-bottom: 9px; cursor: grab; position: relative; font-size: 14px; line-height: 1.7; color: #2C2C2A; user-select: none; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 1px 3px rgba(44,44,42,0.07); transition: transform 0.12s, box-shadow 0.12s; }
+  .rule-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(44,44,42,0.12); }
+  .rule-card:active { cursor: grabbing; }
+  .rule-card.dragging { opacity: 0.35; transform: rotate(-1.5deg) scale(0.98); }
+  .rule-card.drag-over { outline: 2px dashed #999; outline-offset: 2px; }
+
+  .grip { position: absolute; top: 10px; right: 6px; color: #bbb; font-size: 14px; }
+  .rule-text { padding-right: 16px; padding-left: 4px; }
+
+  .card-actions { display: flex; gap: 2px; justify-content: flex-end; margin-top: 6px; opacity: 0; transition: opacity 0.15s; }
+  .rule-card:hover .card-actions { opacity: 1; }
+  .card-btn { border: none; background: none; cursor: pointer; padding: 4px 6px; color: #888; font-size: 15px; border-radius: 6px; display: flex; align-items: center; }
+  .card-btn:hover { background: #f1efe8; color: #2C2C2A; }
+
+  .drop-zone { min-height: 44px; border: 2px dashed rgba(0,0,0,0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #aaa; gap: 6px; transition: all 0.15s; }
+  .drop-zone.active { background: rgba(255,255,255,0.5); border-color: #888; transform: scale(1.02); }
+
+  .add-btn { width: 100%; border: none; border-radius: 12px; padding: 9px; background: rgba(255,255,255,0.55); cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; font-family: inherit; transition: background 0.15s; }
+  .col-red .add-btn    { color: #A32D2D; }
+  .col-yellow .add-btn { color: #854F0B; }
+  .col-green .add-btn  { color: #3B6D11; }
+  .add-btn:hover { background: rgba(255,255,255,0.9); }
+
+  .modal-wrap { position: fixed; inset: 0; background: rgba(30,30,28,0.45); backdrop-filter: blur(3px); display: flex; align-items: flex-start; justify-content: center; z-index: 100; padding-top: 80px; }
+  .modal { background: #fff; border-radius: 18px; padding: 24px; width: 350px; direction: rtl; box-shadow: 0 16px 48px rgba(20,20,18,0.3); animation: modal-in 0.18s ease-out; }
+  @keyframes modal-in { from { opacity: 0; transform: translateY(-10px) scale(0.97); } to { opacity: 1; transform: none; } }
+  .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+  .seg { display: flex; gap: 6px; margin-bottom: 12px; }
+  .seg button { flex: 1; border: 1.5px solid transparent; border-radius: 8px; padding: 8px 4px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .seg-red    { background: #FCEBEB; color: #791F1F; }
+  .seg-yellow { background: #FAEEDA; color: #633806; }
+  .seg-green  { background: #EAF3DE; color: #27500A; }
+  .seg button.sel-red    { border-color: #E24B4A; }
+  .seg button.sel-yellow { border-color: #EF9F27; }
+  .seg button.sel-green  { border-color: #639922; }
+  .seg .mini-dot { width: 11px; height: 11px; border-radius: 50%; }
+  .modal textarea { width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 90px; direction: rtl; line-height: 1.7; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .btn-save { border: none; background: #2C2C2A; color: #fff; padding: 8px 22px; border-radius: 9px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; transition: background 0.15s, transform 0.1s; }
+  .btn-save:hover { background: #454540; transform: translateY(-1px); }
+  .btn-cancel { border: none; background: none; padding: 8px 12px; cursor: pointer; font-size: 14px; color: #888; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tl-header">
+    <div class="tl-body" aria-hidden="true">
+      <div class="tl-light dot-red"></div>
+      <div class="tl-light dot-yellow"></div>
+      <div class="tl-light dot-green"></div>
+    </div>
+    <div class="tl-title">
+      <h1>הָרַמְזוֹר הַמִּשְׁפַּחְתִּי שֶׁלָּנוּ</h1>
+      <p>הכללים של המשפחה — גררו, ערכו והוסיפו. הכללים שמופיעים כאן הם דוגמה בלבד, והשינויים שלכם נשמרים רק בדפדפן שלכם</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="print-btn" onclick="printBoard()"><span aria-hidden="true">🖨️</span> הדפסה</button>
+  </div>
+
+  <div class="columns" id="board"></div>
+</div>
+
+<div id="modal" class="modal-wrap" style="display:none">
+  <div class="modal">
+    <h3 id="modal-title">עריכת כלל</h3>
+    <div class="seg" id="seg"></div>
+    <textarea id="modal-text" placeholder="כתבו את הכלל כאן..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-save" onclick="saveModal()">שמירה</button>
+      <button class="btn-cancel" onclick="closeModal()">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLS = {
+  red:    { label: 'תָּמִיד', icon: '✋', hex: '#E24B4A', bg: '#FCEBEB', dark: '#791F1F' },
+  yellow: { label: 'לִפְעָמִים', icon: '🕐', hex: '#EF9F27', bg: '#FAEEDA', dark: '#633806' },
+  green:  { label: 'חָפְשִׁי', icon: '✔', hex: '#639922', bg: '#EAF3DE', dark: '#27500A' }
+};
+
+const STORAGE_KEY = 'ramzor-rules';
+
+const DEFAULT_DATA = {
+  red: [
+    'אַף אֶחָד לֹא מַחְלִיט לְאָח אוֹ לְאָחוֹת בַּמָּה הוּא מְשַׂחֵק',
+    'נוֹקְשִׁים בַּדֶּלֶת לִפְנֵי שֶׁנִּכְנָסִים לַחֶדֶר'
+  ],
+  yellow: [
+    'מַסָּךְ רַק בְּסוֹף הַשָּׁבוּעַ, חֲצִי שָׁעָה',
+    'כָּל יֶלֶד בּוֹחֵר שְׁלֹשָׁה מִשְׂחָקִים שֶׁהֵם רַק שֶׁלּוֹ, בְּכָל הַשְּׁאָר כֻּלָּם יְכוֹלִים לְשַׂחֵק',
+    'מַשֶּׁהוּ מָתוֹק בָּעֶרֶב רַק אַחֲרֵי אֲרוּחָה מְלֵאָה'
+  ],
+  green: [
+    'כֻּלָּם יְכוֹלִים לִבְחֹר לְשַׂחֵק בְּאֵיזֶה מִשְׂחָקִים שֶׁהֵם רוֹצִים',
+    'אֶפְשָׁר לְצַיֵּר וְלִיצֹר מָתַי שֶׁרוֹצִים',
+    'אֶפְשָׁר לִקְרֹא סֵפֶר לִפְנֵי הַשֵּׁנָה'
+  ]
+};
+
+let data = loadData();
+let dragSrcCol = null, dragSrcIdx = null;
+let modalMode = null, modalColKey = null, modalIdx = null, modalSelectedCol = null;
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+}
+
+function render() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  ['green','yellow','red'].forEach(col => {
+    const info = COLS[col];
+    const div = document.createElement('div');
+    div.className = `col col-${col}`;
+    div.innerHTML = `
+      <div class="col-header">
+        <div class="dot dot-${col}"><span aria-hidden="true">${info.icon}</span></div>
+        <span class="col-title">${info.label}</span>
+      </div>`;
+
+    data[col].forEach((text, i) => {
+      const card = document.createElement('div');
+      card.className = 'rule-card';
+      card.draggable = true;
+      card.innerHTML = `
+        <span class="grip" aria-hidden="true">⠿</span>
+        <div class="rule-text"></div>
+        <div class="card-actions">
+          <button class="card-btn" title="ערוך"><span aria-hidden="true">✏️</span></button>
+          <button class="card-btn" title="מחק"><span aria-hidden="true">🗑️</span></button>
+        </div>`;
+      card.querySelector('.rule-text').textContent = text;
+      card.querySelector('[title="ערוך"]').onclick = () => openEdit(col, i);
+      card.querySelector('[title="מחק"]').onclick = () => deleteRule(col, i);
+
+      card.addEventListener('dragstart', () => {
+        dragSrcCol = col; dragSrcIdx = i;
+        setTimeout(() => card.classList.add('dragging'), 0);
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        document.querySelectorAll('.rule-card, .drop-zone').forEach(c => c.classList.remove('drag-over','active'));
+      });
+      card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+      card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+      card.addEventListener('drop', e => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        if (dragSrcCol === null) return;
+        if (dragSrcCol === col && dragSrcIdx === i) return;
+        const item = data[dragSrcCol].splice(dragSrcIdx, 1)[0];
+        let targetIdx = i;
+        if (dragSrcCol === col && dragSrcIdx < i) targetIdx = i - 1;
+        data[col].splice(targetIdx, 0, item);
+        dragSrcCol = null;
+        saveData();
+        render();
+      });
+      div.appendChild(card);
+    });
+
+    const dropZone = document.createElement('div');
+    dropZone.className = 'drop-zone';
+    dropZone.innerHTML = '<span aria-hidden="true">⬇️</span> שחררו כאן';
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('active'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('active');
+      if (dragSrcCol === null) return;
+      const item = data[dragSrcCol].splice(dragSrcIdx, 1)[0];
+      data[col].push(item);
+      dragSrcCol = null;
+      saveData();
+      render();
+    });
+    div.appendChild(dropZone);
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-btn';
+    addBtn.innerHTML = '<span aria-hidden="true">＋</span> הוספת כלל';
+    addBtn.onclick = () => openAdd(col);
+    div.appendChild(addBtn);
+    board.appendChild(div);
+  });
+}
+
+function printBoard() {
+  const w = window.open('', '_blank');
+  if (!w) { alert('יש לאפשר חלונות קופצים כדי להדפיס'); return; }
+  let colsHtml = '';
+  ['red','yellow','green'].forEach(col => {
+    const info = COLS[col];
+    const cards = data[col].map(t => `<div class="pc">${escapeHtml(t)}</div>`).join('');
+    colsHtml += `
+      <div class="pcol" style="background:${info.bg}">
+        <div class="ph"><span class="pdot" style="background:${info.hex}">${info.icon}</span><span style="color:${info.dark}">${info.label}</span></div>
+        <div class="pcards">${cards}</div>
+      </div>`;
+  });
+  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>הרמזור המשפחתי שלנו</title>
+  <style>
+    @page { size: A4 portrait; margin: 12mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; direction: rtl; padding: 8px; }
+    .head { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 16px; }
+    .tl { background: #2C2C2A; border-radius: 12px; padding: 7px 6px; display: flex; flex-direction: column; gap: 4px; }
+    .tl div { width: 16px; height: 16px; border-radius: 50%; }
+    h1 { font-size: 30px; font-weight: 700; }
+    .grid { display: flex; flex-direction: column; gap: 12px; }
+    .pcol { border-radius: 14px; padding: 12px 14px; break-inside: avoid; }
+    .ph { display: flex; align-items: center; gap: 9px; font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+    .pdot { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
+    .pcards { display: flex; flex-direction: column; gap: 8px; }
+    .pc { background: #fff; border-radius: 9px; padding: 10px 13px; font-size: 16px; line-height: 1.6; border: 0.5px solid rgba(0,0,0,0.08); break-inside: avoid; }
+  </style></head><body>
+    <div class="head">
+      <div class="tl"><div style="background:#E24B4A"></div><div style="background:#EF9F27"></div><div style="background:#639922"></div></div>
+      <h1>הָרַמְזוֹר הַמִּשְׁפַּחְתִּי שֶׁלָּנוּ</h1>
+    </div>
+    <div class="grid">${colsHtml}</div>
+    <script>window.onload = () => { window.print(); };<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderSeg() {
+  const seg = document.getElementById('seg');
+  seg.innerHTML = '';
+  ['green','yellow','red'].forEach(c => {
+    const b = document.createElement('button');
+    b.className = `seg-${c}` + (modalSelectedCol === c ? ` sel-${c}` : '');
+    b.innerHTML = `<span class="mini-dot dot-${c}"></span>${COLS[c].label}`;
+    b.onclick = () => { modalSelectedCol = c; renderSeg(); };
+    seg.appendChild(b);
+  });
+}
+
+function openEdit(col, idx) {
+  modalMode = 'edit'; modalColKey = col; modalIdx = idx; modalSelectedCol = col;
+  document.getElementById('modal-title').textContent = 'עריכת כלל';
+  document.getElementById('modal-text').value = data[col][idx];
+  renderSeg();
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function openAdd(col) {
+  modalMode = 'add'; modalColKey = col; modalIdx = null; modalSelectedCol = col;
+  document.getElementById('modal-title').textContent = 'כלל חדש';
+  document.getElementById('modal-text').value = '';
+  renderSeg();
+  document.getElementById('modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-text').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+function saveModal() {
+  const text = document.getElementById('modal-text').value.trim();
+  if (!text) return;
+  if (modalMode === 'edit') {
+    if (modalSelectedCol === modalColKey) {
+      data[modalColKey][modalIdx] = text;
+    } else {
+      data[modalColKey].splice(modalIdx, 1);
+      data[modalSelectedCol].push(text);
+    }
+  } else {
+    data[modalSelectedCol].push(text);
+  }
+  saveData();
+  closeModal();
+  render();
+}
+
+function deleteRule(col, idx) {
+  data[col].splice(idx, 1);
+  saveData();
+  render();
+}
+
+document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+render();
+</script>
+</body>
+</html>
