@@ -1,11 +1,11 @@
 ---
 name: kids-app
-description: Generate a single-page educational app for children aged 7-9 with Hebrew text. Use when the user wants to create a kids learning app, educational game, Hebrew children's app, or asks to build a new edu app on a specific topic.
+description: Generate a single-page educational app for young children with Hebrew text. Use when the user wants to create a kids learning app, educational game, Hebrew children's app, or asks to build a new edu app on a specific topic.
 ---
 
 # Kids Educational App Generator
 
-Generate a self-contained, single-page HTML educational app for children aged 7–9. All visible text must be in **Hebrew** (RTL). Each app lives in its own folder and is linked from the project's root `index.html`.
+Generate a self-contained, single-page HTML educational app for young children. All visible text must be in **Hebrew** (RTL). Each app lives in its own folder and is linked from the project's root `index.html`.
 
 ## Workflow
 
@@ -109,8 +109,8 @@ Available color variants: `purple`, `blue`, `pink`, `green`, `orange`, `cyan`. P
 
 ## Content Guidelines
 
-- All Hebrew text must be grammatically correct and use vocabulary appropriate for 7–9 year olds
-- Use ניקוד (vowel marks) sparingly — only where it genuinely helps readability for this age group
+- All Hebrew text must be grammatically correct and use simple, child-friendly vocabulary
+- Use ניקוד (vowel marks) sparingly — only where it genuinely helps readability
 - **RTL punctuation** — Place punctuation (`!`, `?`, `.`) at the **end** of the Hebrew string, not the beginning. In RTL, the visual "end" is the left side, so writing `"כל הכבוד!"` renders correctly, while `"!כל הכבוד"` causes the `!` to appear on the wrong side. Same applies to `?` in questions. When emoji follow the text, put punctuation before the emoji: `"מצוין! ✨"`.
 - Positive reinforcement: "כל הכבוד!", "מצוין!", "נכון מאוד!" for correct answers
 - Gentle encouragement on wrong answers: "קרוב! נסה שוב" or "לא נורא, נסה פעם נוספת!"

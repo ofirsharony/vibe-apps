@@ -30,7 +30,7 @@ Card color variants: `purple`, `blue`, `pink`, `green`, `orange`, `cyan`.
 
 ## Kids educational apps
 
-For Hebrew educational apps for children aged 7–9, follow the detailed spec in `.cursor/skills/kids-app/SKILL.md`. Key points:
+For Hebrew educational apps for young children, follow the detailed spec in `.claude/skills/kids-app/SKILL.md`. Key points:
 
 - `<html lang="he" dir="rtl">`, all UI text in Hebrew, `Rubik` Google Font.
 - Levels progressing from easy to hard, progress display, reward system, "שחק שוב" replay button, positive-reinforcement-only feedback.
