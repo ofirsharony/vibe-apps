@@ -85,6 +85,31 @@
   .model .em { font-size: 30px; }
   .model b { display: block; font-size: 14px; margin-top: 6px; }
   .model small { color: var(--muted); font-size: 12px; }
+  .model { position: relative; }
+  .model .lvl { position: absolute; top: 8px; left: 10px; font-size: 11px; letter-spacing: -2px; }
+  .models .lvl-head { grid-column: 1 / -1; margin: 6px 0 0; }
+  .model .guideBtn { display: block; width: 100%; margin-top: 8px; padding: 7px 8px; border-radius: 8px; background: #fff3f3; border: 1px solid #f3c2c2; color: var(--accent); font-weight: 700; font-size: 13px; min-height: 36px; }
+  .model .guideBtn:hover { background: var(--accent); color: #fff; }
+
+  /* ─── guided build ─── */
+  .guide { bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px; width: min(600px, calc(100% - 28px)); box-shadow: var(--shadow); display: none; }
+  .guide.on { display: block; }
+  .guide .row { display: flex; align-items: center; gap: 10px; }
+  .guide .row b { font-size: 18px; }
+  .guide .row .hbtn { height: 38px; font-size: 14px; }
+  .guide .bar { height: 10px; background: #f0ece3; border-radius: 999px; margin-top: 10px; overflow: hidden; }
+  .guide .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--green), #6ee7a0); border-radius: 999px; transition: width .35s; }
+  .guide .pieces { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; font-size: 14px; }
+  .guide .pieces span { display: inline-flex; align-items: center; gap: 6px; background: #f0ece3; padding: 5px 10px; border-radius: 999px; font-weight: 600; }
+  .guide .pieces span.done { opacity: .45; text-decoration: line-through; }
+  .guide .pieces i { width: 14px; height: 10px; border-radius: 2px; display: inline-block; box-shadow: inset 0 -2px 0 rgba(0,0,0,.2); }
+  .guide .msg { margin-top: 8px; font-size: 14px; color: var(--muted); min-height: 20px; }
+  .flash { animation: flash .45s ease-in-out 5; }
+  @keyframes flash { 0%, 100% { outline: 3px solid transparent; transform: scale(1); } 50% { outline: 3px solid var(--accent); transform: scale(1.12); } }
+  .dialog .celebrate { text-align: center; font-size: 56px; line-height: 1.2; }
+  .dialog .celebrate + h2 { text-align: center; font-size: 24px; }
+  .dialog .celebrate ~ p { text-align: center; font-size: 16px; }
+  .dialog .row .hbtn { height: 44px; font-size: 15px; padding: 0 18px; }
 
   .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
   .field label { font-size: 13px; font-weight: 600; }
@@ -189,6 +214,8 @@
     .title-card { top: 54px; left: 10px; padding: 6px 10px; }
     .title-card input { font-size: 15px; }
     .steps { bottom: 60px; }
+    .guide { bottom: 10px; padding: 10px 12px; }
+    .guide .row b { font-size: 15px; }
     .hint { display: none; }
     .modes button { padding: 6px 9px; font-size: 12px; }
     .logo span { display: none; }
@@ -208,10 +235,12 @@
     <button data-mode="build" class="on">🧱 בנייה</button>
     <button data-mode="showcase">✨ הדמיה</button>
     <button data-mode="steps">📖 הוראות</button>
+    <button data-mode="guide" id="guideModeBtn" style="display:none">🎯 מודרך</button>
   </div>
   <div class="spacer"></div>
   <button class="hbtn" id="undoBtn" title="בטל (Ctrl+Z)" disabled>↶ <span class="lbl">בטל</span></button>
   <button class="hbtn" id="redoBtn" title="בצע שוב (Ctrl+Y)" disabled>↷ <span class="lbl">שוב</span></button>
+  <button class="hbtn" id="clearBtn" title="נקה את הלוח כולו">🗑️ <span class="lbl">נקה</span></button>
   <div class="menu">
     <button class="hbtn" id="fileBtn">💾 <span class="lbl">קובץ</span> ▾</button>
     <div class="dropdown" id="fileMenu">
@@ -254,7 +283,7 @@
     </div>
 
     <div class="tabpane" id="tab-models">
-      <h3>דגמים מוכנים כנקודת פתיחה</h3>
+      <h3>דגמים מוכנים לפי רמת קושי</h3>
       <div class="models" id="modelsGrid"></div>
       <p class="note" style="margin-top:12px">כל דגם מגיע עם חלוקה למקטעים, הוראות בנייה שלב־אחר־שלב, ואפשר לערוך אותו כרצונכם.</p>
     </div>
@@ -277,15 +306,32 @@
       <p class="note" id="aiStatus" style="margin-top:10px"></p>
       <h3>הגדרות מודל</h3>
       <div class="field">
-        <label>מפתח API של Anthropic (נמחק אחרי 10 דקות ללא שימוש או בסגירת הדף)</label>
+        <label>ספק</label>
+        <select id="aiProvider">
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="openai">OpenAI (GPT)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="aiKeyLabel">מפתח API של Anthropic (נמחק אחרי 10 דקות ללא שימוש או בסגירת הדף)</label>
         <input type="password" id="aiKey" placeholder="sk-ant-...">
       </div>
       <div class="field">
         <label>מודל</label>
         <select id="aiModel">
-          <option value="claude-sonnet-5">Claude Sonnet 5 (מהיר)</option>
-          <option value="claude-opus-5">Claude Opus 5 (מפורט יותר)</option>
-          <option value="claude-fable-5-1">Claude Fable 5.1</option>
+          <optgroup label="Anthropic" data-provider="anthropic">
+            <option value="claude-sonnet-5">Claude Sonnet 5 (מהיר)</option>
+            <option value="claude-opus-5">Claude Opus 5 (מפורט יותר)</option>
+            <option value="claude-fable-5-1">Claude Fable 5.1</option>
+          </optgroup>
+          <optgroup label="OpenAI" data-provider="openai">
+            <option value="gpt-5.6-terra">GPT-5.6 Terra (מאוזן)</option>
+            <option value="gpt-5.6-sol">GPT-5.6 Sol (מפורט יותר)</option>
+            <option value="gpt-6-astra">GPT-6 Astra (החזק ביותר)</option>
+            <option value="gpt-5.6-luna">GPT-5.6 Luna (מהיר וזול)</option>
+            <option value="gpt-5.4">GPT-5.4</option>
+            <option value="gpt-5.4-mini">GPT-5.4 mini</option>
+          </optgroup>
         </select>
       </div>
       <p class="note">בלי מפתח, הסטודיו ישתמש במחולל מובנה שמזהה מילות מפתח (מכונית, בית, עץ, רובוט...) וצבעים בעברית.</p>
@@ -363,8 +409,31 @@
       <input type="range" id="stepRange" min="1" max="1" value="1" style="margin-top:8px">
       <div class="pieces" id="stepPieces"></div>
     </div>
+    <div class="float guide" id="guide">
+      <div class="row">
+        <b id="guideLabel">שלב 1 מתוך 1</b>
+        <span class="spacer"></span>
+        <button class="hbtn" id="guideHint">💡 רמז</button>
+        <button class="hbtn" id="guideExit">✖ יציאה</button>
+      </div>
+      <div class="bar"><i id="guideBar"></i></div>
+      <div class="pieces" id="guidePieces"></div>
+      <div class="msg" id="guideMsg"></div>
+    </div>
   </div>
 </main>
+
+<div class="overlay" id="doneDlg">
+  <div class="dialog">
+    <div class="celebrate">🎉🏆🎉</div>
+    <h2 id="doneTitle">כל הכבוד!</h2>
+    <p id="doneText">סיימתם לבנות את הדגם, שלב אחרי שלב.</p>
+    <div class="row" style="justify-content:center">
+      <button class="hbtn primary" id="doneAgain">🔁 שחק שוב</button>
+      <button class="hbtn" id="doneFree">🧱 המשך לבנות</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -629,6 +698,7 @@ function recolor(id, c) { const b = bricks.find(b => b.id === id); if (!b || b.c
 function clearAll(silent) { for (const b of [...bricks]) removeBrick(b.id, true); if (!silent) afterChange(); }
 function serialize() { return { name: nameInput.value, bricks: bricks.map(({ t, x, z, y, r, c, s }) => ({ t, x, z, y, r, c, ...(s ? { s } : {}) })) }; }
 function loadModel(data, { name, keepHistory } = {}) {
+  if (guide) endGuide(true);
   clearAll(true); let dropped = 0;
   window.__dropped = []; for (const raw of (data.bricks || [])) { const b = sanitize(raw); if (!b || !addBrick(b, true)) { dropped++; window.__dropped.push(`${raw.t}@${raw.x},${raw.z},${raw.y}`); } }
   if (name || data.name) nameInput.value = name || data.name;
@@ -808,6 +878,7 @@ function ghostFor(hit) {
   return b;
 }
 function updateHover(ev) {
+  if (state.mode === 'guide') { guideHover(ev); return; }
   if (state.mode !== 'build' || state.building) { ghost.visible = hilite.visible = false; return; }
   const hit = pick(ev); hover = hit;
   ghost.visible = hilite.visible = false; canvas.style.cursor = 'default';
@@ -825,7 +896,9 @@ canvas.addEventListener('pointerleave', () => { ghost.visible = hilite.visible =
 canvas.addEventListener('pointerdown', (ev) => { down = { x: ev.clientX, y: ev.clientY, t: performance.now(), button: ev.button }; });
 canvas.addEventListener('pointerup', (ev) => {
   if (!down) return; const moved = Math.hypot(ev.clientX - down.x, ev.clientY - down.y); const dt = performance.now() - down.t; const btn = down.button; down = null;
-  if (moved > 6 || dt > 600 || state.mode !== 'build' || state.building) return;
+  if (moved > 6 || dt > 600 || state.building) return;
+  if (state.mode === 'guide') { if (btn === 0) guideClick(ev); return; }
+  if (state.mode !== 'build') return;
   updateHover(ev); const hit = hover; if (!hit) return;
   if (btn === 2) { if (hit.object.userData.id) { snapshot(); removeBrick(hit.object.userData.id); click(220); } return; }
   if (state.tool === 'place') { const b = ghost.userData.brick; if (b && ghost.userData.ok) { snapshot(); addBrick({ ...b }); click(660); } else if (b) toast('אין מקום כאן 🚫'); }
@@ -838,6 +911,7 @@ canvas.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, textarea, select')) return;
   const k = e.key.toLowerCase();
+  if (state.mode === 'guide') { if (k === 'h') return guideHintShow(); if (e.ctrlKey || e.metaKey || k === 'r' || k === 'p' || k === 'e' || e.key.startsWith('Arrow') || e.key === 'Delete' || e.key === 'Backspace') return; }
   if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
   else if ((e.ctrlKey || e.metaKey) && k === 'y') { e.preventDefault(); redo(); }
   else if (k === 'r') rotate();
@@ -866,7 +940,9 @@ $('mirrorBtn').onclick = () => {
 function setMode(m) {
   state.mode = m; document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === m));
   stage.classList.toggle('showcase', m === 'showcase'); controls.autoRotate = m === 'showcase'; controls.autoRotateSpeed = 1.2;
-  grid.visible = m === 'build'; $('toolbar').style.display = m === 'build' ? '' : 'none'; $('steps').classList.toggle('on', m === 'steps');
+  grid.visible = m === 'build' || m === 'guide'; $('toolbar').style.display = m === 'build' ? '' : 'none'; $('steps').classList.toggle('on', m === 'steps');
+  $('guide').classList.toggle('on', m === 'guide'); guideGroup.visible = m === 'guide';
+  if (m === 'build' && guide) endGuide();
   hemi.intensity = m === 'showcase' ? 0.35 : 0.55; sun.intensity = m === 'showcase' ? 2.6 : 2.2; floor.material.opacity = m === 'showcase' ? 0.5 : 0.22;
   baseMat.color.setHex(m === 'showcase' ? 0x2a2d3a : 0x3c8a3f);
   if (m === 'steps') { state.step = stepGroups().length - 1; }
@@ -919,6 +995,125 @@ $('explode').oninput = e => { state.explode = +e.target.value; $('explodeVal').t
 $('secReset').onclick = () => { state.sections.clear(); state.isolate = null; updateSections(); updateBOM(); applyVisibility(); };
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  Guided build: the chosen preset becomes a hidden target; the child rebuilds it layer by layer by picking the right part
+//  and color and clicking the pulsing ghost. Steps are layers, split into chunks of at most GUIDE_MAX bricks (by section,
+//  then by part+color) so a single step never overwhelms a young builder.
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+const GUIDE_MAX = 8;
+const guideGroup = new THREE.Group(); guideGroup.visible = false; scene.add(guideGroup);
+let guide = null; // { model, target, steps, step, placed, lastY, hover, msg }
+const hex6 = cid => COLOR[cid].hex.toString(16).padStart(6, '0');
+function guideMaterial(cid) { return new THREE.MeshStandardMaterial({ color: COLOR[cid].hex, transparent: true, opacity: 0.4, depthWrite: false, emissive: new THREE.Color(0x000000) }); }
+function guideSteps(target) {
+  const sorted = [...target].sort((a, b) => a.y - b.y || a.z - b.z || a.x - b.x);
+  const layers = []; for (const b of sorted) { const L = layers[layers.length - 1]; if (L && L.y === b.y) L.bricks.push(b); else layers.push({ y: b.y, bricks: [b] }); }
+  const groupBy = (list, keyFn) => { const m = new Map(); for (const b of list) { const k = keyFn(b); if (!m.has(k)) m.set(k, []); m.get(k).push(b); } return [...m.values()]; };
+  const steps = [];
+  for (const L of layers) {
+    if (L.bricks.length <= GUIDE_MAX) { steps.push(L.bricks); continue; }
+    for (const sec of groupBy(L.bricks, b => b.s || '')) {
+      if (sec.length <= GUIDE_MAX) { steps.push(sec); continue; }
+      let cur = [];
+      for (const kind of groupBy(sec, b => b.t + '|' + b.c)) for (let i = 0; i < kind.length; i += GUIDE_MAX) {
+        const chunk = kind.slice(i, i + GUIDE_MAX);
+        if (cur.length && cur.length + chunk.length > GUIDE_MAX) { steps.push(cur); cur = []; }
+        cur.push(...chunk);
+      }
+      if (cur.length) steps.push(cur);
+    }
+  }
+  return steps;
+}
+function startGuide(m) {
+  loadModel({ bricks: m.build() }, { name: m.name });                      // validates and normalizes the preset (drops anything unplaceable)
+  const target = serialize().bricks.map(b => ({ ...b, _done: false }));
+  clearAll(true); undoStack = []; redoStack = [];
+  guide = { model: m, target, steps: guideSteps(target), step: 0, placed: 0, lastY: null, hover: null, msg: '' };
+  nameInput.value = m.name; $('guideModeBtn').style.display = '';
+  afterChange(true); setMode('guide'); guideShowStep(); frameModel('iso');
+  document.querySelector('#tabs button[data-tab="parts"]').click();
+  toast(`🎯 ${m.name}: בונים יחד, שלב אחרי שלב!`);
+}
+function endGuide(silent) {
+  if (!guide) return; guide = null; guideClearGhosts(); canvas.style.cursor = 'default';
+  $('guideModeBtn').style.display = 'none'; $('guide').classList.remove('on'); $('doneDlg').classList.remove('on');
+  if (!silent) toast('יצאתם מהבנייה המודרכת');
+}
+function guideClearGhosts() { for (const c of [...guideGroup.children]) { guideGroup.remove(c); c.material.dispose(); } }
+function guideShowStep() {
+  guideClearGhosts(); if (!guide) return;
+  const step = guide.steps[guide.step];
+  for (const b of step) { if (b._done) continue; const mesh = new THREE.Mesh(buildGeometry(TYPE[b.t], b.r), guideMaterial(b.c)); mesh.position.set(b.x, b.y * PLATE, b.z); mesh.userData.target = b; guideGroup.add(mesh); }
+  guideUpdatePanel();
+  const y = step[0].y; if (guide.lastY != null && y !== guide.lastY && y % 3 === 0) frameModel(); guide.lastY = y;
+}
+function guideUpdatePanel() {
+  const step = guide.steps[guide.step];
+  $('guideLabel').textContent = `שלב ${guide.step + 1} מתוך ${guide.steps.length}`;
+  $('guideBar').style.width = (guide.placed / guide.target.length * 100) + '%';
+  const counts = new Map(); for (const b of step) { const k = b.t + '|' + b.c; const e = counts.get(k) || { n: 0, done: 0 }; e.n++; if (b._done) e.done++; counts.set(k, e); }
+  $('guidePieces').innerHTML = [...counts].map(([k, e]) => { const [t, c] = k.split('|'); return `<span class="${e.done === e.n ? 'done' : ''}"><i style="background:#${hex6(c)}"></i>${esc(TYPE[t].he)} · ${esc(COLOR[c].he)} ×${e.n - e.done}</span>`; }).join('');
+  $('guideMsg').textContent = guide.msg || 'בחרו את החלק והצבע בצד, ואז לחצו על הצללית המהבהבת 👆';
+}
+function pickGuide(ev) {
+  const r = canvas.getBoundingClientRect(); ptr.x = ((ev.clientX - r.left) / r.width) * 2 - 1; ptr.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
+  ray.setFromCamera(ptr, camera); return ray.intersectObjects(guideGroup.children, false)[0] || null;
+}
+function guideHover(ev) { ghost.visible = hilite.visible = false; if (!guide) return; const hit = pickGuide(ev); guide.hover = hit ? hit.object : null; canvas.style.cursor = hit ? 'pointer' : 'default'; }
+function guideClick(ev) {
+  if (!guide) return; const hit = pickGuide(ev); if (!hit) return; const mesh = hit.object, b = mesh.userData.target;
+  const typeOk = state.type === b.t, colorOk = state.color === b.c;
+  if (!typeOk || !colorOk) {
+    guide.msg = !typeOk ? 'זה לא החלק הנכון, נסו חלק אחר 🧱' : 'החלק נכון! עכשיו רק הצבע 🎨';
+    mesh.userData.shake = performance.now(); click(240, 0.04); guideUpdatePanel(); return;
+  }
+  if (!addBrick({ t: b.t, x: b.x, z: b.z, y: b.y, r: b.r, c: b.c, s: b.s }, true)) { toast('משהו חוסם כאן, נסו שוב 🤔'); return; }
+  b._done = true; guide.placed++; guide.msg = 'מצוין! 👏'; click(660); setTimeout(() => click(880, 0.05), 90);
+  afterChange(true);
+  const step = guide.steps[guide.step];
+  if (step.every(x => x._done)) {
+    if (guide.step + 1 >= guide.steps.length) return guideFinish();
+    guide.step++; guide.msg = ''; toast(`⭐ שלב ${guide.step} הושלם! ממשיכים`); [523, 659, 784].forEach((f, i) => setTimeout(() => click(f, 0.06), 150 + i * 110));
+  }
+  guideShowStep();
+}
+function guideHintShow() {
+  if (!guide) return; const b = guide.steps[guide.step].find(x => !x._done); if (!b) return;
+  const flash = (sel) => { const el = document.querySelector(sel); if (!el) return; el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); };
+  if (state.type !== b.t) { document.querySelector('#tabs button[data-tab="parts"]').click(); flash(`.part[data-type="${b.t}"]`); guide.msg = `רמז: החלק המסומן הוא ${TYPE[b.t].he} 💡`; }
+  else if (state.color !== b.c) { document.querySelector('#tabs button[data-tab="colors"]').click(); flash(`.swatch[data-color="${b.c}"]`); guide.msg = `רמז: הצבע המסומן הוא ${COLOR[b.c].he} 💡`; }
+  else guide.msg = 'הכל נבחר נכון! לחצו על הצללית המהבהבת 👆';
+  guideUpdatePanel(); click(520, 0.04);
+}
+function guideFinish() {
+  guideClearGhosts(); afterChange(true); guideUpdatePanel();
+  [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => click(f, 0.07), i * 130));
+  $('doneTitle').textContent = `כל הכבוד! בניתם ${guide.model.name} ${guide.model.em}`;
+  $('doneText').textContent = `${guide.target.length} חלקים, ${guide.steps.length} שלבים, ואפס טעויות שנשארו על הפלטה. אלופים!`;
+  setMode('showcase'); $('doneDlg').classList.add('on');
+}
+function guideTick(t, now) {
+  const pulse = 0.35 + 0.15 * Math.sin(t * 5);
+  for (const m of guideGroup.children) {
+    const hov = guide && guide.hover === m; m.material.opacity = hov ? 0.8 : pulse; m.material.emissive.setScalar(hov ? 0.25 : pulse * 0.3);
+    const b = m.userData.target; let dx = 0; if (m.userData.shake) { const k = (now - m.userData.shake) / 400; if (k >= 1) m.userData.shake = 0; else dx = Math.sin(k * Math.PI * 6) * 0.18 * (1 - k); }
+    m.position.set(b.x + dx, b.y * PLATE, b.z);
+  }
+}
+$('guideHint').onclick = guideHintShow;
+$('guideExit').onclick = () => { if (!guide) return; if (!confirm('לצאת מהבנייה המודרכת? הדגם שבניתם עד עכשיו יישאר על הפלטה.')) return; endGuide(); setMode('build'); };
+$('doneAgain').onclick = () => { const m = guide ? guide.model : null; $('doneDlg').classList.remove('on'); if (m) startGuide(m); };
+$('doneFree').onclick = () => { $('doneDlg').classList.remove('on'); endGuide(true); setMode('build'); frameModel('iso'); toast('הדגם שלכם! עכשיו אפשר לשנות ולהוסיף כרצונכם 🧱'); };
+
+// Clear the whole board (used by the header button and the file menu). Always asks first, since it is not something a child should trigger by accident.
+function clearBoard() {
+  if (!bricks.length && !guide) return toast('הלוח כבר ריק');
+  if (!confirm('בטוחים? זה ינקה את כל הלוח ואי אפשר לבטל.')) return;
+  if (guide) endGuide(true); snapshot(); clearAll(); nameInput.value = 'דגם חדש'; setMode('build'); toast('הלוח נוקה 🗑️');
+}
+$('clearBtn').onclick = clearBoard;
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 //  Render loop
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 const clock = new THREE.Clock();
@@ -930,6 +1125,7 @@ function tick() {
   if (animating) applyVisibility();
   if (state.mode === 'steps') { const pulse = 0.5 + 0.5 * Math.sin(t * 6); for (const hm of hiCache.values()) hm.emissive.setRGB(pulse * 0.45, pulse * 0.38, pulse * 0.05); }
   ghost.visible && (ghost.material.opacity = 0.45 + 0.1 * Math.sin(t * 5));
+  if (guideGroup.visible && guideGroup.children.length) guideTick(t, now);
   controls.update(); renderer.render(scene, camera);
 }
 tick();
@@ -964,7 +1160,7 @@ const rep = (str, n) => Array(n).fill(str);
 // Slope facing: r=0 low side toward -z, r=1 toward +x, r=2 toward +z, r=3 toward -x.
 
 const MODELS = [
-  { id: 'car', em: '🏎️', name: 'מכונית ספורט', cat: 'כלי רכב', build: (c = 'red') => {
+  { id: 'car', lvl: 2, em: '🏎️', name: 'מכונית ספורט', cat: 'כלי רכב', build: (c = 'red') => {
     const pal = { r: c, g: 'dkgray', k: 'black', y: 'tyellow', p: 'tred' }; const S1 = 'שלדה', S2 = 'גוף', S3 = 'תא נהג', S4 = 'פרטים'; const b = [];
     for (const z of [-4, 2]) b.push(P('wheel', -3, z, 0, 'black', 0, S1), P('wheel', 2, z, 0, 'black', 0, S1));
     b.push(...layer(2, 'plate', rep('gggg', 12), pal, S1, -2, -6));
@@ -979,7 +1175,7 @@ const MODELS = [
     b.push(P('1x4p', -2, 4, 9, 'black', 1, S4));
     return b;
   } },
-  { id: 'truck', em: '🚚', name: 'משאית', cat: 'כלי רכב', build: (c = 'blue') => {
+  { id: 'truck', lvl: 3, em: '🚚', name: 'משאית', cat: 'כלי רכב', build: (c = 'blue') => {
     const pal = { c, g: 'dkgray', w: 'white', k: 'black', y: 'tyellow', b: 'tblue', l: 'ltgray', p: 'tred' }; const S1 = 'שלדה', S2 = 'קבינה', S3 = 'ארגז'; const b = [];
     for (const z of [-6, 1, 4]) b.push(P('wheel', -3, z, 0, 'black', 0, S1), P('wheel', 2, z, 0, 'black', 0, S1));
     b.push(...layer(2, 'plate', rep('gggg', 16), pal, S1, -2, -8));
@@ -993,7 +1189,7 @@ const MODELS = [
     b.push(...layer(15, 'plate', rep('llll', 10), pal, S3, -2, -2));
     return b;
   } },
-  { id: 'house', em: '🏠', name: 'בית עם גג רעפים', cat: 'בניינים', build: (c = 'white') => {
+  { id: 'house', lvl: 3, em: '🏠', name: 'בית עם גג רעפים', cat: 'בניינים', build: (c = 'white') => {
     const pal = { w: c, t: 'tan', d: 'dkred', g: 'dkgray', l: 'ltgray' }; const S1 = 'יסודות', S2 = 'קירות', S3 = 'גג', S4 = 'גינה'; const b = [];
     b.push(...layer(0, 'plate', rep('tttttttttt', 10), pal, S1, -5, -5));
     b.push(...layer(0, 'plate', rep('ll', 3), pal, S4, -1, -8));
@@ -1011,7 +1207,7 @@ const MODELS = [
     b.push(P('fence1x4', -6, -3, 0, 'brown', 0, S4), P('fence1x4', -6, 1, 0, 'brown', 0, S4));
     return b;
   } },
-  { id: 'tree', em: '🌳', name: 'עץ', cat: 'טבע', build: (c = 'green') => {
+  { id: 'tree', lvl: 2, em: '🌳', name: 'עץ', cat: 'טבע', build: (c = 'green') => {
     const pal = { g: c, l: 'lime', b: 'brown', r: 'red' }; const S1 = 'גזע', S2 = 'עלווה'; const b = [];
     b.push(...layer(0, 'plate', rep('bbbb', 4), pal, S1, -2, -2)); for (let y = 1; y < 13; y += 3) b.push(P('round2x2', -1, -1, y, 'brown', 0, S1));
     b.push(...layer(13, 'brick', rep('gggggg', 6), pal, S2, -3, -3));
@@ -1023,7 +1219,7 @@ const MODELS = [
     b.push(P('1x1p', -4, -1, 22, 'red', 0, S2), P('1x1p', 3, 1, 22, 'red', 0, S2), P('1x1p', 0, -4, 22, 'red', 0, S2), P('1x1p', -1, 3, 22, 'red', 0, S2), P('1x1p', -3, 0, 25, 'red', 0, S2), P('1x1p', 2, -2, 25, 'red', 0, S2), P('1x1p', 1, 0, 28, 'red', 0, S2));
     return b;
   } },
-  { id: 'robot', em: '🤖', name: 'רובוט', cat: 'דמויות', build: (c = 'ltgray') => {
+  { id: 'robot', lvl: 2, em: '🤖', name: 'רובוט', cat: 'דמויות', build: (c = 'ltgray') => {
     const pal = { l: c, k: 'dkgray', b: 'dkblue', r: 'tred', g: 'tgreen', y: 'yellow' }; const S1 = 'רגליים', S2 = 'גוף', S3 = 'זרועות', S4 = 'ראש'; const b = [];
     b.push(...layer(0, 'plate', ['kk..kk', 'kk..kk', 'kk..kk'], pal, S1, -3, -2));
     for (const y of [1, 4, 7]) b.push(...layer(y, 'brick', ['bb..bb', 'bb..bb'], pal, S1, -3, -1));
@@ -1034,7 +1230,7 @@ const MODELS = [
     b.push(...layer(23, 'plate', ['kk', 'kk'], pal, S4, -1, -1), P('antenna', 0, 0, 24, 'red', 0, S4), P('1x1p', -1, -1, 24, 'tyellow', 0, S4));
     return b;
   } },
-  { id: 'plane', em: '✈️', name: 'מטוס', cat: 'כלי טיס', build: (c = 'white') => {
+  { id: 'plane', lvl: 2, em: '✈️', name: 'מטוס', cat: 'כלי טיס', build: (c = 'white') => {
     const pal = { w: c, r: 'red', b: 'blue', g: 'dkgray' }; const S1 = 'גוף', S2 = 'כנפיים', S3 = 'זנב', S4 = 'תא טייס'; const b = [];
     b.push(...layer(0, 'brick', rep('ww', 14), pal, S1, -1, -7));
     b.push(P('cone', -1, -8, 0, 'red', 0, S1), P('cone', 0, -8, 0, 'red', 0, S1));
@@ -1048,7 +1244,7 @@ const MODELS = [
     b.push(P('1x1p', -8, -3, 4, 'tred', 0, S2), P('1x1p', 7, -3, 4, 'tgreen', 0, S2), P('1x1p', -1, 4, 9, 'red', 0, S3), P('1x1p', 0, 4, 9, 'red', 0, S3));
     return b;
   } },
-  { id: 'boat', em: '⛵', name: 'סירת מפרש', cat: 'כלי שיט', build: (c = 'blue') => {
+  { id: 'boat', lvl: 2, em: '⛵', name: 'סירת מפרש', cat: 'כלי שיט', build: (c = 'blue') => {
     const pal = { b: c, t: 'tan', w: 'white', n: 'brown', r: 'red' }; const S1 = 'גוף הסירה', S2 = 'סיפון', S3 = 'תורן ומפרש'; const b = [];
     b.push(...layer(0, 'brick', ['.bb.', ...rep('bbbb', 12)], pal, S1, -2, -8));
     b.push(...layer(3, 'brick', rep('bbbb', 12), pal, S1, -2, -6));
@@ -1062,7 +1258,7 @@ const MODELS = [
     b.push(P('1x1p', 0, -1, 28, 'red', 0, S3));
     return b;
   } },
-  { id: 'rocket', em: '🚀', name: 'חללית', cat: 'חלל', build: (c = 'white') => {
+  { id: 'rocket', lvl: 2, em: '🚀', name: 'חללית', cat: 'חלל', build: (c = 'white') => {
     const pal = { g: 'dkgray', r: 'red' }; const S1 = 'מנועים', S2 = 'גוף', S3 = 'חרטום', S4 = 'סנפירים'; const b = [];
     b.push(...layer(0, 'plate', rep('gggggg', 6), pal, S1, -3, -3));
     for (const [x, z] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) b.push(P('cone', x, z, 1, 'orange', 0, S1));
@@ -1073,7 +1269,7 @@ const MODELS = [
     b.push(P('dome2x2', -1, -1, 22, 'red', 0, S3), P('antenna', -1, -1, 25, 'ltgray', 0, S3));
     return b;
   } },
-  { id: 'castle', em: '🏰', name: 'טירה', cat: 'בניינים', build: (c = 'ltgray') => {
+  { id: 'castle', lvl: 3, em: '🏰', name: 'טירה', cat: 'בניינים', build: (c = 'ltgray') => {
     const pal = { g: c, d: 'dkgray', t: 'dktan' }; const S1 = 'בסיס', S2 = 'חומות', S3 = 'מגדלים', S4 = 'שער'; const b = [];
     b.push(...layer(0, 'plate', rep('tttttttttttttttt', 12), pal, S1, -8, -6));
     const wallRow = (front) => ['dd' + front + 'dd', 'dd' + 'g'.repeat(12) + 'dd', ...rep('g' + '.'.repeat(14) + 'g', 8), 'dd' + 'g'.repeat(12) + 'dd', 'dd' + 'g'.repeat(12) + 'dd'];
@@ -1088,11 +1284,11 @@ const MODELS = [
     b.push(...layer(1, 'brick', ['g.g', 'ggg', 'g.g'], pal, S4, -6, -1));
     return b;
   } },
-  { id: 'duck', em: '🦆', name: 'ברווז קלאסי', cat: 'חיות', build: (c = 'yellow') => {
+  { id: 'duck', lvl: 1, em: '🦆', name: 'ברווז קלאסי', cat: 'חיות', build: (c = 'yellow') => {
     const S1 = 'גוף', S2 = 'ראש';
     return [P('2x4', -1, -2, 0, c, 0, S1), P('2x2', -1, -2, 3, c, 0, S1), P('slope2x2', -1, 0, 3, c, 2, S1), P('2x2', -1, -2, 6, c, 0, S2), P('slope2x2', -1, -3, 9, 'orange', 0, S2), P('1x1p', -1, -2, 12, 'black', 0, S2), P('1x1p', 0, -2, 12, 'black', 0, S2)];
   } },
-  { id: 'dino', em: '🦖', name: 'דינוזאור', cat: 'חיות', build: (c = 'green') => {
+  { id: 'dino', lvl: 2, em: '🦖', name: 'דינוזאור', cat: 'חיות', build: (c = 'green') => {
     const pal = { g: c, l: 'lime', w: 'white', r: 'red' }; const S1 = 'רגליים', S2 = 'גוף', S3 = 'צוואר וראש', S4 = 'זנב'; const b = [];
     b.push(...layer(0, 'plate', rep('gg..gg', 4), pal, S1, -3, -2));
     for (const y of [1, 4]) b.push(...layer(y, 'brick', ['gg..gg', 'gg..gg'], pal, S1, -3, -1));
@@ -1106,7 +1302,7 @@ const MODELS = [
     for (let z = -3; z < 4; z++) b.push(P('1x1p', 0, z, 13, 'red', 0, S2));
     return b;
   } },
-  { id: 'tractor', em: '🚜', name: 'טרקטור', cat: 'כלי רכב', build: (c = 'yellow') => {
+  { id: 'tractor', lvl: 2, em: '🚜', name: 'טרקטור', cat: 'כלי רכב', build: (c = 'yellow') => {
     const pal = { y: c, g: 'dkgray', k: 'black', t: 'tyellow' }; const S1 = 'גלגלים', S2 = 'גוף', S3 = 'קבינה'; const b = [];
     b.push(P('wheel', -3, -5, 0, 'black', 0, S1), P('wheel', 2, -5, 0, 'black', 0, S1));
     for (const x of [-4, -3, 2, 3]) b.push(P('wheel', x, 2, 0, 'black', 0, S1));
@@ -1119,10 +1315,240 @@ const MODELS = [
     b.push(...layer(12, 'plate', rep('yy', 4), pal, S3, -2, 0), ...layer(12, 'plate', rep('yy', 4), pal, S3, 0, 0));
     return b;
   } },
+
+  // ── רמה 1: קל (עד ~15 חלקים, שכבות פשוטות) ──
+  { id: 'snake', lvl: 1, em: '🐍', name: 'נחש', cat: 'חיות', build: (c = 'green') => {
+    const pal = { g: c, l: 'lime' }; const S1 = 'גוף', S2 = 'ראש'; const b = [];
+    b.push(...layer(0, 'plate', ['gg......', 'gg......', 'gggggg..', '....gg..', '....gggg', '......gg'], pal, S1, -4, -3));
+    b.push(...layer(1, 'plate', ['ll......', '........', '.lll....', '........', '....l.l.', '........'], pal, S1, -4, -3));
+    b.push(P('round2x2', -4, -5, 0, c, 0, S2), P('1x1p', -4, -5, 3, 'black', 0, S2), P('1x1p', -3, -5, 3, 'black', 0, S2));
+    return b;
+  } },
+  { id: 'flowerpot', lvl: 1, em: '🌷', name: 'עציץ עם פרח', cat: 'טבע', build: (c = 'red') => {
+    const S1 = 'עציץ', S2 = 'פרח'; const b = [];
+    b.push(...layer(0, 'brick', rep('oooo', 4), { o: 'orange' }, S1, -2, -2));
+    b.push(...layer(3, 'plate', ['.gg.', 'gggg', 'gggg', '.gg.'], { g: 'green' }, S1, -2, -2));
+    for (const y of [4, 7, 10]) b.push(P('round1x1', -1, -1, y, 'green', 0, S2));
+    b.push(P('flower', -1, -1, 13, c, 0, S2), P('flower', 0, -1, 4, 'lime', 0, S2), P('flower', -1, 0, 4, 'lime', 0, S2));
+    return b;
+  } },
+  { id: 'traffic', lvl: 1, em: '🚦', name: 'רמזור', cat: 'עיר', build: (c = 'black') => {
+    const S1 = 'עמוד', S2 = 'אורות'; const b = [];
+    b.push(...layer(0, 'plate', rep('gggg', 4), { g: 'dkgray' }, S1, -2, -2));
+    b.push(P('2x2', -1, -1, 1, c, 0, S1), P('2x2p', -1, -1, 4, 'tred', 0, S2), P('2x2', -1, -1, 5, c, 0, S1), P('2x2p', -1, -1, 8, 'tyellow', 0, S2), P('2x2', -1, -1, 9, c, 0, S1), P('2x2p', -1, -1, 12, 'tgreen', 0, S2), P('2x2t', -1, -1, 13, c, 0, S1));
+    return b;
+  } },
+  { id: 'icecream', lvl: 1, em: '🍦', name: 'גלידה', cat: 'אוכל', build: (c = 'pink') => {
+    const S1 = 'גביע', S2 = 'כדורים'; const b = [];
+    b.push(P('2x2p', -1, -1, 0, 'tan', 0, S1), P('2x2', -1, -1, 1, 'tan', 0, S1), P('2x2', -1, -1, 4, 'tan', 0, S1), P('2x2p', -1, -1, 7, 'brown', 0, S1));
+    b.push(P('round2x2', -1, -1, 8, c, 0, S2), P('round2x2', -1, -1, 11, 'white', 0, S2), P('round2x2', -1, -1, 14, 'brown', 0, S2), P('dome2x2', -1, -1, 17, 'red', 0, S2));
+    return b;
+  } },
+  { id: 'bench', lvl: 1, em: '🪑', name: 'ספסל בפארק', cat: 'עיר', build: (c = 'brown') => {
+    const S1 = 'רגליים', S2 = 'מושב', S3 = 'פרחים'; const b = [];
+    b.push(P('1x2', -3, -1, 0, 'dkgray', 0, S1), P('1x2', 2, -1, 0, 'dkgray', 0, S1));
+    b.push(...layer(3, 'plate', rep('cccccc', 2), { c }, S2, -3, -1));
+    b.push(P('1x6', -3, 0, 4, c, 1, S2), P('1x6p', -3, 0, 7, c, 1, S2));
+    b.push(P('flower', -5, 0, 0, 'red', 0, S3), P('flower', 4, 0, 0, 'yellow', 0, S3));
+    return b;
+  } },
+  { id: 'pyramid', lvl: 1, em: '🔺', name: 'פירמידה', cat: 'בניינים', build: (c = 'tan') => {
+    const S1 = 'בסיס', S2 = 'אמצע', S3 = 'קצה'; const b = [];
+    b.push(...layer(0, 'brick', rep('tttttt', 6), { t: c }, S1, -3, -3));
+    b.push(...layer(3, 'brick', rep('tttt', 4), { t: c }, S2, -2, -2));
+    b.push(...layer(6, 'brick', rep('tt', 2), { t: c }, S3, -1, -1));
+    for (const [x, z] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) b.push(P('cone', x, z, 9, 'gold', 0, S3));
+    return b;
+  } },
+  { id: 'turtle', lvl: 1, em: '🐢', name: 'צב', cat: 'חיות', build: (c = 'green') => {
+    const S1 = 'רגליים', S2 = 'שריון', S3 = 'ראש'; const b = [];
+    b.push(...layer(0, 'plate', ['l....l', '.gggg.', '.gggg.', '.gggg.', '.gggg.', 'l....l'], { l: 'lime', g: c }, S1, -3, -3));
+    b.push(...layer(1, 'brick', rep('gggg', 4), { g: 'dkgreen' }, S2, -2, -2));
+    b.push(P('2x2p', -1, -1, 4, c, 0, S2));
+    b.push(P('round2x2', -1, -5, 0, 'lime', 0, S3), P('1x1p', -1, -5, 3, 'black', 0, S3), P('1x1p', 0, -5, 3, 'black', 0, S3));
+    return b;
+  } },
+  { id: 'gift', lvl: 1, em: '🎁', name: 'מתנה', cat: 'חגיגה', build: (c = 'red') => {
+    const S1 = 'קופסה', S2 = 'סרט'; const b = [];
+    for (const y of [0, 3]) b.push(...layer(y, 'brick', rep('rrrr', 4), { r: c }, S1, -2, -2));
+    b.push(...layer(6, 'plate', ['.yy.', 'yyyy', 'yyyy', '.yy.'], { y: 'yellow' }, S2, -2, -2));
+    for (const [x, z] of [[-1, -1], [0, 0], [-1, 0], [0, -1]]) b.push(P('round1x1', x, z, 7, 'yellow', 0, S2));
+    return b;
+  } },
+
+  // ── רמה 2: בינוני (~15–35 חלקים) ──
+  { id: 'heli', lvl: 2, em: '🚁', name: 'מסוק', cat: 'כלי טיס', build: (c = 'blue') => {
+    const pal = { c, g: 'dkgray' }; const S1 = 'מגלשים', S2 = 'גוף', S3 = 'זנב', S4 = 'רוטור'; const b = [];
+    b.push(P('1x6p', -3, -3, 0, 'black', 0, S1), P('1x6p', 2, -3, 0, 'black', 0, S1));
+    b.push(...layer(1, 'plate', rep('gggggg', 6), pal, S1, -3, -3));
+    b.push(...layer(2, 'brick', rep('cccc', 4), pal, S2, -2, -1));
+    b.push(P('slope2x2', -2, -3, 2, 'tblue', 0, S2), P('slope2x2', 0, -3, 2, 'tblue', 0, S2));
+    b.push(...layer(5, 'plate', ['cccc', 'cccc', 'c..c', 'c..c'], pal, S2, -2, -1), P('2x6p', -1, 1, 5, c, 0, S3));
+    b.push(P('2x6', -1, 3, 6, c, 0, S3), P('1x2', -1, 7, 9, c, 0, S3), P('prop', -2, 8, 12, 'black', 0, S3));
+    b.push(P('round1x1', -1, 0, 6, 'dkgray', 0, S4), P('prop', -2, 0, 9, 'black', 0, S4), P('prop', -1, -1, 10, 'black', 1, S4));
+    return b;
+  } },
+  { id: 'lighthouse', lvl: 2, em: '🗼', name: 'מגדלור', cat: 'בניינים', build: (c = 'red') => {
+    const S1 = 'סלעים', S2 = 'מגדל', S3 = 'פנס'; const b = [];
+    b.push(...layer(0, 'plate', rep('gggggg', 6), { g: 'dkgray' }, S1, -3, -3));
+    b.push(...layer(1, 'brick', ['gg..gg', 'g....g', '......', '......', 'g....g', 'gg..gg'], { g: 'ltgray' }, S1, -3, -3));
+    b.push(...layer(1, 'brick', rep('wwww', 4), { w: 'white' }, S2, -2, -2));
+    for (let i = 0; i < 4; i++) b.push(P('round2x2', -1, -1, 4 + i * 3, i % 2 ? 'white' : c, 0, S2));
+    b.push(P('2x2p', -1, -1, 16, 'dkgray', 0, S3), P('round2x2', -1, -1, 17, 'tyellow', 0, S3), P('2x2p', -1, -1, 20, 'dkgray', 0, S3), P('dome2x2', -1, -1, 21, c, 0, S3));
+    return b;
+  } },
+  { id: 'giraffe', lvl: 2, em: '🦒', name: 'ג׳ירפה', cat: 'חיות', build: (c = 'yellow') => {
+    const S1 = 'רגליים', S2 = 'גוף', S3 = 'צוואר', S4 = 'ראש'; const b = [];
+    for (const [x, z] of [[-1, -2], [0, -2], [-1, 1], [0, 1]]) b.push(P('1x1', x, z, 0, c, 0, S1), P('1x1', x, z, 3, c, 0, S1));
+    b.push(...layer(6, 'brick', rep('cc', 4), { c }, S2, -1, -2));
+    b.push(...layer(9, 'plate', ['bc', 'cb', 'bc', 'cb'], { c, b: 'brown' }, S2, -1, -2));
+    for (const y of [10, 13, 16]) b.push(P('1x2', -1, -2, y, c, 1, S3));
+    b.push(P('2x3', -1, -4, 19, c, 0, S4), P('1x1p', -1, -2, 22, 'brown', 0, S4), P('1x1p', 0, -2, 22, 'brown', 0, S4), P('1x1p', -1, -4, 22, 'black', 0, S4), P('1x1p', 0, -4, 22, 'black', 0, S4));
+    return b;
+  } },
+  { id: 'penguin', lvl: 2, em: '🐧', name: 'פינגווין', cat: 'חיות', build: (c = 'black') => {
+    const pal = { k: c, w: 'white', o: 'orange' }; const S1 = 'רגליים', S2 = 'גוף', S3 = 'ראש'; const b = [];
+    b.push(...layer(0, 'plate', ['oo.oo', 'oo.oo'], pal, S1, -2, -1));
+    for (const y of [1, 4, 7]) b.push(...layer(y, 'brick', ['www', 'kkk'], pal, S2, -1, -1));
+    b.push(P('2x6p', -3, -1, 10, c, 1, S2));
+    b.push(...layer(11, 'brick', rep('kkk', 2), pal, S3, -1, -1));
+    b.push(P('1x1p', -1, -1, 14, 'white', 0, S3), P('1x1p', 1, -1, 14, 'white', 0, S3), P('cone', 0, -1, 14, 'orange', 0, S3), P('1x1p', 0, 0, 14, c, 0, S3));
+    return b;
+  } },
+  { id: 'bridge', lvl: 2, em: '🌉', name: 'גשר', cat: 'בניינים', build: (c = 'dkgray') => {
+    const pal = { g: c, t: 'tan', b: 'tblue' }; const S1 = 'מים', S2 = 'עמודים', S3 = 'מסילה', S4 = 'מעקה'; const b = [];
+    b.push(...layer(0, 'plate', rep('bbbbbbbbbb', 4), pal, S1, -5, -2));
+    for (const x of [-5, 3]) for (const y of [1, 4]) b.push(...layer(y, 'brick', rep('gg', 4), pal, S2, x, -2));
+    for (const z of [-2, -1, 0, 1]) b.push(P('arch1x4', -3, z, 4, c, 1, S2), P('1x2', 1, z, 4, c, 1, S2));
+    b.push(...layer(7, 'plate', rep('tttttttttt', 4), pal, S3, -5, -2));
+    for (const z of [-2, 1]) b.push(P('fence1x4', -5, z, 8, 'white', 1, S4), P('fence1x4', -1, z, 8, 'white', 1, S4), P('1x2t', 3, z, 8, 'white', 1, S4));
+    return b;
+  } },
+  { id: 'train', lvl: 2, em: '🚂', name: 'קטר', cat: 'כלי רכב', build: (c = 'red') => {
+    const pal = { c, k: 'black', g: 'dkgray', b: 'tblue' }; const S1 = 'שלדה', S2 = 'דוד', S3 = 'קבינה', S4 = 'ארובה'; const b = [];
+    for (const z of [-6, -3, 3]) b.push(P('wheel', -3, z, 0, 'black', 0, S1), P('wheel', 2, z, 0, 'black', 0, S1));
+    b.push(...layer(2, 'plate', rep('gggg', 12), pal, S1, -2, -7), P('1x4p', -2, 4, 3, 'black', 1, S1));
+    b.push(...layer(3, 'brick', rep('cccc', 6), pal, S2, -2, -7));
+    b.push(...layer(6, 'plate', rep('.cc.', 6), pal, S2, -2, -7));
+    b.push(P('dome2x2', -1, -7, 7, 'yellow', 0, S2), P('round1x1', -1, -4, 7, 'black', 0, S4), P('round1x1', -1, -4, 10, 'black', 0, S4), P('2x2p', -2, -5, 13, 'black', 0, S4));
+    b.push(...layer(3, 'brick', rep('cccc', 5), pal, S3, -2, -1));
+    for (const y of [6, 9]) b.push(...layer(y, 'brick', ['cccc', 'b..b', 'b..b', 'b..b', 'cccc'], pal, S3, -2, -1));
+    b.push(...layer(12, 'plate', rep('kkkk', 5), pal, S3, -2, -1), ...layer(13, 'plate', rep('.kk.', 5), pal, S3, -2, -1));
+    return b;
+  } },
+  { id: 'submarine', lvl: 2, em: '🛥️', name: 'צוללת', cat: 'כלי שיט', build: (c = 'yellow') => {
+    const pal = { y: c, k: 'black', b: 'tblue' }; const S1 = 'גוף', S2 = 'צריח', S3 = 'הגה'; const b = [];
+    b.push(...layer(0, 'plate', rep('.yy.', 10), pal, S1, -2, -5));
+    b.push(...layer(1, 'brick', rep('yyyy', 8), pal, S1, -2, -4));
+    b.push(P('slope2x2', -2, -6, 1, c, 0, S1), P('slope2x2', 0, -6, 1, c, 0, S1), P('slope2x2', -2, 4, 1, c, 2, S1), P('slope2x2', 0, 4, 1, c, 2, S1));
+    b.push(...layer(4, 'plate', rep('yyyy', 8), pal, S1, -2, -4));
+    for (const z of [-3, -1, 1, 3]) b.push(P('round1x1', -2, z, 5, 'tblue', 0, S1), P('round1x1', 1, z, 5, 'tblue', 0, S1));
+    b.push(...layer(5, 'brick', rep('yy', 3), pal, S2, -1, -2), ...layer(8, 'plate', rep('yy', 3), pal, S2, -1, -2));
+    b.push(P('antenna', -1, -2, 9, 'black', 0, S2), P('round1x1', 0, 0, 9, 'tblue', 0, S2));
+    b.push(P('2x2p', -1, 4, 4, c, 0, S3), P('1x2', -1, 5, 5, 'black', 1, S3), P('prop', -2, 5, 8, 'black', 0, S3));
+    return b;
+  } },
+  { id: 'cake', lvl: 2, em: '🎂', name: 'עוגת יום הולדת', cat: 'חגיגה', build: (c = 'pink') => {
+    const pal = { p: c, w: 'white', r: 'red', y: 'tyellow' }; const S1 = 'קומה 1', S2 = 'קומה 2', S3 = 'נרות'; const b = [];
+    b.push(...layer(0, 'plate', rep('wwwwwwww', 8), pal, S1, -4, -4));
+    b.push(...layer(1, 'brick', rep('pppppppp', 8), pal, S1, -4, -4));
+    b.push(...layer(4, 'plate', ['wwwwwwww', 'w..w..ww', 'wwwwwwww', 'w..w..ww', 'wwwwwwww', 'w..w..ww', 'wwwwwwww', 'wwwwwwww'], pal, S1, -4, -4));
+    b.push(...layer(5, 'brick', rep('pppp', 4), pal, S2, -2, -2));
+    b.push(...layer(8, 'plate', rep('wwww', 4), pal, S2, -2, -2));
+    for (const [x, z] of [[-2, -2], [1, -2], [-2, 1], [1, 1]]) b.push(P('round1x1', x, z, 9, 'red', 0, S3), P('cone', x, z, 12, 'tyellow', 0, S3));
+    b.push(P('round2x2', -1, -1, 9, 'red', 0, S3));
+    return b;
+  } },
+
+  // ── רמה 3: מאתגר (35+ חלקים, שכבות עם חורים וחלקים מיוחדים) ──
+  { id: 'bus', lvl: 3, em: '🚌', name: 'אוטובוס', cat: 'כלי רכב', build: (c = 'yellow') => {
+    const pal = { c, g: 'dkgray', b: 'tblue', r: 'tred', w: 'white' }; const S1 = 'שלדה', S2 = 'גוף', S3 = 'חלונות', S4 = 'גג'; const b = [];
+    for (const z of [-6, 3]) b.push(P('wheel', -3, z, 0, 'black', 0, S1), P('wheel', 2, z, 0, 'black', 0, S1));
+    b.push(...layer(2, 'plate', rep('gggg', 14), pal, S1, -2, -7));
+    b.push(...layer(3, 'plate', ['wggw'], pal, S1, -2, -7), ...layer(3, 'plate', ['rggr'], pal, S1, -2, 6));
+    b.push(...layer(3, 'brick', rep('cccc', 12), pal, S2, -2, -6));
+    b.push(...layer(6, 'brick', ['bbbb', 'b..b', 'c..c', 'b..b', 'b..b', 'c..c', 'b..b', 'b..b', 'c..c', 'b..b', 'b..b', 'cccc'], pal, S3, -2, -6));
+    b.push(...layer(9, 'brick', rep('cccc', 12), pal, S2, -2, -6));
+    b.push(...layer(12, 'plate', rep('cccc', 12), pal, S4, -2, -6), ...layer(13, 'tile', rep('wwww', 12), pal, S4, -2, -6));
+    return b;
+  } },
+  { id: 'firetruck', lvl: 3, em: '🚒', name: 'כבאית', cat: 'כלי רכב', build: (c = 'red') => {
+    const pal = { c, g: 'dkgray', k: 'black', b: 'tblue', l: 'ltgray', y: 'tyellow', r: 'tred' }; const S1 = 'שלדה', S2 = 'קבינה', S3 = 'גוף', S4 = 'סולם'; const b = [];
+    for (const z of [-6, 1, 4]) b.push(P('wheel', -3, z, 0, 'black', 0, S1), P('wheel', 2, z, 0, 'black', 0, S1));
+    b.push(...layer(2, 'plate', rep('gggg', 16), pal, S1, -2, -8));
+    b.push(...layer(3, 'plate', ['ykky'], pal, S2, -2, -8), ...layer(3, 'plate', ['rkkr'], pal, S3, -2, 7));
+    b.push(...layer(3, 'brick', rep('cccc', 4), pal, S2, -2, -7));
+    b.push(...layer(6, 'brick', ['bbbb', 'b..b', 'b..b', 'cccc'], pal, S2, -2, -7));
+    b.push(...layer(9, 'plate', rep('cccc', 4), pal, S2, -2, -7), P('round1x1', -2, -7, 10, 'tred', 0, S2), P('round1x1', 1, -7, 10, 'tblue', 0, S2));
+    for (const y of [3, 6]) b.push(...layer(y, 'brick', rep('cccc', 10), pal, S3, -2, -3));
+    b.push(...layer(9, 'plate', rep('llll', 10), pal, S3, -2, -3), P('round2x2', -1, 5, 10, 'dkgray', 0, S3));
+    b.push(P('2x2p', -1, -3, 10, 'ltgray', 0, S4), P('round2x2', -1, -3, 11, 'dkgray', 0, S4));
+    b.push(P('1x6p', -1, -3, 14, 'ltgray', 0, S4), P('1x6p', 0, -3, 14, 'ltgray', 0, S4));
+    for (const z of [-2, 0, 2]) b.push(P('1x2p', -1, z, 15, 'white', 1, S4));
+    return b;
+  } },
+  { id: 'pirate', lvl: 3, em: '🏴‍☠️', name: 'ספינת פיראטים', cat: 'כלי שיט', build: (c = 'brown') => {
+    const pal = { c, t: 'tan', w: 'white' }; const S1 = 'קרקעית', S2 = 'גוף', S3 = 'סיפון', S4 = 'תורן', S5 = 'מפרשים'; const b = [];
+    const hull = ['..cc..', '.cccc.', 'cccccc', 'cccccc', 'cccccc', 'cccccc', 'cccccc', 'cccccc', '.cccc.', '..cc..'];
+    b.push(...layer(0, 'plate', hull, pal, S1, -3, -5));
+    for (const y of [1, 4]) b.push(...layer(y, 'brick', hull, pal, S2, -3, -5));
+    b.push(...layer(7, 'plate', hull.map(r => r.replace(/c/g, 't')), pal, S3, -3, -5));
+    for (const z of [-2, 0, 2]) b.push(P('round1x1', -3, z, 8, 'black', 0, S3), P('round1x1', 2, z, 8, 'black', 0, S3));
+    b.push(...layer(8, 'brick', rep('cccc', 2), pal, S3, -2, 2), ...layer(11, 'plate', rep('gggg', 2), { g: 'gold' }, S3, -2, 2), P('round1x1', -1, 2, 12, 'tyellow', 0, S3));
+    for (const y of [8, 12, 16, 20]) b.push(P('1x1', 0, -1, y, c, 0, S4));
+    for (const y of [11, 15, 19]) b.push(...layer(y, 'plate', rep('wwwwww', 2), pal, S5, -3, -2));
+    b.push(P('1x2p', 0, -1, 23, 'black', 1, S4));
+    return b;
+  } },
+  { id: 'barn', lvl: 3, em: '🛖', name: 'אסם בחווה', cat: 'בניינים', build: (c = 'dkred') => {
+    const pal = { c, w: 'white', g: 'dkgray', t: 'tan' }; const S1 = 'רצפה', S2 = 'קירות', S3 = 'גג', S4 = 'חצר'; const b = [];
+    b.push(...layer(0, 'plate', rep('tttttttt', 8), pal, S1, -4, -4));
+    const base = ['ccc..ccc', 'c......c', 'c......c', 'c......c', 'c......c', 'c......c', 'c......c', 'cccccccc'];
+    const win = ['ccc..ccc', 'c......c', 'c......c', '........', '........', 'c......c', 'c......c', 'cccccccc'];
+    b.push(...layer(1, 'brick', base, pal, S2, -4, -4), ...layer(4, 'brick', win, pal, S2, -4, -4), ...layer(7, 'brick', win, pal, S2, -4, -4));
+    b.push(P('door', -1, -4, 1, 'brown', 1, S2), P('window', -4, -1, 4, 'white', 0, S2), P('window', 3, -1, 4, 'white', 0, S2));
+    b.push(...layer(10, 'plate', rep('wwwwwwww', 8), pal, S3, -4, -4));
+    for (const x of [-4, -2, 0, 2]) b.push(P('slope2x3', x, -4, 11, 'dkgray', 0, S3), P('2x2', x, -1, 11, 'dkgray', 0, S3), P('slope2x3', x, 1, 11, 'dkgray', 2, S3));
+    b.push(P('1x8', -4, -1, 14, 'dkgray', 1, S3), P('1x8', -4, 0, 14, 'dkgray', 1, S3), P('2x4t', -4, -1, 17, 'dkgray', 1, S3), P('2x4t', 0, -1, 17, 'dkgray', 1, S3));
+    b.push(P('2x2', 5, 2, 0, 'yellow', 0, S4), P('2x2p', 5, 2, 3, 'tan', 0, S4), P('fence1x4', -6, -4, 0, 'white', 0, S4), P('fence1x4', -6, 0, 0, 'white', 0, S4), P('flower', 5, -3, 0, 'red', 0, S4), P('flower', 6, -2, 0, 'yellow', 0, S4));
+    return b;
+  } },
+  { id: 'dragon', lvl: 3, em: '🐲', name: 'דרקון', cat: 'דמויות', build: (c = 'green') => {
+    const pal = { c, l: 'lime' }; const S1 = 'רגליים', S2 = 'גוף', S3 = 'זנב', S4 = 'כנפיים', S5 = 'ראש'; const b = [];
+    b.push(...layer(0, 'brick', ['c..c', '....', '....', 'c..c'], pal, S1, -2, -2));
+    b.push(...layer(3, 'brick', rep('cccc', 4), pal, S2, -2, -2));
+    b.push(...layer(6, 'plate', ['.cc.', '.cc.', 'l..l', 'l..l'], pal, S2, -2, -2), P('2x6p', -1, 0, 6, c, 0, S3));
+    b.push(P('2x6p', -7, -2, 6, 'lime', 1, S4), P('2x6p', 1, -2, 6, 'lime', 1, S4), P('cone', -7, -2, 7, 'lime', 0, S4), P('cone', 6, -2, 7, 'lime', 0, S4));
+    b.push(P('slope1x2', -2, -2, 7, c, 0, S2), P('slope1x2', 1, -2, 7, c, 0, S2), P('slope2x2', -2, 0, 7, c, 2, S2), P('slope2x2', 0, 0, 7, c, 2, S2));
+    b.push(P('2x4', -1, 2, 3, c, 0, S3), P('slope2x2', -1, 4, 7, c, 2, S3), P('cone', -1, 2, 7, 'lime', 0, S3), P('cone', 0, 3, 7, 'lime', 0, S3));
+    b.push(P('2x2', -1, -2, 7, c, 0, S5), P('2x4', -1, -4, 10, c, 0, S5), P('2x2p', -1, -4, 9, 'torange', 0, S5), P('2x2', -1, -4, 13, c, 0, S5));
+    b.push(P('1x1p', -1, -4, 16, 'white', 0, S5), P('1x1p', 0, -4, 16, 'white', 0, S5), P('cone', -1, -3, 16, 'lime', 0, S5), P('cone', 0, -3, 16, 'lime', 0, S5));
+    return b;
+  } },
+  { id: 'ufo', lvl: 3, em: '🛸', name: 'חללית עב״ם', cat: 'חלל', build: (c = 'ltgray') => {
+    const pal = { g: c, d: 'dkgray', y: 'tyellow', r: 'tred', n: 'tgreen' }; const S1 = 'סלעים', S2 = 'דיסק', S3 = 'אורות', S4 = 'כיפה'; const b = [];
+    for (const [x, z] of [[-5, -5], [4, -5], [-5, 4], [4, 4]]) b.push(P('round1x1', x, z, 0, 'dkgray', 0, S1));
+    b.push(...layer(0, 'plate', ['..gggg..', '.gggggg.', 'gggggggg', 'gggggggg', 'gggggggg', 'gggggggg', '.gggggg.', '..gggg..'], pal, S2, -4, -4));
+    b.push(...layer(1, 'plate', ['..yrny..', '.g....g.', 'y......r', 'r......y', 'n......n', 'y......r', '.g....g.', '..ryny..'], pal, S3, -4, -4));
+    b.push(...layer(1, 'brick', rep('gggg', 4), pal, S2, -2, -2));
+    b.push(...layer(4, 'plate', rep('dddd', 4), pal, S4, -2, -2));
+    b.push(P('dome2x2', -1, -1, 5, 'tblue', 0, S4));
+    for (const [x, z] of [[-2, -2], [1, -2], [-2, 1], [1, 1]]) b.push(P('round1x1', x, z, 5, 'tblue', 0, S4));
+    return b;
+  } },
 ];
+const LEVELS = { 1: { he: 'קל', stars: '⭐' }, 2: { he: 'בינוני', stars: '⭐⭐' }, 3: { he: 'מאתגר', stars: '⭐⭐⭐' } };
 function buildModelsGrid() {
   const el = $('modelsGrid'); el.innerHTML = '';
-  for (const m of MODELS) { const btn = document.createElement('button'); btn.className = 'model'; btn.innerHTML = `<div class="em">${m.em}</div><b>${esc(m.name)}</b><small>${esc(m.cat)}</small>`; btn.onclick = () => { snapshot(); const dropped = loadModel({ bricks: m.build() }, { name: m.name, keepHistory: true }); afterChange(); setMode('build'); frameModel('iso'); toast(`${m.em} ${m.name} נטען · ${bricks.length} חלקים`); }; el.appendChild(btn); }
+  for (const lvl of [1, 2, 3]) {
+    const h = document.createElement('h3'); h.className = 'lvl-head'; h.textContent = `${LEVELS[lvl].stars} ${LEVELS[lvl].he}`; el.appendChild(h);
+    for (const m of MODELS.filter(m => (m.lvl || 2) === lvl)) {
+      const card = document.createElement('div'); card.className = 'model'; card.style.cursor = 'pointer';
+      card.innerHTML = `<span class="lvl">${LEVELS[lvl].stars}</span><div class="em">${m.em}</div><b>${esc(m.name)}</b><small>${esc(m.cat)}</small><button class="guideBtn" data-guide="${m.id}">🎯 בנייה מודרכת</button>`;
+      card.onclick = (ev) => { if (ev.target.closest('.guideBtn')) return startGuide(m); snapshot(); loadModel({ bricks: m.build() }, { name: m.name, keepHistory: true }); afterChange(); setMode('build'); frameModel('iso'); toast(`${m.em} ${m.name} נטען · ${bricks.length} חלקים`); };
+      el.appendChild(card);
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -1155,6 +1581,31 @@ async function callClaude(prompt, key, modelId, current) {
   const s = text.indexOf('{'), e = text.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('התשובה לא הכילה JSON');
   return JSON.parse(text.slice(s, e + 1));
 }
+async function callOpenAI(prompt, key, modelId, current) {
+  const user = current ? `Current model JSON (modify/extend it as requested, keep good parts):\n${JSON.stringify(current)}\n\nRequest: ${prompt}` : `Request: ${prompt}`;
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST', headers: { 'content-type': 'application/json', 'authorization': `Bearer ${key}` },
+    body: JSON.stringify({ model: modelId, max_completion_tokens: 16000, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: user }] }),
+  });
+  if (!res.ok) { const t = await res.text(); throw new Error(`${res.status}: ${t.slice(0, 200)}`); }
+  const data = await res.json(); const text = ((data.choices || [])[0]?.message?.content) || '';
+  const s = text.indexOf('{'), e = text.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('התשובה לא הכילה JSON');
+  return JSON.parse(text.slice(s, e + 1));
+}
+const PROVIDERS = {
+  anthropic: { name: 'Claude', label: 'מפתח API של Anthropic (נמחק אחרי 10 דקות ללא שימוש או בסגירת הדף)', placeholder: 'sk-ant-...', call: callClaude },
+  openai: { name: 'GPT', label: 'מפתח API של OpenAI (נמחק אחרי 10 דקות ללא שימוש או בסגירת הדף)', placeholder: 'sk-...', call: callOpenAI },
+};
+const provider = () => PROVIDERS[$('aiProvider').value] || PROVIDERS.anthropic;
+// Show only the chosen provider's models and make sure the selected model belongs to it.
+function syncProvider() {
+  const pid = $('aiProvider').value, pv = provider();
+  $('aiKeyLabel').textContent = pv.label; $('aiKey').placeholder = pv.placeholder;
+  for (const g of $('aiModel').querySelectorAll('optgroup')) { const on = g.dataset.provider === pid; g.hidden = !on; for (const o of g.children) o.disabled = !on; }
+  const sel = $('aiModel').selectedOptions[0]; if (!sel || sel.disabled) { const first = $('aiModel').querySelector(`optgroup[data-provider="${pid}"] option`); if (first) $('aiModel').value = first.value; }
+  try { localStorage.setItem('lego-studio:provider', pid); } catch {}
+}
+$('aiProvider').addEventListener('change', syncProvider);
 // The LLM may produce floating or colliding bricks; drop collisions (addBrick already does) and then settle floating parts downward.
 function settle() { let moved = 0; for (const b of stepOrder()) { if (b.y === 0) continue; const probe = { ...b }; for (const c of cellsOf(b)) occ.delete(c); const top = topUnder(probe); if (top < b.y) { b.y = top; moved++; } for (const c of cellsOf(b)) occ.set(c, b.id); meshes.get(b.id).position.y = b.y * PLATE; } return moved; }
 
@@ -1165,13 +1616,13 @@ $('aiGo').onclick = async () => {
   const current = $('aiContinue').checked && bricks.length ? serialize() : null;
   try {
     let data, source;
-    if (key) { status.textContent = '🤔 Claude מתכנן את הדגם… (10–40 שניות)'; data = await callClaude(prompt, key, $('aiModel').value, current); source = 'claude'; }
+    if (key) { const pv = provider(); status.textContent = `🤔 ${pv.name} מתכנן את הדגם… (10–40 שניות)`; data = await pv.call(prompt, key, $('aiModel').value, current); source = 'claude'; }
     else { status.textContent = '⚙️ משתמש במחולל המובנה (ללא מפתח API)…'; await new Promise(r => setTimeout(r, 500)); const k = keyword(prompt); data = k; source = k.matched ? 'offline' : 'fallback'; }
     snapshot();
     const dropped = loadModel(data, { name: data.name || prompt.slice(0, 30), keepHistory: true });
     const settled = source === 'claude' ? settle() : 0; afterChange();
     setMode('build'); frameModel('iso');
-    status.textContent = source === 'claude' ? `✅ נוצרו ${bricks.length} חלקים ע״י Claude.` + (dropped ? ` ${dropped} חלקים חופפים הוסרו.` : '') + (settled ? ` ${settled} חלקים הונחתו למקומם.` : '') + ' עכשיו תורכם לשפר!'
+    status.textContent = source === 'claude' ? `✅ נוצרו ${bricks.length} חלקים ע״י ${provider().name}.` + (dropped ? ` ${dropped} חלקים חופפים הוסרו.` : '') + (settled ? ` ${settled} חלקים הונחתו למקומם.` : '') + ' עכשיו תורכם לשפר!'
       : source === 'offline' ? `✅ נקודת פתיחה מהמחולל המובנה (${bricks.length} חלקים). הוסיפו מפתח API לתוצאות מותאמות אישית.` : `ℹ️ לא זיהיתי את הבקשה — טענתי מכונית כנקודת פתיחה. נסו מילים כמו: בית, עץ, רובוט, טירה, חללית, סירה, ברווז, דינוזאור.`;
     toast('✨ נקודת הפתיחה מוכנה!');
   } catch (err) { console.error(err); status.textContent = '❌ שגיאה: ' + err.message + ' — בודקים מפתח? אפשר גם להשאיר ריק ולהשתמש במחולל המובנה.'; }
@@ -1195,7 +1646,7 @@ $('fileMenu').onclick = (e) => {
   if (act === 'ldraw') download(safeName() + '.ldr', toLDraw(), 'text/plain');
   if (act === 'import') $('importFile').click();
   if (act === 'shot') { renderer.render(scene, camera); const a = document.createElement('a'); a.href = renderer.domElement.toDataURL('image/png'); a.download = safeName() + '.png'; a.click(); toast('📸 צילום נשמר'); }
-  if (act === 'clear') { if (!bricks.length) return; if (!confirm('לנקות את כל הדגם?')) return; snapshot(); clearAll(); nameInput.value = 'דגם חדש'; toast('הדגם נוקה 🗑️'); }
+  if (act === 'clear') clearBoard();
 };
 $('importFile').onchange = async (e) => { const f = e.target.files[0]; if (!f) return; try { const data = JSON.parse(await f.text()); snapshot(); const dropped = loadModel(data, { keepHistory: true }); afterChange(); frameModel('iso'); toast(`יובאו ${bricks.length} חלקים` + (dropped ? ` (${dropped} נפסלו)` : '')); } catch { toast('קובץ לא תקין'); } e.target.value = ''; };
 // LDraw export: LDU units (1 stud = 20 LDU, 1 plate = 8 LDU), -y is up. Approximate part numbers; unknown specials fall back to a 1x1 brick.
@@ -1230,7 +1681,8 @@ function saveKey(key) { try { if (!key) { localStorage.removeItem('lego-studio:k
 function loadKey() { try { const raw = localStorage.getItem('lego-studio:key'); if (!raw) return ''; if (!raw.startsWith('{')) { localStorage.removeItem('lego-studio:key'); return ''; } const { key, exp } = JSON.parse(raw); if (Date.now() > exp) { localStorage.removeItem('lego-studio:key'); return ''; } return key; } catch { return ''; } }
 function purgeExpiredKey() { if (!loadKey() && $('aiKey').value && $('aiKey').dataset.fromStore === '1') { $('aiKey').value = ''; delete $('aiKey').dataset.fromStore; toast('מפתח ה־API נמחק (עברו 10 דקות) 🔒'); } }
 setInterval(purgeExpiredKey, 15000);
-try { const k = loadKey(); if (k) { $('aiKey').value = k; $('aiKey').dataset.fromStore = '1'; } const mdl = localStorage.getItem('lego-studio:model'); if (mdl) $('aiModel').value = mdl; } catch {}
+try { const k = loadKey(); if (k) { $('aiKey').value = k; $('aiKey').dataset.fromStore = '1'; } const pv = localStorage.getItem('lego-studio:provider'); if (pv && PROVIDERS[pv]) $('aiProvider').value = pv; const mdl = localStorage.getItem('lego-studio:model'); if (mdl) $('aiModel').value = mdl; } catch {}
+syncProvider();
 $('aiKey').addEventListener('input', () => { delete $('aiKey').dataset.fromStore; });
 // Wipe the key when the page is closed, reloaded or navigated away from. `pagehide` is the most reliable of the unload family
 // (it also fires on mobile and when the page enters the back/forward cache); `beforeunload` is a fallback for older browsers.
@@ -1243,7 +1695,7 @@ if (!booted) { loadModel({ bricks: MODELS[0].build() }, { name: MODELS[0].name }
 frameModel('iso'); setMode('build');
 if (!localStorage.getItem('lego-studio:seen')) { $('helpDlg').classList.add('on'); try { localStorage.setItem('lego-studio:seen', '1'); } catch {} }
 window.__legoReady = true;
-window.__lego = { MODELS, keyword, check: (id) => { const m = MODELS.find(x => x.id === id); const raw = m.build(); const dropped = loadModel({ bricks: raw }, { name: m.name }); return { id, dropped: window.__dropped, floating: window.__floating }; } };
+window.__lego = { MODELS, keyword, startGuide, endGuide, guideSteps, guide: () => guide, guideGroup, camera, state, check: (id) => { const m = MODELS.find(x => x.id === id); const raw = m.build(); const dropped = loadModel({ bricks: raw }, { name: m.name }); return { id, dropped: window.__dropped, floating: window.__floating }; } };
 </script>
 </body>
 </html>
