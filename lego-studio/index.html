@@ -88,6 +88,8 @@
   .model { position: relative; }
   .model .lvl { position: absolute; top: 8px; left: 10px; font-size: 11px; letter-spacing: -2px; }
   .models .lvl-head { grid-column: 1 / -1; margin: 6px 0 0; }
+  .model .delBtn { position: absolute; top: 6px; right: 8px; font-size: 13px; opacity: .55; padding: 4px; border-radius: 6px; }
+  .model .delBtn:hover { opacity: 1; background: #fff3f3; }
   .model .guideBtn { display: block; width: 100%; margin-top: 8px; padding: 7px 8px; border-radius: 8px; background: #fff3f3; border: 1px solid #f3c2c2; color: var(--accent); font-weight: 700; font-size: 13px; min-height: 36px; }
   .model .guideBtn:hover { background: var(--accent); color: #fff; }
 
@@ -1538,17 +1540,44 @@ const MODELS = [
   } },
 ];
 const LEVELS = { 1: { he: 'קל', stars: '⭐' }, 2: { he: 'בינוני', stars: '⭐⭐' }, 3: { he: 'מאתגר', stars: '⭐⭐⭐' } };
+function modelCard(m, stars, onDelete) {
+  const card = document.createElement('div'); card.className = 'model'; card.style.cursor = 'pointer';
+  card.innerHTML = `<span class="lvl">${stars}</span><div class="em">${m.em}</div><b>${esc(m.name)}</b><small>${esc(m.cat)}</small><button class="guideBtn" data-guide="${m.id}">🎯 בנייה מודרכת</button>` + (onDelete ? '<button class="delBtn" title="מחק דגם">🗑️</button>' : '');
+  card.onclick = (ev) => {
+    if (ev.target.closest('.delBtn')) return onDelete();
+    if (ev.target.closest('.guideBtn')) return startGuide(m);
+    snapshot(); loadModel({ bricks: m.build() }, { name: m.name, keepHistory: true }); afterChange(); setMode('build'); frameModel('iso'); toast(`${m.em} ${m.name} נטען · ${bricks.length} חלקים`);
+  };
+  return card;
+}
 function buildModelsGrid() {
   const el = $('modelsGrid'); el.innerHTML = '';
+  const head = (txt) => { const h = document.createElement('h3'); h.className = 'lvl-head'; h.textContent = txt; el.appendChild(h); };
+  head('✨ הדגמים שלי');
+  if (!aiModels.length) { const p = document.createElement('p'); p.className = 'note'; p.style.gridColumn = '1 / -1'; p.textContent = 'דגמים שתיצרו בלשונית AI יישמרו כאן בדפדפן הזה.'; el.appendChild(p); }
+  for (const a of aiModels) el.appendChild(modelCard(aiModelObj(a), LEVELS[levelFor(a.bricks.length)].stars, () => deleteAiModel(a.id)));
   for (const lvl of [1, 2, 3]) {
-    const h = document.createElement('h3'); h.className = 'lvl-head'; h.textContent = `${LEVELS[lvl].stars} ${LEVELS[lvl].he}`; el.appendChild(h);
-    for (const m of MODELS.filter(m => (m.lvl || 2) === lvl)) {
-      const card = document.createElement('div'); card.className = 'model'; card.style.cursor = 'pointer';
-      card.innerHTML = `<span class="lvl">${LEVELS[lvl].stars}</span><div class="em">${m.em}</div><b>${esc(m.name)}</b><small>${esc(m.cat)}</small><button class="guideBtn" data-guide="${m.id}">🎯 בנייה מודרכת</button>`;
-      card.onclick = (ev) => { if (ev.target.closest('.guideBtn')) return startGuide(m); snapshot(); loadModel({ bricks: m.build() }, { name: m.name, keepHistory: true }); afterChange(); setMode('build'); frameModel('iso'); toast(`${m.em} ${m.name} נטען · ${bricks.length} חלקים`); };
-      el.appendChild(card);
-    }
+    head(`${LEVELS[lvl].stars} ${LEVELS[lvl].he}`);
+    for (const m of MODELS.filter(m => (m.lvl || 2) === lvl)) el.appendChild(modelCard(m, LEVELS[lvl].stars));
   }
+}
+
+// AI-generated models persist in localStorage (this browser only) and show up as cards above the presets. Stored as plain
+// brick lists (already validated + settled), so they load and guide exactly like a preset.
+const AI_KEY = 'lego-studio:ai', AI_MAX = 30;
+let aiModels = []; try { aiModels = JSON.parse(localStorage.getItem(AI_KEY) || '[]'); if (!Array.isArray(aiModels)) aiModels = []; } catch { aiModels = []; }
+const levelFor = n => n <= 14 ? 1 : n <= 35 ? 2 : 3;
+function aiModelObj(a) { return { id: a.id, em: '✨', name: a.name, cat: a.prompt ? a.prompt.slice(0, 28) : 'AI', lvl: levelFor(a.bricks.length), build: () => a.bricks.map(b => ({ ...b })) }; }
+function persistAi() { try { localStorage.setItem(AI_KEY, JSON.stringify(aiModels)); } catch { toast('לא הצלחנו לשמור את הדגם בדפדפן'); } }
+function saveAiModel(name, prompt) {
+  const a = { id: 'ai-' + Date.now().toString(36), name: name || prompt.slice(0, 30), prompt, ts: Date.now(), bricks: serialize().bricks };
+  aiModels.unshift(a); if (aiModels.length > AI_MAX) aiModels.length = AI_MAX;
+  persistAi(); buildModelsGrid(); return a;
+}
+function deleteAiModel(id) {
+  const a = aiModels.find(x => x.id === id); if (!a) return;
+  if (!confirm(`למחוק את "${a.name}" מהדגמים שלי?`)) return;
+  aiModels = aiModels.filter(x => x.id !== id); persistAi(); buildModelsGrid(); toast('הדגם נמחק');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -1650,8 +1679,9 @@ $('aiGo').onclick = async () => {
     snapshot();
     const dropped = loadModel(data, { name: data.name || prompt.slice(0, 30), keepHistory: true });
     const settled = source === 'claude' ? settle() : 0; afterChange();
+    if (source === 'claude' && bricks.length) saveAiModel(data.name, prompt);
     setMode('build'); frameModel('iso');
-    status.textContent = source === 'claude' ? `✅ נוצרו ${bricks.length} חלקים ע״י ${provider().name}.` + (dropped ? ` ${dropped} חלקים חופפים הוסרו.` : '') + (settled ? ` ${settled} חלקים הונחתו למקומם.` : '') + ' עכשיו תורכם לשפר!'
+    status.textContent = source === 'claude' ? `✅ נוצרו ${bricks.length} חלקים ע״י ${provider().name}.` + (dropped ? ` ${dropped} חלקים חופפים הוסרו.` : '') + (settled ? ` ${settled} חלקים הונחתו למקומם.` : '') + ' נשמר ב״הדגמים שלי״ ✨'
       : source === 'offline' ? `✅ נקודת פתיחה מהמחולל המובנה (${bricks.length} חלקים). הוסיפו מפתח API לתוצאות מותאמות אישית.` : `ℹ️ לא זיהיתי את הבקשה — טענתי מכונית כנקודת פתיחה. נסו מילים כמו: בית, עץ, רובוט, טירה, חללית, סירה, ברווז, דינוזאור.`;
     toast('✨ נקודת הפתיחה מוכנה!');
   } catch (err) { console.error(err); status.textContent = '❌ שגיאה: ' + err.message + ' — בודקים מפתח? אפשר גם להשאיר ריק ולהשתמש במחולל המובנה.'; }
