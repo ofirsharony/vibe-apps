@@ -1150,7 +1150,7 @@ function layer(y, kind, rows, pal, s, x0, z0) {
     let rz1 = 0; while (free(i, j + rz1)) rz1++; let rz2 = 0; while (free(i, j + rz2) && free(i + 1, j + rz2)) rz2++;
     const pick = (list, run) => list.find(n => n <= run) || 0;
     const cands = [{ w: pick(SIZES[kind][2], rx2), d: 2 }, { w: 2, d: pick(SIZES[kind][2], rz2) }, { w: pick(SIZES[kind][1], rx1), d: 1 }, { w: 1, d: pick(SIZES[kind][1], rz1) }].filter(c => c.w > 0 && c.d > 0);
-    cands.sort((a, b) => b.w * b.d - a.w * a.d); const c = cands[0];
+    cands.sort((a, b) => b.w * b.d - a.w * a.d); const c = cands[0] || { w: 1, d: 1 }; // a lone tile cell has no 1x1 tile: falls through to 1x1p below
     const long = Math.max(c.w, c.d), short = Math.min(c.w, c.d); const r = (c.w === long && long !== short) ? 1 : 0;
     let tid = `${short}x${long}${sfx}`; if (!TYPE[tid]) tid = TYPE[`${short}x${long}p`] ? `${short}x${long}p` : '1x1p';
     for (let a = 0; a < c.w; a++) for (let b = 0; b < c.d; b++) used[j + b][i + a] = true;
@@ -1798,6 +1798,73 @@ const MODELS = [
     b.push(...layer(10, 'plate', rep('kkkkkkkkkkkk', 6), pal, S5, -6, -2), P('1x6p', -3, 0, 11, 'tyellow', 1, S5), P('1x2t', -1, 2, 11, 'dkgray', 1, S5), P('round1x1', 4, -1, 11, 'tgreen', 0, S5));
     return b;
   } },
+  // ── קטגוריה: דגמים יפים במיוחד (beauty: true) ──
+  { id: 'sakura', lvl: 4, beauty: true, em: '🌸', name: 'עץ סאקורה', cat: 'טבע', build: (c = 'pink') => {
+    const pal = { p: c, m: 'magenta', w: 'white', g: 'green' }; const S1 = 'אדמה', S2 = 'גזע', S3 = 'ענפים', S4 = 'צמרת', S5 = 'פריחה'; const b = [];
+    b.push(...layer(0, 'plate', ['..gggggg..', '.gggggggg.', 'gggggggggg', 'gggggggggg', 'gggggggggg', 'gggggggggg', 'gggggggggg', 'gggggggggg', '.gggggggg.', '..gggggg..'], pal, S1, -5, -5));
+    for (const [x, z] of [[-4, -3], [3, -4], [-3, 3], [4, 2], [-1, 4], [2, -4], [-4, 1], [1, 4]]) b.push(P('1x1p', x, z, 1, c, 0, S1));
+    for (const y of [1, 4, 7]) b.push(P('2x2', -1, -1, y, 'brown', 0, S2));
+    b.push(P('1x4', -4, 0, 10, 'brown', 1, S3), P('1x4', 0, -1, 10, 'brown', 1, S3), P('1x4', -1, -4, 10, 'brown', 0, S3), P('1x4', 0, 1, 10, 'brown', 0, S3));
+    b.push(P('6x6p', -3, -3, 13, c, 0, S4), P('2x2p', -5, -1, 13, 'magenta', 0, S4), P('2x2p', 3, -1, 13, 'magenta', 0, S4), P('2x2p', -1, -5, 13, 'magenta', 0, S4), P('2x2p', 0, 3, 13, 'magenta', 0, S4));
+    b.push(...layer(14, 'brick', ['.pmmp.', 'pmwwmp', 'mwwwwm', 'mwwwwm', 'pmwwmp', '.pmmp.'], pal, S4, -3, -3));
+    b.push(P('4x4p', -2, -2, 17, 'magenta', 0, S4), P('dome2x2', -2, -2, 18, c, 0, S4), P('dome2x2', 0, -2, 18, 'white', 0, S4), P('dome2x2', -2, 0, 18, 'white', 0, S4), P('dome2x2', 0, 0, 18, c, 0, S4));
+    for (const [x, z] of [[-5, -1], [-4, 0], [3, -1], [4, 0], [-1, -5], [0, -4], [0, 3], [1, 4]]) b.push(P('flower', x, z, 14, x % 2 ? c : 'white', 0, S5));
+    for (const [x, z] of [[-3, -3], [2, -3], [-3, 2], [2, 2]]) b.push(P('flower', x, z, 14, 'magenta', 0, S5));
+    b.push(P('round1x1', 4, -3, 1, 'dkgray', 0, S1), P('round1x1', -4, 3, 1, 'ltgray', 0, S1), P('1x2t', -4, 4, 1, 'dkgray', 1, S1));
+    return b;
+  } },
+  { id: 'rainbow', lvl: 4, beauty: true, em: '🌈', name: 'קשת בענן', cat: 'טבע', build: () => {
+    const bands = { 8: 'r', 7: 'o', 6: 'y', 5: 'g', 4: 'b', 3: 'v' }; const pal = { r: 'red', o: 'orange', y: 'yellow', g: 'green', b: 'blue', v: 'purple', w: 'white' };
+    const S1 = 'קשת', S2 = 'עננים', S3 = 'שמש'; const b = [];
+    const rows = []; for (let j = 0; j < 9; j++) { let row = ''; for (let i = 0; i < 17; i++) { const x = i - 8, zz = 8 - j; const r = Math.round(Math.sqrt(x * x + zz * zz)); row += bands[r] || '.'; } rows.push(row); }
+    b.push(...layer(0, 'plate', rows, pal, S1, -8, -8));
+    b.push(...layer(1, 'tile', rows.map(r => r.replace(/[oygb]/g, '.')), pal, S1, -8, -8));
+    for (const x0 of [-10, 6]) { b.push(...layer(0, 'plate', rep('wwwww', 3), pal, S2, x0, 1)); b.push(P('dome2x2', x0, 1, 1, 'white', 0, S2), P('round2x2', x0 + 2, 2, 1, 'white', 0, S2), P('dome2x2', x0 + 2, 2, 4, 'white', 0, S2), P('round1x1', x0 + 4, 3, 1, 'white', 0, S2), P('round1x1', x0 + 1, 3, 1, 'white', 0, S2)); }
+    b.push(P('4x4p', 8, -10, 0, 'yellow', 0, S3), P('round2x2', 9, -9, 1, 'yellow', 0, S3), P('dome2x2', 9, -9, 4, 'torange', 0, S3));
+    for (const [x, z] of [[8, -10], [11, -10], [8, -7], [11, -7]]) b.push(P('cone', x, z, 1, 'gold', 0, S3));
+    return b;
+  } },
+  { id: 'peacock', lvl: 4, beauty: true, em: '🦚', name: 'טווס', cat: 'חיות', build: (c = 'blue') => {
+    const bands = { 7: 'd', 6: 'g', 5: 't', 4: 'g', 3: 'd', 2: 'g', 1: 'b', 0: 'b' }; const pal = { d: 'dkgreen', g: 'green', t: 'tgreen', b: c, a: 'azure' };
+    const S1 = 'זנב', S2 = 'עיניים בזנב', S3 = 'גוף', S4 = 'ראש'; const b = [];
+    const rows = []; for (let j = 0; j < 8; j++) { let row = ''; for (let i = 0; i < 15; i++) { const x = i - 7, zz = 7 - j; const r = Math.round(Math.sqrt(x * x + zz * zz)); row += bands[r] || '.'; } rows.push(row); }
+    b.push(...layer(0, 'plate', rows, pal, S1, -7, -7));
+    const eyes = [[-6, -3], [-4, -5], [-1, -6], [2, -6], [5, -3], [-3, -2], [2, -2], [4, -5], [0, -4]];
+    for (const [x, z] of eyes) b.push(P('round1x1', x, z, 1, 'gold', 0, S2), P('1x1p', x, z, 4, 'tblue', 0, S2));
+    for (const y of [1, 4, 7]) b.push(P('2x2', -1, 0, y, c, 0, S3));
+    b.push(P('2x2p', -1, 0, 10, 'azure', 0, S3), P('round2x2', -1, 1, 11, c, 0, S4), P('1x1p', -1, 1, 14, 'black', 0, S4), P('1x1p', 0, 1, 14, 'black', 0, S4), P('cone', 0, 2, 14, 'orange', 0, S4), P('flower', -1, 2, 14, 'tblue', 0, S4));
+    b.push(P('1x2p', -2, 2, 0, 'orange', 0, S3), P('1x2p', 1, 2, 0, 'orange', 0, S3), P('slope1x2', -3, 0, 1, c, 3, S3), P('slope1x2', 1, 0, 1, c, 1, S3));
+    return b;
+  } },
+  { id: 'butterfly', lvl: 3, beauty: true, em: '🦋', name: 'פרפר', cat: 'חיות', build: (c = 'purple') => {
+    const pal = { p: c, m: 'magenta', b: 'tblue', g: 'gold', k: 'black', z: 'azure' }; const S1 = 'כנפיים', S2 = 'עיטורים', S3 = 'גוף'; const b = [];
+    b.push(...layer(0, 'plate', ['.ppppp..kk..ppppp.', 'pmmmmpp.kk.ppmmmmp', 'pmbbmmp.kk.pmmbbmp', 'pmbbmmppkkppmmbbmp', '.pmmmmppkkppmmmmp.', '..ppzzppkkppzzpp..', '...pzzzpkkpzzzp...', '....pzzpkkpzzp....', '.....ppp..ppp.....'], pal, S1, -9, -5));
+    for (const [x, z] of [[-5, -3], [4, -3], [-3, 0], [2, 0]]) b.push(P('round1x1', x, z, 1, 'gold', 0, S2));
+    for (const [x, z] of [[-7, -4], [6, -4], [-6, -1], [5, -1], [-4, 1], [3, 1], [-2, 2], [1, 2]]) b.push(P('1x1p', x, z, 1, 'tblue', 0, S2));
+    b.push(P('1x2t', -8, -5, 1, 'black', 1, S2), P('1x2t', 6, -5, 1, 'black', 1, S2), P('1x2t', -4, 3, 1, 'black', 1, S2), P('1x2t', 2, 3, 1, 'black', 1, S2));
+    for (const z of [-5, -3, -1, 1]) b.push(P('1x2p', -1, z, 1, 'black', 0, S3), P('1x2p', 0, z, 1, 'black', 0, S3));
+    b.push(P('round2x2', -1, -7, 0, 'black', 0, S3), P('antenna', -1, -7, 3, 'black', 0, S3), P('antenna', 0, -7, 3, 'black', 0, S3), P('1x1p', -1, -6, 3, 'gold', 0, S3), P('1x1p', 0, -6, 3, 'gold', 0, S3));
+    b.push(P('round1x1', -1, -5, 2, 'black', 0, S3), P('round1x1', 0, -3, 2, 'black', 0, S3), P('round1x1', -1, -1, 2, 'black', 0, S3), P('round1x1', 0, 1, 2, 'black', 0, S3));
+    return b;
+  } },
+  { id: 'pagoda', lvl: 4, beauty: true, em: '⛩️', name: 'פגודה יפנית', cat: 'בניינים', build: (c = 'red') => {
+    const pal = { r: c, w: 'white', k: 'black', g: 'dkgray' }; const S1 = 'בסיס', S2 = 'קומה 1', S3 = 'גג 1', S4 = 'קומה 2', S5 = 'גג 2', S6 = 'קומה 3', S7 = 'צריח'; const b = [];
+    b.push(...layer(0, 'plate', rep('gggggggggg', 10), pal, S1, -5, -5));
+    for (const y of [1, 4, 7]) b.push(...layer(y, 'brick', ['wrr..rrw', 'rrrrrrrr', 'rrrrrrrr', 'rrrrrrrr', 'rrrrrrrr', 'rrrrrrrr', 'rrrrrrrr', 'wrrrrrrw'], pal, S2, -4, -4));
+    b.push(P('door', -1, -4, 1, 'black', 1, S2));
+    b.push(...layer(10, 'plate', rep('kkkkkkkkkk', 10), pal, S3, -5, -5));
+    b.push(...layer(11, 'plate', ['kkkkkkkkkk', 'k........k', 'k........k', 'k........k', 'k........k', 'k........k', 'k........k', 'k........k', 'k........k', 'kkkkkkkkkk'], pal, S3, -5, -5));
+    for (const [x, z] of [[-5, -5], [4, -5], [-5, 4], [4, 4]]) b.push(P('slope1x2', x, z, 12, 'black', z < 0 ? 0 : 2, S3));
+    for (const y of [11, 14]) b.push(...layer(y, 'brick', ['wrrrrw', 'rrrrrr', 'rrrrrr', 'rrrrrr', 'rrrrrr', 'wrrrrw'], pal, S4, -3, -3));
+    b.push(...layer(17, 'plate', rep('kkkkkkkk', 8), pal, S5, -4, -4));
+    b.push(...layer(18, 'plate', ['kkkkkkkk', 'k......k', 'k......k', 'k......k', 'k......k', 'k......k', 'k......k', 'kkkkkkkk'], pal, S5, -4, -4));
+    for (const y of [18, 21]) b.push(...layer(y, 'brick', ['wrrw', 'rrrr', 'rrrr', 'wrrw'], pal, S6, -2, -2));
+    b.push(P('6x6p', -3, -3, 24, 'black', 0, S7), ...layer(25, 'plate', ['kkkkkk', 'k....k', 'k....k', 'k....k', 'k....k', 'kkkkkk'], pal, S7, -3, -3));
+    b.push(P('2x2', -1, -1, 25, c, 0, S7), P('2x2p', -1, -1, 28, 'gold', 0, S7), P('round1x1', -1, -1, 29, 'gold', 0, S7), P('cone', -1, -1, 32, 'gold', 0, S7), P('antenna', 0, 0, 29, 'gold', 0, S7));
+    for (const [x, z] of [[-5, -3], [4, -3], [-5, 2], [4, 2]]) b.push(P('round1x1', x, z, 1, 'tred', 0, S1), P('1x1p', x, z, 4, 'black', 0, S1));
+    b.push(P('flower', -5, 0, 1, 'pink', 0, S1), P('flower', 4, 0, 1, 'pink', 0, S1));
+    return b;
+  } },
 ];
 const LEVELS = { 1: { he: 'קל', stars: '⭐' }, 2: { he: 'בינוני', stars: '⭐⭐' }, 3: { he: 'מאתגר', stars: '⭐⭐⭐' }, 4: { he: 'מומחה', stars: '⭐⭐⭐⭐' } };
 function modelCard(m, stars, onDelete) {
@@ -1816,9 +1883,11 @@ function buildModelsGrid() {
   head('✨ הדגמים שלי');
   if (!aiModels.length) { const p = document.createElement('p'); p.className = 'note'; p.style.gridColumn = '1 / -1'; p.textContent = 'דגמים שתיצרו בלשונית AI יישמרו כאן בדפדפן הזה.'; el.appendChild(p); }
   for (const a of aiModels) el.appendChild(modelCard(aiModelObj(a), LEVELS[levelFor(a.bricks.length)].stars, () => deleteAiModel(a.id)));
+  head('💎 דגמים יפים במיוחד');
+  for (const m of MODELS.filter(m => m.beauty)) el.appendChild(modelCard(m, LEVELS[m.lvl || 3].stars));
   for (const lvl of [1, 2, 3, 4]) {
     head(`${LEVELS[lvl].stars} ${LEVELS[lvl].he}`);
-    for (const m of MODELS.filter(m => (m.lvl || 2) === lvl)) el.appendChild(modelCard(m, LEVELS[lvl].stars));
+    for (const m of MODELS.filter(m => !m.beauty && (m.lvl || 2) === lvl)) el.appendChild(modelCard(m, LEVELS[lvl].stars));
   }
 }
 
