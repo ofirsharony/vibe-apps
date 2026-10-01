@@ -902,6 +902,28 @@
         },
         extras: extrasAmargasaurus,
       },
+      {
+        id: 'mammoth', name: 'ממותה צמרית', latin: 'Mammuthus primigenius', emoji: '🦣', diet: 'herbivore', sound: 'trumpet',
+        period: 'עידן הקרח, לפני 400,000–4,000 שנה', length: '5.5 מטר', height: '3.5 מטר', weight: '6 טון', lengthM: 5.5, mass: 0.9,
+        fun: 'הממותה בכלל לא הייתה דינוזאור אלא פיל קדום ושעיר! היא חיה בעידן הקרח, הרבה אחרי שהדינוזאורים נכחדו, והחטים שלה היו ארוכים עד 4 מטרים.',
+        skins: [
+          { main: 0x7a4a2a, belly: 0x5e3820, accent: 0x4a2c18 },
+          { main: 0x9a5f34, belly: 0x7a4a28, accent: 0x5c361c },
+          { main: 0x5a4a40, belly: 0x463a32, accent: 0x2e2622 },
+        ],
+        spec: {
+          body: { L: 4.0, H: 2.3, W: 2.3, y: 2.35, tilt: 5 * DEG },
+          neck: { count: 2, length: 0.5, r0: 0.95, r1: 0.85, pitch0: 5 * DEG, bend: -5 * DEG, attach: [1.7, 0.35] },
+          head: { len: 1.4, h: 1.5, w: 1.2, snout: 0.25, taper: 0.7, teeth: false, eye: 0.07, pitch: -25 * DEG },
+          tail: { count: 4, length: 1.0, r0: 0.18, r1: 0.05, pitch0: -65 * DEG, bend: -3 * DEG, attach: [-1.9, 0.5] },
+          legs: [
+            { x: -1.15, y: 1.7, z: 0.72, thick: 0.42, a1: 4 * DEG, a2: -8 * DEG, footH: 0.2, toes: 0 },
+            { x: 1.1, y: 1.8, z: 0.72, thick: 0.45, a1: 2 * DEG, a2: -4 * DEG, footH: 0.2, toes: 0, fore: true },
+          ],
+        },
+        extras: extrasMammoth,
+        animate: animateMammoth,
+      },
     ];
 
     // Habitat (drives the scenery) and the range of years each species lived, in millions of years ago.
@@ -916,6 +938,8 @@
       compy: { habitat: 'forest', from: 150, to: 148 }, ptera: { habitat: 'coast', from: 86, to: 84 },
       coelo: { habitat: 'desert', from: 216, to: 196 },
       carno: { habitat: 'plains', from: 72, to: 70 }, amarga: { habitat: 'forest', from: 129, to: 122 },
+      // Ice Age, far later than the timeline's 66–235 Mya range, so the mammoth is never "alive" on it.
+      mammoth: { habitat: 'tundra', from: 0.4, to: 0.004 },
     };
     DINOS.forEach((d) => Object.assign(d, META[d.id]));
 
@@ -940,6 +964,7 @@
       theri:   { type: 'sine', dur: 0.8, pulses: 2, gap: 0.18, f: [[0, 300], [0.4, 340], [1, 260]], vib: { rate: 7, depth: 12 }, harmonic: 3, gain: 0.4 },
       carno:   { type: 'sawtooth', dur: 0.45, pulses: 3, gap: 0.16, f: [[0, 110], [0.3, 170], [1, 80]], filter: ['lowpass', 1100, 350], dist: 90, noise: { amt: 0.25, freq: 500 }, sub: true, gain: 0.65 },
       amarga:  { type: 'triangle', dur: 1.9, f: [[0, 90], [0.3, 120], [0.6, 110], [1, 60]], vib: { rate: 5.5, depth: 7 }, filter: ['lowpass', 500, 300], harmonic: 2, trem: { rate: 4, depth: 0.35 }, gain: 0.6 },
+      mammoth: { type: 'sawtooth', dur: 1.2, f: [[0, 320], [0.15, 620], [0.6, 560], [1, 380]], vib: { rate: 14, depth: 25 }, filter: ['bandpass', 900, 700], dist: 30, noise: { amt: 0.15, freq: 1500 }, gain: 0.45 },
     };
     DINOS.forEach((d) => { d.voice = VOICES[d.id]; });
 
@@ -964,9 +989,10 @@
       coelo: 'קוֹאֵלוֹפִיזִיס הוּא אֶחָד מֵהַדִּינוֹזָאוּרִים הַקְּדוּמִים בְּיוֹתֵר שֶׁאָנוּ מַכִּירִים, וְהוּא חַי בִּתְקוּפַת הַטְּרִיאָס, לִפְנֵי יוֹתֵר מִמָּאתַיִם מִילְיוֹן שָׁנִים. הוּא הָיָה טוֹרֵף קַל וּמָהִיר, עִם גּוּף דַּק, צַוָּאר אָרֹךְ וְזָנָב אָרֹךְ. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "צוּרָה חֲלוּלָה", כִּי הָעֲצָמוֹת שֶׁלּוֹ הָיוּ חֲלוּלוֹת וְקַלּוֹת, כְּמוֹ שֶׁל צִפּוֹר. בְּמָקוֹם אֶחָד בִּנְיוּ מֶקְסִיקוֹ מָצְאוּ מֵאוֹת שְׁלָדִים שֶׁלּוֹ יַחַד, אָז כַּנִּרְאֶה הוּא חַי בְּלַהֲקוֹת גְּדוֹלוֹת. קוֹאֵלוֹפִיזִיס אָכַל חַיּוֹת קְטַנּוֹת, וְהוּא אֲפִלּוּ טָס לַחֲלָל: שֶׁלֶד שֶׁלּוֹ נִשְׁלַח לַחֲלָל בְּמַעְבֹּרֶת חָלָל בִּשְׁנַת 1998!',
       carno: 'קַרְנוֹטָאוּרוּס הָיָה טוֹרֵף גָּדוֹל שֶׁחַי בִּדְרוֹם אָמֶרִיקָה, לִפְנֵי כְּשִׁבְעִים מִילְיוֹן שָׁנִים. הַשֵּׁם שֶׁלּוֹ פֵּרוּשׁוֹ "שׁוֹר אוֹכֵל בָּשָׂר", כִּי מֵעַל הָעֵינַיִם שֶׁלּוֹ צָמְחוּ שְׁתֵּי קַרְנַיִם עָבוֹת כְּמוֹ שֶׁל שׁוֹר. הַזְּרוֹעוֹת שֶׁלּוֹ הָיוּ קְטַנְטַנּוֹת, אֲפִלּוּ קְטַנּוֹת מֵאֵלּוּ שֶׁל טִי־רֶקְס, וְכִמְעַט לֹא הִשְׁתַּמֵּשׁ בָּהֶן. לְעֻמַּת זֹאת, הָרַגְלַיִם שֶׁלּוֹ הָיוּ אֲרֻכּוֹת וַחֲזָקוֹת, וְהוּא הָיָה מֵהָרָצִים הַמְּהִירִים בֵּין הַטּוֹרְפִים הַגְּדוֹלִים. הַמְּאֻבָּן שֶׁלּוֹ נִשְׁמַר כָּל כָּךְ טוֹב, שֶׁאֶפְשָׁר לִרְאוֹת בּוֹ אֶת הָעוֹר: הוּא הָיָה מְכֻסֶּה בְּקַשְׂקַשִּׂים קְטַנִּים וּבִבְלִיטוֹת עֲגֻלּוֹת.',
       amarga: 'אָמַרְגָּזָאוּרוּס הָיָה סָאוּרוֹפּוֹד, כְּלוֹמַר דִּינוֹזָאוּר עִם צַוָּאר אָרֹךְ שֶׁהָלַךְ עַל אַרְבַּע, אֲבָל הוּא הָיָה קָטָן יַחֲסִית לִקְרוֹבֵי מִשְׁפַּחְתּוֹ הָעֲנָקִיִּים. הַדָּבָר הַמְּיֻחָד בּוֹ הָיָה שְׁתֵּי שׁוּרוֹת שֶׁל קוֹצִים אֲרֻכִּים שֶׁצָּמְחוּ מֵהַצַּוָּאר וּמֵהַגַּב שֶׁלּוֹ, כְּמוֹ מַסְרֵק עָנָק. מַדְעָנִים לֹא בְּטוּחִים לְמָה הֵם שִׁמְּשׁוּ: אוּלַי לַהֲגָנָה, אוּלַי כְּדֵי לְהַרְשִׁים, וְאוּלַי הָיָה עֲלֵיהֶם מִפְרָשׂ שֶׁל עוֹר. הוּא חַי בְּאַרְגֶּנְטִינָה לִפְנֵי כְּמֵאָה וְעֶשְׂרִים וַחֲמִשָּׁה מִילְיוֹן שָׁנִים, וְקָרְאוּ לוֹ עַל שֵׁם הַנָּהָר לָה אָמַרְגָּה שֶׁלְּיָדוֹ נִמְצָא. הוּא אָכַל צְמָחִים נְמוּכִים, וְהַצַּוָּאר שֶׁלּוֹ הָיָה קָצָר יַחֲסִית, אָז כַּנִּרְאֶה לֹא הִגִּיעַ לְצַמְּרוֹת הָעֵצִים.',
+      mammoth: 'הַמָּמוּתָה הַצַּמְרִית לֹא הָיְתָה דִּינוֹזָאוּר, אֶלָּא בַּת מִשְׁפָּחָה שֶׁל הַפִּיל. הִיא חָיְתָה בְּעִדַּן הַקֶּרַח, הַרְבֵּה אַחֲרֵי שֶׁהַדִּינוֹזָאוּרִים נִכְחֲדוּ, בִּמְקוֹמוֹת קָרִים מְאוֹד שֶׁהָיוּ מְכֻסִּים בְּשֶׁלֶג. כְּדֵי לֹא לִקְפֹּא, הָיְתָה לָהּ פַּרְוָה אֲרֻכָּה וַעֲבָה וְשִׁכְבָה שֶׁל שׁוּמָן מִתַּחַת לָעוֹר. הָאָזְנַיִם וְהַזָּנָב שֶׁלָּהּ הָיוּ קְטַנִּים, כְּדֵי שֶׁלֹּא יִתְקָרְרוּ. הַחֲטִים שֶׁלָּהּ הָיוּ אֲרֻכִּים וּמְעֻקָּלִים, וְהִיא הִשְׁתַּמְּשָׁה בָּהֶם כְּדֵי לְפַנּוֹת שֶׁלֶג וּלְהַגִּיעַ לָעֲשָׂבִים. בְּנֵי אָדָם קַדְמוֹנִים צָדוּ מָמוּתוֹת וְצִיְּרוּ אוֹתָן עַל קִירוֹת שֶׁל מְעָרוֹת. הַמָּמוּתוֹת הָאַחֲרוֹנוֹת חָיוּ עַל אִי קָטָן לִפְנֵי אַרְבַּעַת אֲלָפִים שָׁנָה בִּלְבַד, כְּשֶׁהַפִּירָמִידוֹת בְּמִצְרַיִם כְּבָר עָמְדוּ!',
     };
     DINOS.forEach((d) => { d.story = STORIES[d.id]; });
-    const HABITAT_NAME = { plains: 'מישורים 🌾', forest: 'יער 🌲', swamp: 'ביצה 🪷', desert: 'מדבר 🏜️', coast: 'חוף 🌊' };
+    const HABITAT_NAME = { plains: 'מישורים 🌾', forest: 'יער 🌲', swamp: 'ביצה 🪷', desert: 'מדבר 🏜️', coast: 'חוף 🌊', tundra: 'טונדרה קפואה ❄️' };
     const FOOD_NAME = { leaf: 'עלים 🌿', meat: 'בשר 🍖', fish: 'דגים 🐟' };
 
     // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -1297,6 +1323,56 @@
         for (const z of [-0.16, 0.16]) body.add(mesh(new THREE.ConeGeometry(0.07, h, 5), mats.accent, t * L / 2, y + h / 2, z));
       }
     }
+    function extrasMammoth(ctx) {
+      const { hd, body, tail, legs, mats, s } = ctx;
+      const { L, H, W } = s.body;
+      const { h, w } = s.head;
+      // Round elephant foot pads in place of the long dinosaur foot box.
+      for (const l of legs) {
+        l.foot.clear();
+        l.foot.add(mesh(new THREE.CylinderGeometry(0.4, 0.46, 0.3, 10), mats.main, 0, -0.1, 0));
+        for (const dz of [-0.2, 0, 0.2]) l.foot.add(mesh(new THREE.SphereGeometry(0.09, 6, 4), mats.claw, 0.4, -0.16, dz));
+      }
+      const hump = ellipsoid(1.1, 0.7, 0.95, mats.main, 12);
+      hump.position.set(L * 0.22, H * 0.36, 0);
+      body.add(hump);
+      const dome = ellipsoid(0.5, 0.45, 0.5, mats.main, 10);
+      dome.position.set(hd.skullL * 0.35, h * 0.42, 0);
+      hd.g.add(dome);
+      for (const sgn of [-1, 1]) {
+        const ear = ellipsoid(0.28, 0.34, 0.06, mats.accent, 8);
+        ear.position.set(hd.skullL * 0.15, h * 0.12, sgn * w * 0.56);
+        hd.g.add(ear);
+        // Tusks curl down-forward, then up and inward; the root's Y turn splays them apart.
+        const tusk = chain({ count: 6, length: 2.2, r0: 0.11, r1: 0.04, pitch0: -50 * DEG, bend: 22 * DEG, dir: 1, mat: mats.tooth });
+        tusk.root.position.set(hd.skullL * 0.85, -h * 0.25, sgn * w * 0.3);
+        tusk.root.rotation.y = -sgn * 0.35;
+        tusk.groups.slice(3).forEach((g) => { g.rotation.y = sgn * 0.25; });
+        hd.g.add(tusk.root);
+      }
+      // Trunk hangs straight down (head pitch -25° + -65°) and curls forward toward the tip.
+      const trunk = chain({ count: 8, length: 2.4, r0: 0.26, r1: 0.08, pitch0: -65 * DEG, bend: 7 * DEG, dir: 1, mat: mats.main });
+      trunk.root.position.set(hd.skullL + hd.snoutL * 0.6, -h * 0.05, 0);
+      hd.g.add(trunk.root);
+      ctx.custom.trunk = trunk.groups;
+      // Shaggy fur skirt around the belly, plus a tuft on the tail tip.
+      for (let i = 0; i < 28; i++) {
+        const a = (i / 28) * Math.PI * 2;
+        const f = mesh(new THREE.ConeGeometry(0.2, 0.75, 5), mats.accent, Math.cos(a) * L * 0.4, -H * 0.3, Math.sin(a) * W * 0.42);
+        f.rotation.x = Math.PI;
+        body.add(f);
+      }
+      const tuft = mesh(new THREE.ConeGeometry(0.12, 0.35, 5), mats.accent, 0, -0.12, 0);
+      tuft.rotation.z = Math.PI;
+      tail.end.add(tuft);
+    }
+    function animateMammoth(d, t, wa, pulse = 0) {
+      // Trunk sways, and lifts when trumpeting.
+      d.custom.trunk.forEach((g, i) => {
+        g.rotation.y = Math.sin(t * 1.2 - i * 0.5) * 0.06 * (1 + wa);
+        g.rotation.z = g.userData.baseZ + Math.sin(t * 0.8 - i * 0.3) * 0.03 + pulse * 0.22;
+      });
+    }
     function extrasPachy({ hd, mats, s }) {
       const dome = mesh(new THREE.SphereGeometry(0.3, 10, 8), mats.accent, hd.skullL * 0.35, s.head.h * 0.3, 0);
       dome.scale.set(1.05, 0.85, 0.9);
@@ -1572,6 +1648,7 @@
       swamp: { ground: 0x5c7f3a, patch: 0x4a6a2e, sky: 0xa9c9c2 },
       desert: { ground: 0xc9a86a, patch: 0xb8945a, sky: 0xf1d9ad },
       coast: { ground: 0x8fb56a, patch: 0x7aa05a, sky: 0x8ad0f8 },
+      tundra: { ground: 0xe4ecf0, patch: 0xc8d6de, sky: 0xc4d8e8 },
     };
     const ERAS = {
       triassic: { ground: 0xb59a5a, sky: 0xf0c8a0 },
@@ -1638,6 +1715,24 @@
       sand.rotation.x = -Math.PI / 2;
       sand.position.set(0, 0.04, -115);
       g.add(sand);
+    }
+    {
+      const g = habitatGroup('tundra');
+      const snowMat = mkMat(0xf4f8fb), iceMat = mkMat(0xa8d4ea, { roughness: 0.3, metalness: 0.1 });
+      for (let i = 0; i < 18; i++) {
+        const a = rnd(0, Math.PI * 2), r = rnd(16, 80), sz = rnd(2, 6);
+        const drift = mesh(new THREE.SphereGeometry(sz, 9, 6), snowMat, Math.cos(a) * r, -sz * 0.55, Math.sin(a) * r);
+        drift.scale.set(1.4, 0.6, 1);
+        drift.userData.rad = sz * 1.2;
+        g.add(drift);
+      }
+      for (let i = 0; i < 10; i++) {
+        const a = rnd(0, Math.PI * 2), r = rnd(20, 90), sz = rnd(0.8, 2.2);
+        const ice = mesh(new THREE.OctahedronGeometry(sz, 0), iceMat, Math.cos(a) * r, sz * 0.5, Math.sin(a) * r);
+        ice.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
+        ice.userData.rad = sz;
+        g.add(ice);
+      }
     }
     const envColor = {
       ground: new THREE.Color(HABITATS.plains.ground), patch: new THREE.Color(HABITATS.plains.patch), sky: new THREE.Color(HABITATS.plains.sky),
@@ -2198,7 +2293,7 @@
       renderChips();
       renderFacts(def);
       setHabitat(def.habitat);
-      setYear(Math.round((def.from + def.to) / 2), { fromSelect: true });
+      if (def.from >= 66) setYear(Math.round((def.from + def.to) / 2), { fromSelect: true });
       if (state.cur) {
         const old = state.cur;
         await tween(0.28, easeInOut, (k) => old.root.scale.setScalar(Math.max(0.001, (1 - k) * (old.grow || 1))));
