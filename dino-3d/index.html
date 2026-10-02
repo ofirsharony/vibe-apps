@@ -1457,6 +1457,335 @@
         },
         extras: extrasGorilla,
       },
+      // ── Third batch: interesting animals ──
+      {
+        id: 'panda', name: 'פנדה ענקית', latin: 'Ailuropoda melanoleuca', emoji: '🐼', diet: 'herbivore', sound: 'honk',
+        period: 'חי היום 🌍', length: '1.7 מטר', height: '80 ס"מ', weight: '100 ק"ג', lengthM: 1.7, mass: 0.32,
+        fun: 'הפנדה אוכלת במבוק כמעט 14 שעות ביום! כשהיא נולדת היא קטנה כמו עכבר, ורק אחרי שבוע מופיעים הכתמים השחורים.',
+        skins: [
+          { main: 0xf4f2ee, belly: 0xffffff, accent: 0x1a1a1a },
+          { main: 0xeee6da, belly: 0xfaf4ea, accent: 0x2a2420 },
+          { main: 0xf0e8e0, belly: 0xffffff, accent: 0x5a3a2a },
+        ],
+        spec: quad({ L: 1.4, H: 0.9, W: 0.85, legH: 0.35, thick: 0.17,
+          neck: { length: 0.2, r0: 0.32, r1: 0.3, pitch0: 5 * DEG },
+          head: { len: 0.5, h: 0.5, w: 0.5, snout: 0.3, taper: 0.7, eye: 0.03, pitch: -10 * DEG },
+          tail: { count: 2, length: 0.12, r0: 0.07, r1: 0.05 } }),
+        extras: extrasPanda,
+      },
+      {
+        id: 'wolf', name: 'זאב', latin: 'Canis lupus', emoji: '🐺', diet: 'carnivore', sound: 'trumpet',
+        period: 'חי היום 🌍', length: '1.6 מטר', height: '80 ס"מ', weight: '50 ק"ג', lengthM: 1.6, mass: 0.2,
+        fun: 'זאבים חיים בלהקות, ומיילל אחד יכול להישמע עד 10 קילומטרים! כל הכלבים בעולם הם צאצאים של זאבים.',
+        skins: [
+          { main: 0x8a8580, belly: 0xd8d4cc, accent: 0x4a4644 },
+          { main: 0xeeeae4, belly: 0xffffff, accent: 0xb0aca4 },
+          { main: 0x5a4a3e, belly: 0xb8a690, accent: 0x2e2620 },
+        ],
+        spec: quad({ L: 1.1, H: 0.55, W: 0.4, legH: 0.5, thick: 0.07,
+          neck: { length: 0.3, r0: 0.2, r1: 0.17, pitch0: 30 * DEG },
+          head: { len: 0.4, h: 0.25, w: 0.22, snout: 0.55, taper: 0.6, teeth: true, eye: 0.025, pitch: -10 * DEG },
+          tail: { count: 5, length: 0.5, r0: 0.08, r1: 0.06, pitch0: -35 * DEG, bend: 2 * DEG } }),
+        extras: extrasWolf,
+      },
+      {
+        id: 'deer', name: 'צבי אדום (אייל)', latin: 'Cervus elaphus', emoji: '🦌', diet: 'herbivore', sound: 'trumpet',
+        period: 'חי היום 🌍', length: '2 מטר', height: '1.3 מטר', weight: '150 ק"ג', lengthM: 2, mass: 0.3,
+        fun: 'הקרניים של האייל הזכר נושרות כל חורף וצומחות מחדש, הן גדלות מהר יותר מכל עצם אחרת בטבע!',
+        skins: [
+          { main: 0x9a5a34, belly: 0xd8b494, accent: 0xf0e0c8 },
+          { main: 0x8a6a4a, belly: 0xd0b898, accent: 0xeee0cc },
+          { main: 0xb0703e, belly: 0xe8c8a8, accent: 0xffffff },
+        ],
+        spec: quad({ L: 1.3, H: 0.7, W: 0.45, legH: 0.8, thick: 0.07, hooves: true,
+          neck: { count: 3, length: 0.6, r0: 0.18, r1: 0.14, pitch0: 50 * DEG, bend: -5 * DEG },
+          head: { len: 0.45, h: 0.22, w: 0.2, snout: 0.55, taper: 0.7, eye: 0.025, pitch: -45 * DEG },
+          tail: { count: 2, length: 0.15, r0: 0.05 } }),
+        extras: extrasDeer,
+      },
+      {
+        id: 'tortoise', name: 'צב ענק', latin: 'Chelonoidis niger', emoji: '🐢', diet: 'herbivore', sound: 'rumble',
+        period: 'חי היום 🌍', length: '1.5 מטר', height: '70 ס"מ', weight: '250 ק"ג', lengthM: 1.5, mass: 0.4,
+        fun: 'צבי הענק של איי גלפגוס יכולים לחיות יותר מ-150 שנה! הם יכולים לשרוד שנה שלמה בלי לאכול ובלי לשתות.',
+        skins: [
+          { main: 0x7a7060, belly: 0x9a907a, accent: 0x4a4434 },
+          { main: 0x6a6a5a, belly: 0x8a8a72, accent: 0x5a4a2e },
+          { main: 0x8a7a5a, belly: 0xa8987a, accent: 0x3a3424 },
+        ],
+        spec: quad({ L: 1.2, H: 0.6, W: 1.0, legH: 0.15, thick: 0.12,
+          neck: { count: 3, length: 0.5, r0: 0.1, r1: 0.09, pitch0: 20 * DEG, bend: -5 * DEG, attach: [0.55, 0] },
+          head: { len: 0.22, h: 0.14, w: 0.13, snout: 0.4, taper: 0.8, eye: 0.02, pitch: -5 * DEG },
+          tail: { count: 1, length: 0.1, r0: 0.05, r1: 0.02 } }),
+        extras: extrasTortoise,
+      },
+      {
+        id: 'komodo', name: 'דרקון קומודו', latin: 'Varanus komodoensis', emoji: '🦎', diet: 'carnivore', sound: 'rumble',
+        period: 'חי היום 🌍', length: '3 מטר', height: '40 ס"מ', weight: '70 ק"ג', lengthM: 3, mass: 0.3,
+        fun: 'דרקון הקומודו הוא הלטאה הגדולה ביותר בעולם! הוא מריח אוכל עם הלשון המפוצלת שלו, ממרחק של כמה קילומטרים.',
+        skins: [
+          { main: 0x6a6a50, belly: 0x9a9a7a, accent: 0x4a4a34 },
+          { main: 0x5a5a4a, belly: 0x8a8a74, accent: 0x8a6a3a },
+          { main: 0x7a6a50, belly: 0xaa9a7a, accent: 0x4a3a2a },
+        ],
+        spec: {
+          body: { L: 1.2, H: 0.4, W: 0.5, y: 0.38, tilt: 0 },
+          neck: { count: 2, length: 0.35, r0: 0.2, r1: 0.17, pitch0: 5 * DEG, bend: 0, attach: [0.55, 0] },
+          head: { len: 0.45, h: 0.2, w: 0.25, snout: 0.5, taper: 0.7, teeth: true, eye: 0.025, pitch: -5 * DEG },
+          tail: { count: 7, length: 1.4, r0: 0.2, r1: 0.03, pitch0: 0, bend: 0, attach: [-0.55, 0] },
+          legs: [
+            { x: -0.4, y: 0.32, z: 0.3, thick: 0.07, a1: 10 * DEG, a2: -20 * DEG, footH: 0.04, toes: 4 },
+            { x: 0.4, y: 0.32, z: 0.3, thick: 0.07, a1: 10 * DEG, a2: -20 * DEG, footH: 0.04, toes: 4, fore: true },
+          ],
+        },
+        extras: extrasKomodo,
+      },
+      {
+        id: 'flamingo', name: 'פלמינגו', latin: 'Phoenicopterus roseus', emoji: '🦩', diet: 'fish', sound: 'honk',
+        period: 'חי היום 🌍', length: '1.4 מטר', height: '1.4 מטר', weight: '3 ק"ג', lengthM: 1.4, mass: 0.07,
+        fun: 'הפלמינגו נולד אפור, והוא נהיה ורוד בגלל השרימפס והאצות שהוא אוכל! הוא אוהב לישון כשהוא עומד על רגל אחת.',
+        skins: [
+          { main: 0xf08aa0, belly: 0xf8b4c4, accent: 0xd0506a },
+          { main: 0xf4a0a8, belly: 0xfcc8cc, accent: 0x2a2a2a },
+          { main: 0xf8b0b8, belly: 0xffd8dc, accent: 0xe06a7a },
+        ],
+        spec: {
+          body: { L: 0.5, H: 0.35, W: 0.3, y: 1.0, tilt: 0 },
+          neck: { count: 7, length: 0.6, r0: 0.04, r1: 0.03, pitch0: 70 * DEG, bend: -20 * DEG, attach: [0.22, 0.08] },
+          head: { len: 0.16, h: 0.07, w: 0.06, snout: 0.6, taper: 0.5, teeth: false, eye: 0.012, pitch: -70 * DEG },
+          tail: { count: 1, length: 0.12, r0: 0.08, r1: 0.04, pitch0: -10 * DEG, bend: 0, attach: [-0.22, 0.05] },
+          legs: [{ x: 0, y: 0.9, z: 0.06, thick: 0.02, a1: 10 * DEG, a2: -20 * DEG, footH: 0.02, toes: 3 }],
+        },
+        extras: extrasFlamingo,
+      },
+      {
+        id: 'penguin', name: 'פינגווין קיסרי', latin: 'Aptenodytes forsteri', emoji: '🐧', diet: 'fish', sound: 'trumpet',
+        period: 'חי היום 🌍', length: '1.2 מטר', height: '1.2 מטר', weight: '30 ק"ג', lengthM: 1.2, mass: 0.2,
+        fun: 'אבא פינגווין שומר על הביצה על הרגליים שלו חודשיים שלמים בקור של אנטארקטיקה, בלי לאכול בכלל!',
+        skins: [
+          { main: 0x1e2228, belly: 0xffffff, accent: 0xf0b040 },
+          { main: 0x2a3440, belly: 0xf4f4f0, accent: 0xf0d060 },
+          { main: 0x3a3a3e, belly: 0xffffff, accent: 0xe8903a },
+        ],
+        spec: {
+          body: { L: 0.45, H: 0.95, W: 0.45, y: 0.65, tilt: 0 },
+          neck: { count: 1, length: 0.08, r0: 0.14, r1: 0.13, pitch0: 0, bend: 0, attach: [0.1, 0.4] },
+          head: { len: 0.25, h: 0.2, w: 0.19, snout: 0.45, taper: 0.5, teeth: false, eye: 0.02, pitch: -5 * DEG },
+          tail: { count: 1, length: 0.1, r0: 0.06, r1: 0.03, pitch0: -30 * DEG, bend: 0, attach: [-0.2, -0.35] },
+          legs: [{ x: 0, y: 0.25, z: 0.1, thick: 0.045, a1: 0, a2: 0, footH: 0.03, toes: 3 }],
+        },
+        extras: extrasPenguin,
+      },
+      {
+        id: 'orangutan', name: 'אורנגאוטן', latin: 'Pongo pygmaeus', emoji: '🦧', diet: 'herbivore', sound: 'trumpet',
+        period: 'חי היום 🌍', length: '1.5 מטר', height: '1.4 מטר', weight: '90 ק"ג', lengthM: 1.5, mass: 0.32,
+        fun: 'השם אורנגאוטן פירושו "איש היער"! הזרועות שלו ארוכות פי שניים מהרגליים, והוא בונה לעצמו מיטה חדשה מעלים בכל לילה.',
+        skins: [
+          { main: 0xb0582a, belly: 0xc8784a, accent: 0x6a2e14 },
+          { main: 0x9a4a24, belly: 0xb86a40, accent: 0x5a2a10 },
+          { main: 0xc8703a, belly: 0xe09060, accent: 0x7a3a18 },
+        ],
+        spec: {
+          body: { L: 0.9, H: 0.9, W: 0.8, y: 1.0, tilt: 30 * DEG },
+          neck: { count: 1, length: 0.12, r0: 0.25, r1: 0.23, pitch0: 10 * DEG, bend: 0, attach: [0.38, 0.22] },
+          head: { len: 0.32, h: 0.32, w: 0.3, snout: 0.3, taper: 0.9, teeth: false, eye: 0.022, pitch: -10 * DEG },
+          tail: { count: 1, length: 0.02, r0: 0.01, r1: 0.01, pitch0: 0, bend: 0, attach: [-0.4, 0] },
+          legs: [
+            { x: -0.3, y: 0.6, z: 0.28, thick: 0.12, a1: 10 * DEG, a2: -20 * DEG, footH: 0.06, toes: 0 },
+            { x: 0.35, y: 1.15, z: 0.36, thick: 0.12, a1: 5 * DEG, a2: -10 * DEG, footH: 0.06, toes: 0, fore: true },
+          ],
+          pads: 'pad',
+        },
+        extras: extrasOrangutan,
+      },
+      {
+        id: 'anteater', name: 'נמלן ענק', latin: 'Myrmecophaga tridactyla', emoji: '🐜', diet: 'carnivore', sound: 'honk',
+        period: 'חי היום 🌍', length: '2 מטר', height: '70 ס"מ', weight: '40 ק"ג', lengthM: 2, mass: 0.22,
+        fun: 'לנמלן אין שיניים בכלל, אבל יש לו לשון באורך 60 סנטימטרים! הוא אוכל עד 30,000 נמלים בכל יום.',
+        skins: [
+          { main: 0x6a5a4a, belly: 0x8a7a68, accent: 0x2a2420 },
+          { main: 0x7a6a5a, belly: 0x9a8a78, accent: 0x3a3028 },
+          { main: 0x5a4e44, belly: 0x7a6e64, accent: 0xe8e0d0 },
+        ],
+        spec: quad({ L: 1.2, H: 0.7, W: 0.45, legH: 0.45, thick: 0.09,
+          neck: { length: 0.35, r0: 0.2, r1: 0.12, pitch0: -15 * DEG },
+          head: { len: 0.55, h: 0.15, w: 0.13, snout: 0.8, taper: 0.35, eye: 0.015, pitch: -20 * DEG },
+          tail: { count: 5, length: 0.8, r0: 0.15, r1: 0.12, pitch0: -10 * DEG, bend: 3 * DEG, tall: 2.0 } }),
+        extras: extrasAnteater,
+      },
+      {
+        id: 'sloth', name: 'עצלן', latin: 'Bradypus variegatus', emoji: '🦥', diet: 'herbivore', sound: 'screech',
+        period: 'חי היום 🌍', length: '70 ס"מ', height: '40 ס"מ', weight: '5 ק"ג', lengthM: 0.7, mass: 0.08,
+        fun: 'העצלן זז כל כך לאט שצומחות על הפרווה שלו אצות ירוקות! הוא ישן עד 15 שעות ביום, ויורד מהעץ רק פעם בשבוע.',
+        skins: [
+          { main: 0x9a8a6a, belly: 0xb8a888, accent: 0x3a2e24 },
+          { main: 0x8a8a6a, belly: 0xaaa888, accent: 0x2a2a1e },
+          { main: 0xaa9a7a, belly: 0xc8b898, accent: 0x4a3a2a },
+        ],
+        spec: quad({ L: 0.6, H: 0.4, W: 0.35, legH: 0.35, thick: 0.05,
+          neck: { length: 0.1, r0: 0.13, r1: 0.12, pitch0: 10 * DEG },
+          head: { len: 0.2, h: 0.17, w: 0.17, snout: 0.3, taper: 0.9, eye: 0.014, pitch: -5 * DEG },
+          tail: { count: 1, length: 0.05, r0: 0.03, r1: 0.02 } }),
+        extras: extrasSloth,
+      },
+      {
+        id: 'llama', name: 'לאמה', latin: 'Lama glama', emoji: '🦙', diet: 'herbivore', sound: 'honk',
+        period: 'חי היום 🌍', length: '1.8 מטר', height: '1.8 מטר', weight: '150 ק"ג', lengthM: 1.8, mass: 0.3,
+        fun: 'כשהלאמה כועסת, היא יורקת! היא חיה בהרים הגבוהים של דרום אמריקה, והפרווה הרכה שלה משמשת לסריגת סוודרים.',
+        skins: [
+          { main: 0xf0e8dc, belly: 0xfaf4ea, accent: 0x8a6a4a },
+          { main: 0xb08a5a, belly: 0xd0b088, accent: 0x5a4030 },
+          { main: 0x5a4a3e, belly: 0x7a6a5e, accent: 0xf0e8dc },
+        ],
+        spec: quad({ L: 1.2, H: 0.7, W: 0.5, legH: 0.75, thick: 0.07, hooves: true,
+          neck: { count: 4, length: 0.8, r0: 0.16, r1: 0.13, pitch0: 75 * DEG, bend: -3 * DEG },
+          head: { len: 0.32, h: 0.18, w: 0.16, snout: 0.45, taper: 0.8, eye: 0.02, pitch: -20 * DEG },
+          tail: { count: 2, length: 0.2, r0: 0.05 } }),
+        extras: extrasLlama,
+      },
+      {
+        id: 'okapi', name: 'אוקאפי', latin: 'Okapia johnstoni', emoji: '🦓', diet: 'herbivore', sound: 'rumble',
+        period: 'חי היום 🌍', length: '2.3 מטר', height: '1.6 מטר', weight: '250 ק"ג', lengthM: 2.3, mass: 0.37,
+        fun: 'לאוקאפי יש פסים כמו לזברה, אבל הוא בעצם בן משפחה של הג׳ירפה! הלשון שלו כל כך ארוכה שהוא מנקה איתה את האוזניים.',
+        skins: [
+          { main: 0x4a2a20, belly: 0x6a4030, accent: 0xf4ece0 },
+          { main: 0x5a3424, belly: 0x7a4a34, accent: 0xffffff },
+          { main: 0x3a2420, belly: 0x5a3a30, accent: 0xe8dcc8 },
+        ],
+        spec: quad({ L: 1.6, H: 0.8, W: 0.55, legH: 0.9, thick: 0.09, foreH: 0.1, hooves: true,
+          neck: { count: 3, length: 0.6, r0: 0.2, r1: 0.15, pitch0: 45 * DEG, bend: -5 * DEG },
+          head: { len: 0.45, h: 0.22, w: 0.2, snout: 0.55, taper: 0.7, eye: 0.025, pitch: -45 * DEG },
+          tail: { length: 0.4, r0: 0.04 } }),
+        extras: extrasOkapi,
+      },
+      {
+        id: 'tapir', name: 'טפיר', latin: 'Tapirus indicus', emoji: '🐗', diet: 'herbivore', sound: 'screech',
+        period: 'חי היום 🌍', length: '2.2 מטר', height: '1 מטר', weight: '300 ק"ג', lengthM: 2.2, mass: 0.4,
+        fun: 'לטפיר יש חדק קצר כמו לפיל קטן! הגורים שלו נולדים עם פסים ונקודות, כמו אבטיח מהלך.',
+        skins: [
+          { main: 0x1e1e22, belly: 0x2a2a2e, accent: 0xf0f0ec },
+          { main: 0x3a3430, belly: 0x4a4440, accent: 0xe8e0d0 },
+          { main: 0x5a4a40, belly: 0x6a5a50, accent: 0x5a4a40 },
+        ],
+        spec: quad({ L: 1.6, H: 0.9, W: 0.65, legH: 0.5, thick: 0.12,
+          neck: { count: 1, length: 0.2, r0: 0.32, r1: 0.3, pitch0: 0 },
+          head: { len: 0.45, h: 0.32, w: 0.28, snout: 0.4, taper: 0.7, eye: 0.02, pitch: -20 * DEG },
+          tail: { count: 1, length: 0.06, r0: 0.04, r1: 0.03 } }),
+        extras: extrasTapir,
+      },
+      {
+        id: 'warthog', name: 'חזיר יבלות', latin: 'Phacochoerus africanus', emoji: '🐗', diet: 'herbivore', sound: 'screech',
+        period: 'חי היום 🌍', length: '1.5 מטר', height: '75 ס"מ', weight: '100 ק"ג', lengthM: 1.5, mass: 0.26,
+        fun: 'כשחזיר היבלות בורח, הוא מרים את הזנב ישר למעלה כמו אנטנה, כדי שהגורים יראו לאן לרוץ! הוא אוכל כשהוא כורע על הברכיים.',
+        skins: [
+          { main: 0x6a5a4e, belly: 0x8a7a6e, accent: 0x3a2e24 },
+          { main: 0x7a6a5a, belly: 0x9a8a7a, accent: 0xe0d8c8 },
+          { main: 0x5a4a44, belly: 0x7a6a64, accent: 0x8a5a3a },
+        ],
+        spec: quad({ L: 1.1, H: 0.6, W: 0.5, legH: 0.35, thick: 0.08, hooves: true,
+          neck: { length: 0.2, r0: 0.25, r1: 0.23, pitch0: 0 },
+          head: { len: 0.45, h: 0.3, w: 0.3, snout: 0.5, taper: 0.85, eye: 0.02, pitch: -25 * DEG },
+          tail: { count: 3, length: 0.3, r0: 0.02, r1: 0.015, pitch0: 70 * DEG, bend: 0 } }),
+        extras: extrasWarthog,
+      },
+      {
+        id: 'hyena', name: 'צבוע מנומר', latin: 'Crocuta crocuta', emoji: '🐕', diet: 'carnivore', sound: 'screech',
+        period: 'חי היום 🌍', length: '1.6 מטר', height: '85 ס"מ', weight: '60 ק"ג', lengthM: 1.6, mass: 0.25,
+        fun: 'הצבוע "צוחק" כשהוא מתרגש, והצחוק נשמע ממרחק של קילומטרים! הלסתות שלו כל כך חזקות שהוא אוכל אפילו עצמות.',
+        skins: [
+          { main: 0xb8a078, belly: 0xd8c8a8, accent: 0x3a2e24 },
+          { main: 0xa89070, belly: 0xc8b898, accent: 0x2a2018 },
+          { main: 0xc0a888, belly: 0xe0d0b8, accent: 0x5a4030 },
+        ],
+        spec: quad({ L: 1.1, H: 0.6, W: 0.45, legH: 0.55, thick: 0.08, tilt: -8 * DEG, foreH: 0.12,
+          neck: { length: 0.3, r0: 0.2, r1: 0.17, pitch0: 25 * DEG },
+          head: { len: 0.38, h: 0.26, w: 0.24, snout: 0.45, taper: 0.75, teeth: true, eye: 0.022, pitch: -10 * DEG },
+          tail: { count: 3, length: 0.3, r0: 0.04 } }),
+        extras: extrasHyena,
+      },
+      {
+        id: 'koala', name: 'קואלה', latin: 'Phascolarctos cinereus', emoji: '🐨', diet: 'herbivore', sound: 'rumble',
+        period: 'חי היום 🌍', length: '70 ס"מ', height: '50 ס"מ', weight: '12 ק"ג', lengthM: 0.7, mass: 0.08,
+        fun: 'הקואלה ישנה עד 20 שעות ביום! היא אוכלת רק עלי אקליפטוס, וכמעט אף פעם לא שותה מים.',
+        skins: [
+          { main: 0x9a9a9e, belly: 0xe8e8e8, accent: 0x5a5a5e },
+          { main: 0x8a8480, belly: 0xe0dcd8, accent: 0x4a4440 },
+          { main: 0xa8a4a0, belly: 0xf0eeec, accent: 0x6a6460 },
+        ],
+        spec: quad({ L: 0.5, H: 0.4, W: 0.35, legH: 0.2, thick: 0.06,
+          neck: { length: 0.05, r0: 0.14, r1: 0.13, pitch0: 10 * DEG },
+          head: { len: 0.25, h: 0.25, w: 0.26, snout: 0.25, taper: 0.9, eye: 0.016, pitch: -5 * DEG },
+          tail: { count: 1, length: 0.03, r0: 0.03, r1: 0.02 } }),
+        extras: extrasKoala,
+      },
+      {
+        id: 'peacock', name: 'טווס', latin: 'Pavo cristatus', emoji: '🦚', diet: 'herbivore', sound: 'screech',
+        period: 'חי היום 🌍', length: '2 מטר עם הזנב', height: '1 מטר', weight: '5 ק"ג', lengthM: 1.2, mass: 0.08,
+        fun: 'הטווס הזכר פורש מניפה של 200 נוצות עם "עיניים" צבעוניות, כדי להרשים את הנקבות! הנקבה, הטווסה, חומה ופשוטה.',
+        skins: [
+          { main: 0x1f5fa8, belly: 0x2a70b8, accent: 0x2a9a5a },
+          { main: 0x2a7a9a, belly: 0x3a8aaa, accent: 0x6aaa3a },
+          { main: 0xf0f0ec, belly: 0xffffff, accent: 0xf4f4f0 },
+        ],
+        spec: {
+          body: { L: 0.45, H: 0.3, W: 0.28, y: 0.55, tilt: 0 },
+          neck: { count: 4, length: 0.3, r0: 0.05, r1: 0.04, pitch0: 70 * DEG, bend: -6 * DEG, attach: [0.2, 0.08] },
+          head: { len: 0.1, h: 0.07, w: 0.06, snout: 0.5, taper: 0.5, teeth: false, eye: 0.012, pitch: -10 * DEG },
+          tail: { count: 1, length: 0.1, r0: 0.06, r1: 0.04, pitch0: 0, bend: 0, attach: [-0.2, 0.03] },
+          legs: [{ x: 0, y: 0.45, z: 0.07, thick: 0.025, a1: 20 * DEG, a2: -40 * DEG, footH: 0.02, toes: 3 }],
+        },
+        extras: extrasPeacock,
+      },
+      {
+        id: 'sabertooth', name: 'נמר שן החרב', latin: 'Smilodon fatalis', emoji: '🐯', diet: 'carnivore', sound: 'roar',
+        period: 'עידן הקרח, לפני 2.5 מיליון עד 10,000 שנה', length: '2 מטר', height: '1 מטר', weight: '280 ק"ג', lengthM: 2, mass: 0.42,
+        fun: 'לנמר שן החרב היו שתי שיניים ארוכות כמו סכינים, באורך של 28 סנטימטרים! הוא יכול היה לפתוח את הפה כמעט ישר, כדי להשתמש בהן.',
+        skins: [
+          { main: 0xc09060, belly: 0xe8d0b0, accent: 0x6a4a2a },
+          { main: 0xa88a6a, belly: 0xd8c4a8, accent: 0x5a4030 },
+          { main: 0xd0a070, belly: 0xf0dcc0, accent: 0x8a5a30 },
+        ],
+        spec: quad({ L: 1.6, H: 0.85, W: 0.7, legH: 0.5, thick: 0.14,
+          neck: { length: 0.3, r0: 0.33, r1: 0.28, pitch0: 20 * DEG },
+          head: { len: 0.45, h: 0.4, w: 0.38, snout: 0.35, taper: 0.8, teeth: true, eye: 0.03, pitch: -5 * DEG },
+          tail: { count: 2, length: 0.25, r0: 0.06, r1: 0.04, pitch0: -40 * DEG } }),
+        extras: extrasSabertooth,
+      },
+      {
+        id: 'woollyrhino', name: 'קרנף צמרי', latin: 'Coelodonta antiquitatis', emoji: '🦏', diet: 'herbivore', sound: 'honk',
+        period: 'עידן הקרח, לפני 3.5 מיליון עד 14,000 שנה', length: '3.8 מטר', height: '2 מטר', weight: '2 טון', lengthM: 3.8, mass: 0.7,
+        fun: 'הקרנף הצמרי חי לצד הממותה בעידן הקרח! הקרן הקדמית שלו הייתה ארוכה כמו מטר, והוא השתמש בה כדי לפנות שלג.',
+        skins: [
+          { main: 0x7a5a3a, belly: 0x6a4a2e, accent: 0x4a3018 },
+          { main: 0x9a7a52, belly: 0x8a6a42, accent: 0x5a4024 },
+          { main: 0x5a4a3e, belly: 0x4a3e34, accent: 0x2e2620 },
+        ],
+        spec: quad({ L: 3.0, H: 1.5, W: 1.4, legH: 0.6, thick: 0.28,
+          neck: { length: 0.4, r0: 0.6, r1: 0.55, pitch0: -10 * DEG },
+          head: { len: 1.1, h: 0.65, w: 0.55, snout: 0.45, taper: 0.7, eye: 0.04, pitch: -25 * DEG },
+          tail: { length: 0.5, r0: 0.07 } }),
+        extras: extrasWoollyRhino,
+      },
+      {
+        id: 'platypus', name: 'ברווזן', latin: 'Ornithorhynchus anatinus', emoji: '🦆', diet: 'fish', sound: 'screech',
+        period: 'חי היום 🌍', length: '50 ס"מ', height: '15 ס"מ', weight: '2 ק"ג', lengthM: 0.5, mass: 0.05,
+        fun: 'הברווזן הוא יונק שמטיל ביצים! יש לו מקור של ברווז, זנב של בונה, וכשהוא צולל הוא סוגר את העיניים ומוצא אוכל בעזרת המקור.',
+        skins: [
+          { main: 0x6a4a30, belly: 0x9a7a5a, accent: 0x2a2420 },
+          { main: 0x5a4434, belly: 0x8a7464, accent: 0x1e1a18 },
+          { main: 0x7a5a3e, belly: 0xaa8a6a, accent: 0x3a3028 },
+        ],
+        spec: {
+          body: { L: 0.4, H: 0.15, W: 0.2, y: 0.12, tilt: 0 },
+          neck: { count: 1, length: 0.04, r0: 0.07, r1: 0.06, pitch0: 0, bend: 0, attach: [0.18, 0] },
+          head: { len: 0.1, h: 0.08, w: 0.09, snout: 0.3, taper: 0.9, teeth: false, eye: 0.008, pitch: 0 },
+          tail: { count: 1, length: 0.06, r0: 0.05, r1: 0.05, pitch0: 0, bend: 0, attach: [-0.18, 0] },
+          legs: [
+            { x: -0.12, y: 0.08, z: 0.1, thick: 0.02, a1: 10 * DEG, a2: -20 * DEG, footH: 0.01, toes: 4 },
+            { x: 0.12, y: 0.08, z: 0.1, thick: 0.02, a1: 10 * DEG, a2: -20 * DEG, footH: 0.01, toes: 4, fore: true },
+          ],
+        },
+        extras: extrasPlatypus,
+      },
     ];
 
     // Habitat (drives the scenery) and the range of years each species lived, in millions of years ago.
@@ -1489,6 +1818,16 @@
       bison: { habitat: 'plains', from: 0, to: 0 }, moose: { habitat: 'forest', from: 0, to: 0 },
       croc: { habitat: 'swamp', from: 0, to: 0 }, kangaroo: { habitat: 'desert', from: 0, to: 0 },
       ostrich: { habitat: 'savanna', from: 0, to: 0 }, gorilla: { habitat: 'forest', from: 0, to: 0 },
+      panda: { habitat: 'forest', from: 0, to: 0 }, wolf: { habitat: 'forest', from: 0, to: 0 },
+      deer: { habitat: 'forest', from: 0, to: 0 }, tortoise: { habitat: 'coast', from: 0, to: 0 },
+      komodo: { habitat: 'coast', from: 0, to: 0 }, flamingo: { habitat: 'swamp', from: 0, to: 0 },
+      penguin: { habitat: 'tundra', from: 0, to: 0 }, orangutan: { habitat: 'forest', from: 0, to: 0 },
+      anteater: { habitat: 'savanna', from: 0, to: 0 }, sloth: { habitat: 'forest', from: 0, to: 0 },
+      llama: { habitat: 'plains', from: 0, to: 0 }, okapi: { habitat: 'forest', from: 0, to: 0 },
+      tapir: { habitat: 'forest', from: 0, to: 0 }, warthog: { habitat: 'savanna', from: 0, to: 0 },
+      hyena: { habitat: 'savanna', from: 0, to: 0 }, koala: { habitat: 'forest', from: 0, to: 0 },
+      peacock: { habitat: 'forest', from: 0, to: 0 }, sabertooth: { habitat: 'plains', from: 0, to: 0 },
+      woollyrhino: { habitat: 'tundra', from: 0, to: 0 }, platypus: { habitat: 'swamp', from: 0, to: 0 },
     };
     DINOS.forEach((d) => Object.assign(d, META[d.id]));
 
@@ -1547,6 +1886,28 @@
       ostrich: { type: 'sine', dur: 0.6, pulses: 3, gap: 0.2, f: [[0, 70], [1, 55]], sub: true, gain: 0.7 },
       gorilla: { type: 'square', dur: 0.1, pulses: 6, gap: 0.08, f: [[0, 110], [1, 80]], filter: ['lowpass', 400, 200], pre: 'thonk', gain: 0.6 },
     });
+    Object.assign(VOICES, {
+      panda: { type: 'triangle', dur: 0.3, pulses: 3, gap: 0.12, f: [[0, 400], [0.5, 480], [1, 350]], filter: ['lowpass', 1500, 800], gain: 0.4 },
+      wolf: { type: 'sine', dur: 2.2, f: [[0, 420], [0.2, 620], [0.7, 600], [1, 380]], vib: { rate: 5, depth: 12 }, gain: 0.4 },
+      deer: { type: 'sawtooth', dur: 1.4, f: [[0, 160], [0.3, 220], [1, 110]], vib: { rate: 10, depth: 15 }, filter: ['lowpass', 900, 300], noise: { amt: 0.2, freq: 500 }, gain: 0.5 },
+      tortoise: { type: 'sine', dur: 0.8, f: [[0, 90], [1, 70]], filter: ['lowpass', 300, 200], sub: true, gain: 0.5 },
+      komodo: { type: 'sine', dur: 1.0, f: [[0, 120], [1, 100]], noise: { amt: 0.7, freq: 2500 }, filter: ['highpass', 800, 800], gain: 0.4 },
+      flamingo: { type: 'square', dur: 0.2, pulses: 4, gap: 0.1, f: [[0, 500], [0.5, 560], [1, 440]], filter: ['bandpass', 800, 600], gain: 0.3 },
+      penguin: { type: 'sawtooth', dur: 0.9, pulses: 2, gap: 0.15, f: [[0, 600], [0.3, 750], [1, 520]], vib: { rate: 30, depth: 40 }, filter: ['bandpass', 900, 700], gain: 0.35 },
+      orangutan: { type: 'sawtooth', dur: 1.8, f: [[0, 120], [0.4, 180], [1, 90]], trem: { rate: 3, depth: 0.5 }, filter: ['lowpass', 600, 300], sub: true, gain: 0.55 },
+      anteater: { type: 'sine', dur: 0.4, pulses: 2, gap: 0.15, f: [[0, 260], [1, 200]], noise: { amt: 0.5, freq: 1500 }, gain: 0.35 },
+      sloth: { type: 'sine', dur: 1.2, f: [[0, 1400], [0.5, 1500], [1, 1200]], vib: { rate: 4, depth: 30 }, gain: 0.25 },
+      llama: { type: 'triangle', dur: 0.8, f: [[0, 300], [0.5, 340], [1, 260]], vib: { rate: 7, depth: 20 }, gain: 0.4 },
+      okapi: { type: 'sine', dur: 1.2, f: [[0, 100], [0.5, 110], [1, 90]], trem: { rate: 5, depth: 0.3 }, gain: 0.45 },
+      tapir: { type: 'sine', dur: 0.5, pulses: 2, gap: 0.2, f: [[0, 1800], [0.4, 2400], [1, 1600]], gain: 0.25 },
+      warthog: { type: 'square', dur: 0.15, pulses: 5, gap: 0.08, f: [[0, 220], [1, 160]], filter: ['lowpass', 900, 400], noise: { amt: 0.3, freq: 700 }, gain: 0.45 },
+      hyena: { type: 'sawtooth', dur: 0.18, pulses: 6, gap: 0.08, f: [[0, 700], [0.5, 900], [1, 650]], filter: ['bandpass', 900, 700], gain: 0.35 },
+      koala: { type: 'sawtooth', dur: 1.2, f: [[0, 70], [0.5, 80], [1, 60]], trem: { rate: 12, depth: 0.6 }, filter: ['lowpass', 400, 200], sub: true, gain: 0.6 },
+      peacock: { type: 'sawtooth', dur: 0.6, pulses: 2, gap: 0.15, f: [[0, 900], [0.3, 1300], [1, 800]], filter: ['highpass', 600, 600], gain: 0.3 },
+      sabertooth: { type: 'sawtooth', dur: 1.5, f: [[0, 100], [0.2, 170], [1, 60]], vib: { rate: 20, depth: 12 }, filter: ['lowpass', 900, 220], dist: 70, noise: { amt: 0.3, freq: 400 }, sub: true, gain: 0.65 },
+      woollyrhino: { type: 'sawtooth', dur: 0.6, pulses: 2, gap: 0.14, f: [[0, 110], [1, 70]], filter: ['lowpass', 550, 280], noise: { amt: 0.6, freq: 700 }, gain: 0.5 },
+      platypus: { type: 'triangle', dur: 0.5, f: [[0, 200], [0.5, 230], [1, 180]], trem: { rate: 20, depth: 0.5 }, gain: 0.35 },
+    });
     DINOS.forEach((d) => { d.voice = VOICES[d.id]; });
 
     // A full paragraph about every species, with nikud so young readers can read it alone.
@@ -1601,6 +1962,26 @@
       kangaroo: 'הַקֶּנְגּוּרוּ חַי בְּאוֹסְטְרַלְיָה, וְהוּא לֹא הוֹלֵךְ אֶלָּא קוֹפֵץ! הָרַגְלַיִם הָאֲחוֹרִיּוֹת שֶׁלּוֹ חֲזָקוֹת מְאוֹד, וְהַזָּנָב הָעָבֶה עוֹזֵר לוֹ לִשְׁמֹר עַל שִׁוּוּי מִשְׁקָל. הַגּוּר שֶׁלּוֹ נוֹלָד קָטָן מְאוֹד וְגָדֵל בְּתוֹךְ כִּיס עַל הַבֶּטֶן שֶׁל אִמָּא. כְּשֶׁהוּא גָּדֵל, הוּא מֵצִיץ הַחוּצָה מֵהַכִּיס.',
       ostrich: 'הַיָּעֵן הוּא הַצִּפּוֹר הַגְּדוֹלָה בְּיוֹתֵר בָּעוֹלָם, וְהוּא לֹא יוֹדֵעַ לָעוּף. בִּמְקוֹם זֶה הוּא רָץ מַהֵר מְאוֹד עַל רַגְלַיִם אֲרֻכּוֹת וַחֲזָקוֹת. הַבֵּיצָה שֶׁל הַיָּעֵן הִיא הַבֵּיצָה הַגְּדוֹלָה בְּיוֹתֵר שֶׁל צִפּוֹר, כְּמוֹ עֶשְׂרִים בֵּיצֵי תַּרְנְגֹלֶת. הָעֵינַיִם שֶׁלּוֹ גְּדוֹלוֹת מְאוֹד וְרוֹאוֹת לְמֶרְחַקִּים.',
       gorilla: 'הַגּוֹרִילָה הִיא הַקּוֹף הַגָּדוֹל בְּיוֹתֵר, וְהִיא חַיָּה בַּיְּעָרוֹת שֶׁל אַפְרִיקָה. הִיא חֲזָקָה מְאוֹד, אֲבָל רְגוּעָה וַעֲדִינָה, וְאוֹכֶלֶת בְּעִקָּר עָלִים וּפֵרוֹת. הַגּוֹרִילוֹת חַיּוֹת בְּמִשְׁפָּחוֹת, וְהָאַבָּא הַגָּדוֹל שׁוֹמֵר עַל כֻּלָּם. כְּשֶׁהוּא רוֹצֶה לְהַרְשִׁים, הוּא מְתוֹפֵף עַל הֶחָזֶה!',
+      panda: 'הַפַּנְדָּה הָעֲנָקִית חַיָּה בֶּהָרִים שֶׁל סִין, בְּתוֹךְ יַעֲרוֹת בַּמְבּוּק. הִיא אוֹכֶלֶת בַּמְבּוּק כִּמְעַט כָּל הַיּוֹם, כִּי יֵשׁ בּוֹ מְעַט מְאוֹד כֹּחַ. עַל כַּף הַיָּד שֶׁלָּהּ יֵשׁ עֶצֶם מְיֻחֶדֶת שֶׁעוֹבֶדֶת כְּמוֹ אֲגוּדָל, וְעוֹזֶרֶת לָהּ לְהַחֲזִיק אֶת הַבַּמְבּוּק. הַגּוּר שֶׁלָּהּ נוֹלָד וָרֹד וְקָטָן מְאוֹד.',
+      wolf: 'הַזְּאֵבִים חַיִּים בִּלְהָקוֹת, כְּמוֹ מִשְׁפָּחָה גְּדוֹלָה. הֵם יוֹצְאִים לָצוּד בְּיַחַד, וּמְדַבְּרִים זֶה עִם זֶה בִּיְלָלוֹת. הַיְּלָלָה עוֹזֶרֶת לַלַּהֲקָה לִמְצֹא זֶה אֶת זֶה בַּיַּעַר. כָּל הַכְּלָבִים בָּעוֹלָם, הַקְּטַנִּים וְהַגְּדוֹלִים, הֵם צֶאֱצָאִים שֶׁל זְאֵבִים.',
+      deer: 'הָאַיָּל הָאָדֹם חַי בַּיְּעָרוֹת שֶׁל אֵירוֹפָּה וְאַסְיָה. לַזָּכָר יֵשׁ קְרָנַיִם מְסֻעָפוֹת כְּמוֹ עֲנָפִים שֶׁל עֵץ. בְּכָל חֹרֶף הַקְּרָנַיִם נוֹשְׁרוֹת, וּבָאָבִיב הֵן צוֹמְחוֹת מֵחָדָשׁ, גְּדוֹלוֹת יוֹתֵר. בַּסְּתָיו הַזְּכָרִים קוֹרְאִים בְּקוֹל רָם וְנִלְחָמִים בַּקְּרָנַיִם.',
+      tortoise: 'צַב הָעֲנָק חַי בְּאִיֵּי גָּלָפָּגוֹס. הוּא אֶחָד מֵהַחַיּוֹת שֶׁחַיּוֹת הֲכִי הַרְבֵּה זְמַן, יוֹתֵר מִמֵּאָה וַחֲמִשִּׁים שָׁנָה! הַשִּׁרְיוֹן שֶׁלּוֹ קָשֶׁה וְכָבֵד, וְהוּא הוֹלֵךְ לְאַט מְאוֹד. הוּא אוֹכֵל עֵשֶׂב, עָלִים וַאֲפִלּוּ קַקְטוּסִים.',
+      komodo: 'דְּרָקוֹן הַקּוֹמוֹדוֹ הוּא הַלְּטָאָה הַגְּדוֹלָה בְּיוֹתֵר בָּעוֹלָם. הוּא חַי בְּכַמָּה אִיִּים קְטַנִּים בְּאִינְדוֹנֶזְיָה. בְּעֶזְרַת הַלָּשׁוֹן הַמְּפֻצֶּלֶת שֶׁלּוֹ הוּא מֵרִיחַ אֹכֶל מֵרָחוֹק. הוּא נִרְאֶה אִטִּי, אֲבָל יָכוֹל לָרוּץ מַהֵר לְמֶרְחָק קָצָר.',
+      flamingo: 'הַפְלָמִינְגּוֹ הוּא צִפּוֹר וְרֻדָּה עִם רַגְלַיִם אֲרֻכּוֹת וְדַקּוֹת. הוּא נוֹלָד אָפֹר, וְנַעֲשֶׂה וָרֹד בִּגְלַל הַשְּׁרִימְפְּס וְהָאַצּוֹת שֶׁהוּא אוֹכֵל. כְּדֵי לֶאֱכֹל, הוּא הוֹפֵךְ אֶת הָרֹאשׁ וּמְסַנֵּן אֶת הַמַּיִם בַּמַּקּוֹר. הוּא אוֹהֵב לַעֲמֹד וְלִישֹׁן עַל רֶגֶל אַחַת.',
+      penguin: 'הַפִּינְגְּוִין הַקֵּיסָרִי הוּא הַפִּינְגְּוִין הַגָּדוֹל בְּיוֹתֵר, וְהוּא חַי בְּאַנְטַרְקְטִיקָה הַקְּפוּאָה. הוּא לֹא יוֹדֵעַ לָעוּף, אֲבָל שׂוֹחֶה וְצוֹלֵל מְצֻיָּן. אַבָּא פִּינְגְּוִין שׁוֹמֵר עַל הַבֵּיצָה עַל הָרַגְלַיִם שֶׁלּוֹ, מִתַּחַת לְקֶפֶל עוֹר חַם. כְּשֶׁקַּר מְאוֹד, כָּל הַפִּינְגְּוִינִים עוֹמְדִים צְמוּדִים כְּדֵי לְהִתְחַמֵּם.',
+      orangutan: 'הָאוֹרַנְגְאוּטָן הוּא קוֹף גָּדוֹל עִם פַּרְוָה כְּתֻמָּה, שֶׁחַי עַל הָעֵצִים בַּיְּעָרוֹת שֶׁל אִינְדוֹנֶזְיָה. הַזְּרוֹעוֹת שֶׁלּוֹ אֲרֻכּוֹת מְאוֹד, וְהוּא מִתְנַדְנֵד בָּהֶן מֵעֵץ לְעֵץ. בְּכָל עֶרֶב הוּא בּוֹנֶה לְעַצְמוֹ מִטָּה חֲדָשָׁה מֵעֲנָפִים וְעָלִים. הוּא חָכָם מְאוֹד וְיוֹדֵעַ לְהִשְׁתַּמֵּשׁ בִּכְלֵי עֲבוֹדָה.',
+      anteater: 'הַנְּמָלָן הָעֲנָק חַי בְּדָרוֹם אָמֶרִיקָה. אֵין לוֹ שִׁנַּיִם בִּכְלָל, אֲבָל יֵשׁ לוֹ לָשׁוֹן אֲרֻכָּה וּדְבִיקָה. בְּעֶזְרַת הַטְּפָרִים הֶחֲזָקִים הוּא פּוֹתֵחַ קִנֵּי נְמָלִים, וּמְלַקֵּק אוֹתָן מַהֵר מְאוֹד. הַזָּנָב הַשָּׂעִיר שֶׁלּוֹ מְשַׁמֵּשׁ לוֹ כְּמוֹ שְׂמִיכָה בַּלַּיְלָה.',
+      sloth: 'הָעַצְלָן חַי עַל הָעֵצִים בַּיְּעָרוֹת הַגְּשׁוּמִים. הוּא תָּלוּי הָפוּךְ עַל הָעֲנָפִים בְּעֶזְרַת טְפָרִים אֲרֻכִּים, וְזָז לְאַט לְאַט. הוּא זָז כָּל כָּךְ לְאַט, שֶׁעַל הַפַּרְוָה שֶׁלּוֹ צוֹמְחוֹת אַצּוֹת יְרֻקּוֹת וּמַסְוִוֹת אוֹתוֹ. אֲבָל בַּמַּיִם הוּא דַּוְקָא שַׂחְיָן טוֹב!',
+      llama: 'הַלָּאמָה חַיָּה בֶּהָרִים הַגְּבוֹהִים שֶׁל דְּרוֹם אָמֶרִיקָה. בְּנֵי אָדָם מְגַדְּלִים לָאמוֹת כְּבָר אַלְפֵי שָׁנִים, כְּדֵי שֶׁיִּסְחֲבוּ מַשָּׂאוֹת וְכְדֵי לִסְרֹג מֵהַצֶּמֶר שֶׁלָּהֶן. הִיא קְרוֹבַת מִשְׁפָּחָה שֶׁל הַגָּמָל, אֲבָל אֵין לָהּ דַּבֶּשֶׁת. כְּשֶׁהִיא כּוֹעֶסֶת, הִיא יוֹרֶקֶת!',
+      okapi: 'הָאוֹקָאפִּי חַי עָמֹק בַּיַּעַר שֶׁל מֶרְכַּז אַפְרִיקָה, וְהוּא בַּיְשָׁן מְאוֹד. עַל הָרַגְלַיִם שֶׁלּוֹ יֵשׁ פַּסִּים כְּמוֹ שֶׁל זֶבְּרָה, אֲבָל הוּא בֶּן מִשְׁפָּחָה שֶׁל הַגִ\'ירָפָה. הַפַּסִּים עוֹזְרִים לוֹ לְהִסְתַּתֵּר בֵּין הָעֵצִים. הַלָּשׁוֹן שֶׁלּוֹ כָּל כָּךְ אֲרֻכָּה, שֶׁהוּא מְנַקֶּה אִתָּהּ אֶת הָאָזְנַיִם!',
+      tapir: 'הַטַּפִּיר נִרְאֶה כְּמוֹ חֲזִיר גָּדוֹל עִם חֶדֶק קָצָר, אֲבָל הוּא בֶּן מִשְׁפָּחָה שֶׁל הַסּוּס וְהַקַּרְנַף. הוּא חַי בַּיְּעָרוֹת לְיַד נְהָרוֹת, וְאוֹהֵב לִשְׂחוֹת. בְּעֶזְרַת הַחֶדֶק הוּא קוֹטֵף עָלִים וּפֵרוֹת. הַגּוּרִים שֶׁלּוֹ נוֹלָדִים עִם פַּסִּים וּנְקֻדּוֹת לְבָנִים.',
+      warthog: 'חֲזִיר הַיַּבָּלוֹת חַי בַּסַּוַּאנָה שֶׁל אַפְרִיקָה. עַל הַפָּנִים שֶׁלּוֹ יֵשׁ בְּלִיטוֹת שֶׁנִּקְרָאוֹת יַבָּלוֹת, וּשְׁנֵי חֲטִים מְעֻקָּלִים. הוּא יָשֵׁן בִּמְאוּרוֹת בָּאֲדָמָה, וְנִכְנָס אֲלֵיהֶן עִם הַיַּשְׁבָן קֹדֶם, כְּדֵי לִשְׁמֹר עַל הַפֶּתַח. כְּשֶׁהוּא רָץ, הַזָּנָב שֶׁלּוֹ עוֹמֵד יָשָׁר לְמַעְלָה.',
+      hyena: 'הַצָּבוֹעַ הַמְּנֻמָּר חַי בִּלְהָקוֹת גְּדוֹלוֹת בַּסַּוַּאנָה. הוּא צַיָּד מְצֻיָּן, וְגַם אוֹכֵל שְׁאֵרִיּוֹת שֶׁטּוֹרְפִים אֲחֵרִים הִשְׁאִירוּ. הַלְּסָתוֹת שֶׁלּוֹ כָּל כָּךְ חֲזָקוֹת שֶׁהוּא שׁוֹבֵר וְאוֹכֵל אֲפִלּוּ עֲצָמוֹת. כְּשֶׁהוּא מִתְרַגֵּשׁ, הוּא מַשְׁמִיעַ קוֹל שֶׁנִּשְׁמָע כְּמוֹ צְחוֹק.',
+      koala: 'הַקּוֹאָלָה חַיָּה בְּאוֹסְטְרַלְיָה, עַל עֲצֵי אֶקָלִיפְּטוּס. הִיא אוֹכֶלֶת רַק אֶת הָעָלִים שֶׁל הָעֵצִים הָאֵלֶּה, וּמְקַבֶּלֶת מֵהֶם כִּמְעַט אֶת כָּל הַמַּיִם שֶׁהִיא צְרִיכָה. הִיא יְשֵׁנָה עַד עֶשְׂרִים שָׁעוֹת בְּיוֹם! הַגּוּר שֶׁלָּהּ גָּדֵל בְּכִיס, וְאַחַר כָּךְ נוֹסֵעַ עַל הַגַּב שֶׁל אִמָּא.',
+      peacock: 'הַטַּוָּס הוּא אַחַת הַצִּפּוֹרִים הַיָּפוֹת בְּיוֹתֵר. לַזָּכָר יֵשׁ זָנָב אָרֹךְ שֶׁל נוֹצוֹת כְּחֻלּוֹת וִירֻקּוֹת, עִם "עֵינַיִם" צִבְעוֹנִיּוֹת. כְּשֶׁהוּא רוֹצֶה לְהַרְשִׁים, הוּא פּוֹרֵשׂ אֶת הַזָּנָב כְּמוֹ מְנִיפָה עֲנָקִית וּמְרַעֵד אוֹתָהּ. הַטַּוָּס יוֹדֵעַ לָעוּף, וּבַלַּיְלָה הוּא יָשֵׁן עַל עֵצִים.',
+      sabertooth: 'נְמַר שֵׁן הַחֶרֶב חַי בְּעִדַּן הַקֶּרַח, יַחַד עִם הַמָּמוּתוֹת. הָיוּ לוֹ שְׁתֵּי שִׁנַּיִם עֶלְיוֹנוֹת אֲרֻכּוֹת וַחֲדוֹת כְּמוֹ סַכִּינִים. הוּא הָיָה חָזָק וְכָבֵד, יוֹתֵר מֵאַרְיֵה, וְצָד חַיּוֹת גְּדוֹלוֹת. מָצְאוּ אֶלְפֵי שְׁלָדִים שֶׁלּוֹ בְּבוֹרוֹת שֶׁל זֶפֶת בְּלוֹס אַנְגֶ\'לֶס.',
+      woollyrhino: 'הַקַּרְנַף הַצַּמְרִי חַי בְּעִדַּן הַקֶּרַח, בְּאוֹתָן אֲדָמוֹת קְפוּאוֹת שֶׁבָּהֶן חָיְתָה הַמָּמוּתָה. הָיְתָה לוֹ פַּרְוָה עָבָה וְאָרֻכָּה שֶׁשָּׁמְרָה עָלָיו מִפְּנֵי הַקֹּר. הַקֶּרֶן הַקִּדְמִית שֶׁלּוֹ הָיְתָה אֲרֻכָּה מְאוֹד, וְהוּא פִּנָּה אִתָּהּ שֶׁלֶג כְּדֵי לְהַגִּיעַ לָעֵשֶׂב. בְּנֵי אָדָם קַדְמוֹנִים צִיְּרוּ אוֹתוֹ עַל קִירוֹת מְעָרוֹת.',
+      platypus: 'הַבַּרְוָזָן הוּא אַחַת הַחַיּוֹת הַמּוּזָרוֹת בָּעוֹלָם. יֵשׁ לוֹ מַקּוֹר כְּמוֹ שֶׁל בַּרְוָז, זָנָב כְּמוֹ שֶׁל בּוֹנֶה וְרַגְלַיִם עִם קְרוּם שְׂחִיָּה. הוּא יוֹנֵק, אֲבָל מֵטִיל בֵּיצִים! כְּשֶׁהוּא צוֹלֵל, הוּא סוֹגֵר אֶת הָעֵינַיִם וּמוֹצֵא אֹכֶל בְּעֶזְרַת הַמַּקּוֹר הָרָגִישׁ.',
     };
     DINOS.forEach((d) => { d.story = STORIES[d.id]; });
     const HABITAT_NAME = { plains: 'מישורים 🌾', forest: 'יער 🌲', swamp: 'ביצה 🪷', desert: 'מדבר 🏜️', coast: 'חוף 🌊', tundra: 'טונדרה קפואה ❄️', savanna: 'סוואנה 🌍' };
@@ -2204,6 +2585,201 @@
     function extrasQuetzal(ctx) {
       extrasPteranodon(ctx);
       for (const w of ctx.custom.wings) w.pivot.scale.setScalar(1.7);
+    }
+    // ── Third batch: extras for the "interesting animals" ────────────────────────────────────────────────────────
+    function paintLegs(legs, mat) { for (const l of legs) l.hip.traverse((o) => { if (o.isMesh) o.material = mat; }); }
+    function roundEars({ hd, mats, s }, r, mat = mats.main, y = 0.5) {
+      for (const sgn of [-1, 1]) hd.g.add(mesh(new THREE.SphereGeometry(r, 8, 6), mat, hd.skullL * 0.15, s.head.h * y, sgn * s.head.w * 0.42));
+    }
+    function pointedEars({ hd, mats, s }, h) {
+      for (const sgn of [-1, 1]) hd.g.add(cone(h * 0.35, h, mats.main, hd.skullL * 0.2, s.head.h * 0.5 + h * 0.4, sgn * s.head.w * 0.3));
+    }
+    function furFringe({ body, mats, s }, n, r, h) {
+      const { L, H, W } = s.body;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const f = mesh(new THREE.ConeGeometry(r, h, 5), mats.accent, Math.cos(a) * L * 0.4, -H * 0.3, Math.sin(a) * W * 0.42);
+        f.rotation.x = Math.PI;
+        body.add(f);
+      }
+    }
+    function extrasPanda(ctx) {
+      const { hd, mats, s, body, legs } = ctx;
+      paintLegs(legs, mats.accent);
+      roundEars(ctx, 0.09, mats.accent, 0.55);
+      for (const sgn of [-1, 1]) {
+        const p = ellipsoid(0.08, 0.06, 0.03, mats.accent, 8);
+        p.position.set(hd.skullL * 0.6, s.head.h * 0.12, sgn * s.head.w * 0.38);
+        hd.g.add(p);
+      }
+      const band = mesh(new THREE.TorusGeometry(1, 0.12, 6, 20), mats.accent, s.body.L * 0.22, 0, 0);
+      band.rotation.y = Math.PI / 2;
+      band.scale.set(s.body.W / 2 * 0.9, s.body.H / 2 * 0.95, 1);
+      body.add(band);
+    }
+    function extrasWolf(ctx) { pointedEars(ctx, 0.14); tailTuft(ctx, 0.09); }
+    function extrasDeer(ctx) {
+      const { hd, mats, s } = ctx;
+      for (const sgn of [-1, 1]) {
+        const a = new THREE.Group();
+        a.position.set(hd.skullL * 0.25, s.head.h * 0.5, sgn * 0.07);
+        a.rotation.x = -sgn * 0.5;
+        a.add(mesh(new THREE.CylinderGeometry(0.015, 0.025, 0.5, 5), mats.claw, 0, 0.25, 0));
+        for (let i = 0; i < 3; i++) a.add(cone(0.015, 0.2, mats.claw, 0.06, 0.15 + i * 0.13, 0, -0.6));
+        hd.g.add(a);
+      }
+      pointedEars(ctx, 0.12);
+      spots(ctx, 25, 0.03);
+    }
+    function extrasTortoise({ body, mats, s }) {
+      const { L, H, W } = s.body;
+      const shell = ellipsoid(L / 2 * 1.08, H / 2 * 1.25, W / 2 * 1.08, mats.accent, 12);
+      shell.position.y = H * 0.12;
+      body.add(shell);
+      for (let i = 0; i < 14; i++) {
+        const [x, y, z] = onBody(s, rnd(-0.6, 0.6), rnd(0.3, Math.PI - 0.3), 1.25);
+        body.add(mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.04, 6), mats.dark, x, y + H * 0.1, z));
+      }
+    }
+    function extrasKomodo({ hd, s }) {
+      const pink = mkMat(0xe06a8a);
+      for (const sgn of [-1, 1]) {
+        const t = mesh(new THREE.CylinderGeometry(0.008, 0.012, 0.18, 4), pink, hd.skullL + hd.snoutL + 0.07, -s.head.h * 0.1, sgn * 0.02);
+        t.rotation.set(sgn * 0.25, 0, Math.PI / 2);
+        hd.g.add(t);
+      }
+    }
+    function extrasFlamingo({ hd, body, mats, s }) {
+      const tip = cone(0.025, 0.08, mats.dark, hd.skullL + hd.snoutL * 0.9, -0.01, 0, -Math.PI / 2 - 0.6);
+      hd.g.add(tip);
+      for (const sgn of [-1, 1]) {
+        const w = ellipsoid(0.2, 0.1, 0.03, mats.accent, 8);
+        w.position.set(-0.03, 0.04, sgn * s.body.W * 0.48);
+        body.add(w);
+      }
+    }
+    function extrasPenguin({ hd, body, mats, s }) {
+      const front = ellipsoid(0.14, s.body.H * 0.4, s.body.W * 0.42, mats.belly, 10);
+      front.position.set(s.body.L * 0.2, -0.02, 0);
+      body.add(front);
+      for (const sgn of [-1, 1]) {
+        const f = ellipsoid(0.06, 0.25, 0.03, mats.main, 8);
+        f.position.set(0, 0, sgn * s.body.W * 0.5);
+        f.rotation.x = sgn * 0.15;
+        body.add(f);
+        const patch = ellipsoid(0.05, 0.07, 0.02, mats.accent, 8);
+        patch.position.set(0, -0.02, sgn * s.head.w * 0.5);
+        hd.g.add(patch);
+      }
+    }
+    function extrasOrangutan(ctx) {
+      for (const sgn of [-1, 1]) {
+        const pad = ellipsoid(0.04, 0.16, 0.12, ctx.mats.belly, 8);
+        pad.position.set(ctx.hd.skullL * 0.5, 0, sgn * ctx.s.head.w * 0.55);
+        ctx.hd.g.add(pad);
+      }
+    }
+    function extrasAnteater(ctx) { roundEars(ctx, 0.04); }
+    function extrasSloth(ctx) {
+      const { legs, mats, hd, s } = ctx;
+      for (const l of legs) for (const dz of [-0.03, 0, 0.03]) l.foot.add(cone(0.012, 0.12, mats.claw, 0.05, -0.02, dz, -Math.PI / 2 - 0.6));
+      for (const sgn of [-1, 1]) {
+        const m = ellipsoid(0.06, 0.025, 0.02, mats.accent, 8);
+        m.position.set(hd.skullL * 0.6, s.head.h * 0.1, sgn * s.head.w * 0.33);
+        hd.g.add(m);
+      }
+    }
+    function extrasLlama(ctx) {
+      const { hd, mats, s } = ctx;
+      for (const sgn of [-1, 1]) {
+        const e = ellipsoid(0.03, 0.1, 0.025, mats.main, 6);
+        e.position.set(hd.skullL * 0.15, s.head.h * 0.75, sgn * s.head.w * 0.3);
+        e.rotation.z = 0.25;
+        hd.g.add(e);
+      }
+    }
+    function extrasOkapi(ctx) {
+      const { body, mats, s, hd } = ctx;
+      const { L, H, W } = s.body;
+      for (let i = 0; i < 5; i++) {
+        const t = -0.9 + i * 0.1, r = Math.sqrt(1 - t * t);
+        const ring = mesh(new THREE.TorusGeometry(1, 0.06, 4, 20), mats.accent, t * L / 2, 0, 0);
+        ring.rotation.y = Math.PI / 2;
+        ring.scale.set(r * W / 2 * 1.02, r * H / 2 * 1.02, 1);
+        body.add(ring);
+      }
+      for (const sgn of [-1, 1]) hd.g.add(cone(0.02, 0.1, mats.dark, hd.skullL * 0.2, s.head.h * 0.6, sgn * 0.06));
+      ears(ctx, 0.09, 0.5);
+    }
+    function extrasTapir(ctx) {
+      const { hd, body, mats, s } = ctx;
+      const trunk = chain({ count: 4, length: 0.3, r0: 0.08, r1: 0.05, pitch0: -40 * DEG, bend: 8 * DEG, dir: 1, mat: mats.main });
+      trunk.root.position.set(hd.skullL + hd.snoutL * 0.8, 0, 0);
+      hd.g.add(trunk.root);
+      const saddle = ellipsoid(s.body.L * 0.28, s.body.H / 2 * 1.03, s.body.W / 2 * 1.03, mats.accent, 12);
+      saddle.position.x = -s.body.L * 0.12;
+      body.add(saddle);
+      roundEars(ctx, 0.06);
+    }
+    function extrasWarthog(ctx) {
+      const { hd, mats, s } = ctx;
+      for (const sgn of [-1, 1]) {
+        const t = chain({ count: 3, length: 0.22, r0: 0.025, r1: 0.01, pitch0: 30 * DEG, bend: 30 * DEG, dir: 1, mat: mats.tooth });
+        t.root.position.set(hd.skullL + hd.snoutL * 0.5, -s.head.h * 0.1, sgn * s.head.w * 0.4);
+        t.root.rotation.y = -sgn * 0.5;
+        hd.g.add(t.root);
+        hd.g.add(mesh(new THREE.SphereGeometry(0.04, 5, 4), mats.main, hd.skullL * 0.9, s.head.h * 0.2, sgn * s.head.w * 0.45));
+      }
+      for (let i = 0; i < 6; i++) ctx.body.add(cone(0.03, 0.15, mats.accent, (0.4 - i * 0.12) * s.body.L / 2, s.body.H / 2 + 0.05, 0));
+      tailTuft(ctx, 0.04);
+      pointedEars(ctx, 0.08);
+    }
+    function extrasHyena(ctx) { spots(ctx, 35, 0.04); roundEars(ctx, 0.06); }
+    function extrasKoala(ctx) {
+      const { hd, mats, s } = ctx;
+      for (const sgn of [-1, 1]) {
+        const e = ellipsoid(0.04, 0.11, 0.11, mats.belly, 8);
+        e.position.set(hd.skullL * 0.2, s.head.h * 0.45, sgn * s.head.w * 0.55);
+        hd.g.add(e);
+      }
+      const nose = ellipsoid(0.05, 0.07, 0.045, mats.dark, 8);
+      nose.position.set(hd.skullL + hd.snoutL * 0.4, s.head.h * 0.05, 0);
+      hd.g.add(nose);
+    }
+    function extrasPeacock({ hd, body, mats, s }) {
+      const eye = mkMat(0x1a3a8a), gold = mkMat(0xd8b040);
+      for (let i = 0; i < 15; i++) {
+        const a = (i / 14 - 0.5) * 2.6;
+        const g = new THREE.Group();
+        g.position.set(-s.body.L * 0.4, 0.05, 0);
+        g.rotation.x = a;
+        g.rotation.z = 0.25;
+        const f = ellipsoid(0.06, 0.55, 0.012, mats.accent, 8);
+        f.position.y = 0.55;
+        g.add(f);
+        g.add(mesh(new THREE.SphereGeometry(0.04, 6, 4), gold, 0, 0.95, 0.012), mesh(new THREE.SphereGeometry(0.025, 6, 4), eye, 0, 0.95, 0.03));
+        body.add(g);
+      }
+      for (let i = -1; i <= 1; i++) hd.g.add(cone(0.008, 0.08, mats.main, hd.skullL * 0.4 + i * 0.012, s.head.h * 0.5 + 0.04, i * 0.012));
+    }
+    function extrasSabertooth(ctx) {
+      const { hd, mats, s } = ctx;
+      for (const sgn of [-1, 1]) hd.g.add(cone(0.025, 0.28, mats.tooth, hd.skullL + hd.snoutL * 0.55, -s.head.h * 0.35, sgn * s.head.w * 0.18, Math.PI));
+      ears(ctx, 0.06, 0.5);
+    }
+    function extrasWoollyRhino(ctx) {
+      const { hd, mats, s } = ctx;
+      const x = hd.skullL + hd.snoutL * 0.7;
+      hd.g.add(cone(0.12, 1.0, mats.claw, x, s.head.h * 0.5, 0, -0.5));
+      hd.g.add(cone(0.08, 0.35, mats.claw, x - 0.3, s.head.h * 0.45, 0, -0.25));
+      furFringe(ctx, 22, 0.14, 0.5);
+      ears(ctx, 0.12);
+    }
+    function extrasPlatypus({ hd, tail, mats, s }) {
+      const bill = mesh(new THREE.BoxGeometry(0.16, 0.025, 0.11), mats.dark, hd.skullL + 0.06, 0, 0);
+      hd.g.add(bill);
+      const t = mesh(new THREE.BoxGeometry(0.18, 0.03, 0.12), mats.main, -0.08, 0, 0);
+      tail.end.add(t);
     }
     function extrasPachy({ hd, mats, s }) {
       const dome = mesh(new THREE.SphereGeometry(0.3, 10, 8), mats.accent, hd.skullL * 0.35, s.head.h * 0.3, 0);
