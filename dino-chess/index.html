@@ -925,9 +925,10 @@
     // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
     const canvas = $('c');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.autoUpdate = false; // redrawn only while something moves; see loop()
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
@@ -1500,7 +1501,7 @@
     const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
     const easeOut = (k) => 1 - Math.pow(1 - k, 3);
     const linear = (k) => k;
-    function tween(dur, ease, fn) { return new Promise((res) => tweens.push({ t: 0, dur, ease, fn, res })); }
+    function tween(dur, ease, fn) { wake(); return new Promise((res) => tweens.push({ t: 0, dur, ease, fn, res })); }
     function stepTweens(dt) {
       for (let i = tweens.length - 1; i >= 0; i--) {
         const tw = tweens[i];
@@ -2017,9 +2018,32 @@
     // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════
     const clock = new THREE.Clock();
     let frames = 0, fps = 0, fpsT = 0;
+    // Power saving: full frame rate while something moves or for 4 s after input, then 15 fps (fire and breathing
+    // keep going), then a full stop after 60 s without input. Any input or move wakes it again.
+    const IDLE_AFTER = 4000, PAUSE_AFTER = 60000, IDLE_STEP = 1 / 15;
+    let lastActive = performance.now(), running = true, idleAcc = 0;
+    function wake() {
+      lastActive = performance.now();
+      if (!running) { running = true; clock.getDelta(); requestAnimationFrame(loop); }
+    }
+    for (const ev of ['pointerdown', 'pointermove', 'wheel', 'keydown', 'resize']) window.addEventListener(ev, wake, { passive: true });
+    document.addEventListener('visibilitychange', wake);
+
     function loop() {
+      const now = performance.now();
+      let moving = tweens.length > 0 || busy || thinking;
+      if (!moving) for (const e of models.values()) if (e.walk > 0 || e.walkAmt > 0.01) { moving = true; break; }
+      if (moving) lastActive = now;
+      const idleFor = now - lastActive;
+      if (idleFor > PAUSE_AFTER) { running = false; return; }
       requestAnimationFrame(loop);
-      const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+      // The menu's slow camera spin needs full frame rate to look smooth.
+      const idle = idleFor > IDLE_AFTER && !controls.autoRotate;
+      const raw = clock.getDelta();
+      if (idle) { idleAcc += raw; if (idleAcc < IDLE_STEP) return; }
+      const dt = Math.min(idle ? idleAcc : raw, 0.1), t = clock.elapsedTime;
+      idleAcc = 0;
+      renderer.shadowMap.needsUpdate = !idle;
       stepTweens(dt);
       for (const e of models.values()) if (e.group.visible) animateDino(e, dt, t);
       for (const f of fires) f.update(dt, t);
