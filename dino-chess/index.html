@@ -824,7 +824,7 @@
     }
 
     // Piece → dinosaur, from the hand-written legend: king T-rex, queen Spinosaurus, rook Triceratops,
-    // bishop Stegosaurus, knight Velociraptor, pawn Ankylosaurus. Specs match dino-3d.
+    // bishop Ankylosaurus, knight Velociraptor, pawn Stegosaurus. Specs match dino-3d.
     const DEFS = {
       k: {
         id: 'trex', sound: 'roar',
@@ -863,7 +863,7 @@
         },
         extras: extrasTriceratops,
       },
-      b: {
+      p: {
         id: 'stego', sound: 'honk',
         spec: {
           body: { L: 4.6, H: 2.6, W: 2.0, y: 2.0, tilt: 0 },
@@ -889,7 +889,7 @@
         },
         extras: extrasRaptorFeathered,
       },
-      p: {
+      b: {
         id: 'anky', sound: 'honk',
         spec: {
           body: { L: 4.6, H: 1.7, W: 3.0, y: 1.25, tilt: 0 },
@@ -908,9 +908,9 @@
       k: { piece: 'מלך', dino: 'טירנוזאורוס רקס' },
       q: { piece: 'מלכה', dino: 'ספינוזאורוס' },
       r: { piece: 'צריח', dino: 'טריצרטופס' },
-      b: { piece: 'רץ', dino: 'סטגוזאורוס' },
+      b: { piece: 'רץ', dino: 'אנקילוזאורוס' },
       n: { piece: 'פרש', dino: 'ולוציראפטור' },
-      p: { piece: 'רגלי', dino: 'אנקילוזאורוס' },
+      p: { piece: 'רגלי', dino: 'סטגוזאורוס' },
     };
     const COLOR_NAME = { w: 'הלבן', b: 'השחור' };
     // Body length each species is shrunk to (in squares). Royals and bishop get half tails so their bodies can be bigger.
