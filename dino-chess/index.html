@@ -635,43 +635,6 @@
       nose.rotation.z = -35 * DEG;
       hd.g.add(nose);
     }
-    function extrasStegosaurus({ body, tail, mats, s }) {
-      const { L, H } = s.body;
-      const plate = (hgt, wid) => {
-        const sh = new THREE.Shape();
-        sh.moveTo(-wid / 2, 0); sh.lineTo(wid / 2, 0); sh.lineTo(wid * 0.42, hgt * 0.45); sh.lineTo(wid * 0.1, hgt);
-        sh.lineTo(-wid * 0.1, hgt); sh.lineTo(-wid * 0.42, hgt * 0.45); sh.closePath();
-        const g = new THREE.ExtrudeGeometry(sh, { depth: 0.1, bevelEnabled: false });
-        g.translate(0, 0, -0.05);
-        return mesh(g, mats.accent);
-      };
-      const N = 12;
-      for (let i = 0; i < N; i++) {
-        const t = -0.82 + (i / (N - 1)) * 1.64;
-        const x = t * L / 2;
-        const y = (H / 2) * Math.sqrt(Math.max(0, 1 - t * t)) - 0.15;
-        const size = 0.55 + 0.95 * Math.sin(Math.PI * (i + 0.5) / N);
-        const p = plate(size, size * 0.8);
-        p.position.set(x, y, (i % 2 ? 1 : -1) * 0.17);
-        p.rotation.z = -t * 0.5;
-        body.add(p);
-      }
-      for (let i = 0; i < 3; i++) {
-        const g = tail.groups[i];
-        const size = 0.9 - i * 0.22;
-        const p = plate(size, size * 0.8);
-        p.position.set(-tail.seg * 0.5, s.tail.r0 * (0.8 - i * 0.12), (i % 2 ? 1 : -1) * 0.12);
-        g.add(p);
-      }
-      for (const i of [tail.groups.length - 2, tail.groups.length - 1]) {
-        for (const sgn of [-1, 1]) {
-          const sp = mesh(new THREE.ConeGeometry(0.08, 0.75, 6), mats.accent, -tail.seg * 0.5, 0.05, sgn * 0.12);
-          sp.rotation.x = -sgn * 0.5;
-          sp.rotation.z = 0.25;
-          tail.groups[i].add(sp);
-        }
-      }
-    }
     function extrasRaptor({ hd, tail, mats, s }) {
       const crest = mesh(new THREE.BoxGeometry(hd.skullL * 0.9, 0.09, 0.02), mats.accent, hd.skullL * 0.35, s.head.h * 0.55, 0);
       crest.rotation.z = 0.3;
@@ -700,6 +663,36 @@
       neck.groups.forEach((g, i) => {
         const ruff = mesh(new THREE.SphereGeometry(s.neck.r0 * (1.25 - i * 0.12), 8, 6), mats.belly, s.neck.length / s.neck.count * 0.4, 0, 0);
         g.add(ruff);
+      });
+    }
+    // Knight raptor: same body as the pawn, but a raised tail with gold bands, a dorsal spike row and an upright plume.
+    function extrasRaptorPlumed(ctx) {
+      const { hd, tail, neck, mats, s } = ctx;
+      const crest = mesh(new THREE.BoxGeometry(hd.skullL * 0.9, 0.09, 0.02), mats.accent, hd.skullL * 0.35, s.head.h * 0.55, 0);
+      crest.rotation.z = 0.3;
+      hd.g.add(crest);
+      const n = tail.groups.length;
+      tail.groups.forEach((g, i) => {
+        const r = s.tail.r0 + (s.tail.r1 - s.tail.r0) * (i / n);
+        if (i % 2) {
+          const band = mesh(new THREE.CylinderGeometry(r * 1.08, r * 1.08, tail.seg * 0.35, 10), mats.accent, -tail.seg * 0.5, 0, 0);
+          band.rotation.z = Math.PI / 2;
+          g.add(band);
+        }
+        const spike = mesh(new THREE.ConeGeometry(r * 0.35, r * 1.1, 5), mats.accent, -tail.seg * 0.5, r * 1.2, 0);
+        spike.rotation.z = 0.5;
+        g.add(spike);
+      });
+      for (let i = -3; i <= 3; i++) {
+        const a = Math.PI + i * 0.3;
+        const f = mesh(new THREE.SphereGeometry(1, 8, 5), i % 2 ? mats.main : mats.accent, 0, 0, 0);
+        f.scale.set(tail.seg * 1.5, s.tail.r0 * 0.5, 0.012);
+        f.position.set(Math.cos(a) * tail.seg * 1.2, Math.sin(-a) * tail.seg * 1.2 + tail.seg * 0.3, 0);
+        f.rotation.z = -i * 0.3;
+        tail.end.add(f);
+      }
+      neck.groups.forEach((g, i) => {
+        g.add(mesh(new THREE.SphereGeometry(s.neck.r0 * (1.25 - i * 0.12), 8, 6), mats.belly, s.neck.length / s.neck.count * 0.4, 0, 0));
       });
     }
     function extrasSpinosaurus({ body, mats, s }) {
@@ -824,7 +817,7 @@
     }
 
     // Piece → dinosaur, from the hand-written legend: king T-rex, queen Spinosaurus, rook Triceratops,
-    // bishop Ankylosaurus, knight Velociraptor, pawn Stegosaurus. Specs match dino-3d.
+    // bishop Ankylosaurus, knight Velociraptor (big, plumed tail), pawn Velociraptor. Specs match dino-3d.
     const DEFS = {
       k: {
         id: 'trex', sound: 'roar',
@@ -863,21 +856,19 @@
         },
         extras: extrasTriceratops,
       },
-      p: {
-        id: 'stego', sound: 'honk',
-        spec: {
-          body: { L: 4.6, H: 2.6, W: 2.0, y: 2.0, tilt: 0 },
-          neck: { count: 3, length: 1.4, r0: 0.6, r1: 0.35, pitch0: -25 * DEG, bend: -5 * DEG, attach: [1.9, -0.1] },
-          head: { len: 0.75, h: 0.4, w: 0.38, snout: 0.5, taper: 0.6, teeth: false, eye: 0.05, pitch: -5 * DEG },
-          tail: { count: 7, length: 3.8, r0: 0.7, r1: 0.06, pitch0: 5 * DEG, bend: -4 * DEG, attach: [-1.85, 0.1] },
-          legs: [
-            { x: -1.3, y: 1.6, z: 0.75, thick: 0.4, a1: 8 * DEG, a2: -16 * DEG, footH: 0.25, toes: 3 },
-            { x: 1.3, y: 1.2, z: 0.65, thick: 0.3, a1: 5 * DEG, a2: -10 * DEG, footH: 0.2, toes: 4, fore: true },
-          ],
-        },
-        extras: extrasStegosaurus,
-      },
       n: {
+        id: 'raptor', sound: 'screech',
+        spec: {
+          body: { L: 0.95, H: 0.48, W: 0.36, y: 0.62, tilt: 0 },
+          neck: { count: 4, length: 0.45, r0: 0.16, r1: 0.1, pitch0: 55 * DEG, bend: -20 * DEG, attach: [0.4, 0.08] },
+          head: { len: 0.42, h: 0.2, w: 0.17, snout: 0.55, taper: 0.5, teeth: true, eye: 0.03, pitch: 0 },
+          tail: { count: 7, length: 1.05, r0: 0.16, r1: 0.04, pitch0: 24 * DEG, bend: -5 * DEG, attach: [-0.4, 0.05] },
+          legs: [{ x: -0.18, y: 0.5, z: 0.16, thick: 0.075, a1: 30 * DEG, a2: -60 * DEG, footH: 0.06, toes: 2, sickle: true }],
+          arms: [{ x: 0.35, y: -0.05, z: 0.17, len: 0.42, thick: 0.03, a1: 35 * DEG, a2: -50 * DEG, feathers: true }],
+        },
+        extras: extrasRaptorPlumed,
+      },
+      p: {
         id: 'raptor', sound: 'screech',
         spec: {
           body: { L: 0.95, H: 0.48, W: 0.36, y: 0.62, tilt: 0 },
@@ -910,7 +901,7 @@
       r: { piece: 'צריח', dino: 'טריצרטופס' },
       b: { piece: 'רץ', dino: 'אנקילוזאורוס' },
       n: { piece: 'פרש', dino: 'ולוציראפטור' },
-      p: { piece: 'רגלי', dino: 'סטגוזאורוס' },
+      p: { piece: 'רגלי', dino: 'ולוציראפטור' },
     };
     const COLOR_NAME = { w: 'הלבן', b: 'השחור' };
     // Body length each species is shrunk to (in squares). Royals and bishop get half tails so their bodies can be bigger.
@@ -1298,6 +1289,9 @@
       g.rotation.z = -0.12;
       d.hd.g.add(g);
     }
+    // The knight is the pawn raptor 20% bigger in every axis, so it takes the pawn's scale, not its own FIT.
+    let pawnS = 0;
+    function pawnScale() { if (!pawnS) buildModel('p', 'w'); return pawnS; }
     function buildModel(type, color) {
       const base = DEFS[type];
       const tailK = NATURAL[type] ? 1 : 0.55;
@@ -1309,7 +1303,8 @@
       d.root.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(d.root);
       const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
-      const s = Math.min(FIT[type] / size.x, 0.92 / size.z);
+      const s = type === 'n' ? pawnScale() * 1.2 : Math.min(FIT[type] / size.x, 0.92 / size.z);
+      if (type === 'p') pawnS = s;
       const wrap = new THREE.Group();
       wrap.scale.set(s, s * TALL, s);
       wrap.position.set(-center.x * s, 0, -center.z * s);
@@ -1963,7 +1958,7 @@
       for (const t of ['k', 'q', 'r', 'b', 'n', 'p']) {
         const d = document.createElement('div');
         d.className = 'lrow';
-        d.innerHTML = `${thumbs['w' + t] ? `<img src="${thumbs['w' + t]}" alt="">` : `<span class="ph">${t === 'k' || t === 'q' || t === 'n' ? '🦖' : '🦕'}</span>`}<div><b>${NAMES[t].piece}</b><small>${NAMES[t].dino}</small></div>`;
+        d.innerHTML = `${thumbs['w' + t] ? `<img src="${thumbs['w' + t]}" alt="">` : `<span class="ph">${t === 'k' || t === 'q' || t === 'n' || t === 'p' ? '🦖' : '🦕'}</span>`}<div><b>${NAMES[t].piece}</b><small>${NAMES[t].dino}</small></div>`;
         rows.appendChild(d);
       }
     }
