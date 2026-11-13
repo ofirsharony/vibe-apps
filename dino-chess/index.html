@@ -1289,7 +1289,7 @@
       g.rotation.z = -0.12;
       d.hd.g.add(g);
     }
-    // The knight is the pawn raptor 20% bigger in every axis, so it takes the pawn's scale, not its own FIT.
+    // The knight is the pawn raptor 40% bigger in every axis, so it takes the pawn's scale, not its own FIT.
     let pawnS = 0;
     function pawnScale() { if (!pawnS) buildModel('p', 'w'); return pawnS; }
     function buildModel(type, color) {
@@ -1303,7 +1303,7 @@
       d.root.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(d.root);
       const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
-      const s = type === 'n' ? pawnScale() * 1.2 : Math.min(FIT[type] / size.x, 0.92 / size.z);
+      const s = type === 'n' ? pawnScale() * 1.4 : Math.min(FIT[type] / size.x, 0.92 / size.z);
       if (type === 'p') pawnS = s;
       const wrap = new THREE.Group();
       wrap.scale.set(s, s * TALL, s);
